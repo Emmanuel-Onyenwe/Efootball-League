@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>eLeague — Submit Result</title>
+<title>Panic Keh — Submit Result</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -388,7 +388,7 @@
         <rect x="48" y="72" width="4" height="16" fill="url(#crestEdge2)"/>
         <rect x="54" y="82" width="4" height="6" fill="url(#crestEdge2)"/>
       </svg>
-      <div class="wordmark">eLEAGUE<small>Season Table</small></div>
+      <div class="wordmark">PANIC KEH<small>Season Table</small></div>
     </div>
 
     <nav class="top-nav">
@@ -418,21 +418,11 @@
       <form method="POST" action="{{ url_for('submit') }}" enctype="multipart/form-data" id="result-form">
 
         <div class="field-group">
-          <label for="player_id">You played as</label>
-          <select name="player_id" id="player_id" required>
-            <option value="" disabled selected>Select your name</option>
-            {% for u in active_users %}
-            <option value="{{ u.id }}">{{ u.name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <div class="field-group">
-          <label for="opponent_id">Opponent</label>
-          <select name="opponent_id" id="opponent_id" required>
-            <option value="" disabled selected>Select your opponent</option>
-            {% for u in active_users %}
-            <option value="{{ u.id }}">{{ u.name }}</option>
+          <label for="match_id">Select Scheduled Fixture</label>
+          <select name="match_id" id="match_id" required>
+            <option value="" disabled selected>-- Choose Match --</option>
+            {% for fx in fixtures %}
+            <option value="{{ fx.id }}">{{ fx.player_a.name }} (Home) vs {{ fx.player_b.name }} (Away)</option>
             {% endfor %}
           </select>
         </div>
@@ -441,13 +431,13 @@
           <label>Final score</label>
           <div class="scoreboard">
             <div class="score-input-wrap">
-              <span>You</span>
-              <input type="number" name="score_player" min="0" step="1" required inputmode="numeric">
+              <span>Player A (Home)</span>
+              <input type="number" name="score_a" min="0" step="1" required inputmode="numeric">
             </div>
             <div class="score-divider">:</div>
             <div class="score-input-wrap">
-              <span>Opponent</span>
-              <input type="number" name="score_opponent" min="0" step="1" required inputmode="numeric">
+              <span>Player B (Away)</span>
+              <input type="number" name="score_b" min="0" step="1" required inputmode="numeric">
             </div>
           </div>
         </div>
@@ -476,24 +466,6 @@
   </main>
 
   <script>
-    // Prevent selecting the same player on both sides.
-    var playerSelect = document.getElementById('player_id');
-    var opponentSelect = document.getElementById('opponent_id');
-
-    function syncOptions(source, target) {
-      var chosen = source.value;
-      Array.prototype.forEach.call(target.options, function (opt) {
-        if (!opt.value) return;
-        opt.disabled = (opt.value === chosen);
-        if (opt.disabled && opt.selected) {
-          target.value = '';
-        }
-      });
-    }
-
-    playerSelect.addEventListener('change', function () { syncOptions(playerSelect, opponentSelect); });
-    opponentSelect.addEventListener('change', function () { syncOptions(opponentSelect, playerSelect); });
-
     // Screenshot preview + drag-and-drop support.
     var fileInput = document.getElementById('screenshot');
     var dropzone = document.getElementById('dropzone');
