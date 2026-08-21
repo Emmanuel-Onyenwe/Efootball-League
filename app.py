@@ -4,21 +4,28 @@ from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'supersecretkey'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///league.db'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
-
-# Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 db = SQLAlchemy(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 
 # --- DATABASE MODELS ---
-class User(db.Model):
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(50), unique=True, nullable=False) # This is the Gamertag
+    password_hash = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(20), default='player') # 'player' or 'admin'
+    in_league = db.Column(db.Boolean, default=False) # True when approved by admin
+    
+    # Stats
     points = db.Column(db.Integer, default=0)
     strikes = db.Column(db.Integer, default=0)
     played = db.Column(db.Integer, default=0)
@@ -38,51 +45,94 @@ class Match(db.Model):
     screenshot_path = db.Column(db.String(200), nullable=True)
     deadline = db.Column(db.DateTime, nullable=True)
     status = db.Column(db.String(20), default='pending') 
-
     player_a = db.relationship('User', foreign_keys=[player_a_id])
     player_b = db.relationship('User', foreign_keys=[player_b_id])
 
-# --- PHASE 2: CORE LOGIC ---
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+# --- AUTHENTICATION ROUTES ---
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        gamertag = request.form.get('gamertag')
+        password = request.form.get('password')
+        
+        if User.query.filter_by(name=gamertag).first():
+            flash("Gamertag already taken. Please login or choose another.", "error")
+            return redirect(url_for('register'))
+            
+        hashed_pw = generate_password_hash(password)
+        
+        # Make the first registered user the Admin automatically
+        is_first_user = User.query.count() == 0
+        role = 'admin' if is_first_user else 'player'
+        in_league = True if is_first_user else False
+        
+        new_user = User(name=gamertag, password_hash=hashed_pw, role=role, in_league=in_league)
+        db.session.add(new_user)
+        db.session.commit()
+        
+        flash("Registration successful! You can now log in.", "success")
+        return redirect(url_for('login'))
+        
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        gamertag = request.form.get('gamertag')
+        password = request.form.get('password')
+        user = User.query.filter_by(name=gamertag).first()
+        
+        if user and check_password_hash(user.password_hash, password):
+            login_user(user)
+            return redirect(url_for('index'))
+        else:
+            flash("Invalid Gamertag or password.", "error")
+            
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+# --- CORE LOGIC (Standings) ---
 def update_standings():
-    users = User.query.filter_by(status='active').all()
+    users = User.query.filter_by(status='active', in_league=True).all()
     for user in users:
         matches_as_a = Match.query.filter_by(player_a_id=user.id, status='approved').all()
         matches_as_b = Match.query.filter_by(player_b_id=user.id, status='approved').all()
-        
         user.played = len(matches_as_a) + len(matches_as_b)
         user.won = user.drawn = user.lost = user.goals_for = user.goals_against = user.points = 0
         
         for m in matches_as_a:
-            user.goals_for += m.score_a
-            user.goals_against += m.score_b
-            if m.score_a > m.score_b:
-                user.won += 1; user.points += 3
-            elif m.score_a == m.score_b:
-                user.drawn += 1; user.points += 1
-            else:
-                user.lost += 1
+            user.goals_for += m.score_a; user.goals_against += m.score_b
+            if m.score_a > m.score_b: user.won += 1; user.points += 3
+            elif m.score_a == m.score_b: user.drawn += 1; user.points += 1
+            else: user.lost += 1
                 
         for m in matches_as_b:
-            user.goals_for += m.score_b
-            user.goals_against += m.score_a
-            if m.score_b > m.score_a:
-                user.won += 1; user.points += 3
-            elif m.score_b == m.score_a:
-                user.drawn += 1; user.points += 1
-            else:
-                user.lost += 1
+            user.goals_for += m.score_b; user.goals_against += m.score_a
+            if m.score_b > m.score_a: user.won += 1; user.points += 3
+            elif m.score_b == m.score_a: user.drawn += 1; user.points += 1
+            else: user.lost += 1
     db.session.commit()
 
-# --- PHASE 3: PUBLIC ROUTES ---
+# --- PUBLIC ROUTES ---
 @app.route('/')
 def index():
     update_standings()
-    users = User.query.filter_by(status='active').all()
+    users = User.query.filter_by(status='active', in_league=True).all()
     standings = sorted(users, key=lambda u: (u.points, (u.goals_for - u.goals_against)), reverse=True)
     fixtures = Match.query.filter_by(status='pending').all()
     return render_template('index.html', standings=standings, fixtures=fixtures)
 
 @app.route('/submit', methods=['GET', 'POST'])
+@login_required
 def submit():
     if request.method == 'POST':
         match_id = request.form.get('match_id')
@@ -104,40 +154,61 @@ def submit():
             flash("Result submitted and pending admin approval!", "success")
             return redirect(url_for('index'))
             
-    fixtures = Match.query.filter_by(status='pending').all()
+    # Only show matches involving the currently logged-in user
+    fixtures = Match.query.filter(
+        (Match.status == 'pending') & 
+        ((Match.player_a_id == current_user.id) | (Match.player_b_id == current_user.id))
+    ).all()
     return render_template('submit.html', fixtures=fixtures)
 
-# Route to serve the uploaded screenshots
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# --- PHASE 4: ADMIN DASHBOARD ROUTES ---
+# --- ADMIN DASHBOARD ---
 @app.route('/admin')
+@login_required
 def admin():
-    users = User.query.filter_by(status='active').all()
+    if current_user.role != 'admin':
+        flash("Access Denied: Admins only.", "error")
+        return redirect(url_for('index'))
+        
+    active_players = User.query.filter_by(status='active', in_league=True).all()
+    pending_players = User.query.filter_by(in_league=False).all()
     pending_matches = Match.query.filter_by(status='submitted').all()
-    return render_template('admin.html', users=users, pending_matches=pending_matches)
+    return render_template('admin.html', active_players=active_players, pending_players=pending_players, pending_matches=pending_matches)
 
-@app.route('/admin/add_player', methods=['POST'])
-def add_player():
-    name = request.form.get('name')
-    if name:
-        db.session.add(User(name=name))
+@app.route('/admin/approve_player/<int:user_id>', methods=['POST'])
+@login_required
+def approve_player(user_id):
+    if current_user.role == 'admin':
+        user = User.query.get_or_404(user_id)
+        user.in_league = True
         db.session.commit()
-        flash(f"Player {name} added to the league!", "success")
+        flash(f"{user.name} added to the league roster!", "success")
+    return redirect(url_for('admin'))
+
+@app.route('/admin/promote/<int:user_id>', methods=['POST'])
+@login_required
+def promote_player(user_id):
+    if current_user.role == 'admin':
+        user = User.query.get_or_404(user_id)
+        user.role = 'admin'
+        db.session.commit()
+        flash(f"{user.name} is now a Co-Admin!", "success")
     return redirect(url_for('admin'))
 
 @app.route('/admin/generate_fixtures', methods=['POST'])
+@login_required
 def generate_fixtures():
-    users = User.query.filter_by(status='active').all()
+    if current_user.role != 'admin': return redirect(url_for('index'))
+    users = User.query.filter_by(status='active', in_league=True).all()
     if len(users) < 2:
-        flash("Need at least 2 players to generate fixtures.", "error")
+        flash("Need at least 2 approved players to generate fixtures.", "error")
         return redirect(url_for('admin'))
     
-    # Round Robin Matchmaking
     pairs = list(itertools.combinations(users, 2))
-    base_deadline = datetime.now() + timedelta(days=7) # Sets deadline to 7 days from generation
+    base_deadline = datetime.now() + timedelta(days=7)
     
     matches_created = 0
     for player_a, player_b in pairs:
@@ -155,43 +226,17 @@ def generate_fixtures():
     return redirect(url_for('admin'))
 
 @app.route('/admin/approve/<int:match_id>', methods=['POST'])
+@login_required
 def approve_match(match_id):
-    match = Match.query.get_or_404(match_id)
-    match.status = 'approved'
-    db.session.commit()
-    flash("Match result approved and standings updated!", "success")
-    return redirect(url_for('admin'))
-
-@app.route('/admin/reject/<int:match_id>', methods=['POST'])
-def reject_match(match_id):
-    match = Match.query.get_or_404(match_id)
-    match.status = 'pending'
-    match.score_a = None
-    match.score_b = None
-    match.screenshot_path = None
-    db.session.commit()
-    flash("Match rejected and reset. Players must re-submit.", "error")
-    return redirect(url_for('admin'))
-
-@app.route('/admin/eliminate/<int:user_id>', methods=['POST'])
-def eliminate_player(user_id):
-    user = User.query.get_or_404(user_id)
-    user.status = 'eliminated'
-    
-    # Find and delete all future pending matches involving this player
-    unplayed_matches = Match.query.filter(
-        (Match.status == 'pending') & 
-        ((Match.player_a_id == user.id) | (Match.player_b_id == user.id))
-    ).all()
-    
-    for m in unplayed_matches:
-        db.session.delete(m)
-        
-    db.session.commit()
-    flash(f"{user.name} eliminated! {len(unplayed_matches)} future matches were safely removed to restructure the league.", "success")
+    if current_user.role == 'admin':
+        match = Match.query.get_or_404(match_id)
+        match.status = 'approved'
+        db.session.commit()
+        flash("Match result approved and standings updated!", "success")
     return redirect(url_for('admin'))
 
 with app.app_context():
+    db.drop_all() # Resets the database schema so the new password columns are created
     db.create_all()
 
 if __name__ == '__main__':

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Panic Keh | Login</title>
+    <style>
+        body { background-color: #0A0E1A; color: #F2F5FA; font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #10162C; padding: 40px; border-radius: 12px; border-top: 4px solid #FF2E9A; text-align: center; width: 100%; max-width: 400px; }
+        input { width: 100%; padding: 12px; margin: 10px 0 20px; background: #1B2340; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box;}
+        button { width: 100%; padding: 12px; background: linear-gradient(90deg, #FF2E9A, #7C5CFF); border: none; color: black; font-weight: bold; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2 style="font-family: 'Orbitron', sans-serif; margin-top:0;">ADMIN / PLAYER LOGIN</h2>
+        <form method="POST">
+            <label style="display:block; text-align:left; font-size: 0.8rem; color:#A8B2D1;">GAMERTAG</label>
+            <input type="text" name="gamertag" required>
+            <label style="display:block; text-align:left; font-size: 0.8rem; color:#A8B2D1;">PASSWORD</label>
+            <input type="password" name="password" required>
+            <button type="submit">LOG IN</button>
+        </form>
+        <p style="margin-top: 20px; font-size: 0.8rem;"><a href="/register" style="color: #FF2E9A; text-decoration: none;">Need an account? Register</a></p>
+    </div>
+</body>
+</html>
