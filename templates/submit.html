@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panic Keh | Submit Score</title>
+    <style>
+        /* Inherit the same neon dark theme variables from index.html */
+        :root {
+            --bg-color: #0b0c10;
+            --panel-bg: #1f2833;
+            --neon-cyan: #45f3ff;
+            --neon-magenta: #ff007f;
+            --text-main: #c5c6c7;
+            --white: #ffffff;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+        .form-card {
+            background: var(--panel-bg);
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            border-top: 4px solid var(--neon-cyan);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            background: #111;
+            border: 1px solid #333;
+            color: var(--white);
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+            border: none;
+            color: #000;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        button:hover { opacity: 0.8; }
+        .score-row {
+            display: flex;
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-card">
+        <h2 style="color: var(--white); text-align: center; text-transform: uppercase;">Submit Match Result</h2>
+        <form method="POST" enctype="multipart/form-data">
+            
+            <label>Select Scheduled Fixture</label>
+            <select name="match_id" required>
+                <option value="">-- Choose Match --</option>
+                {% for fixture in fixtures %}
+                <option value="{{ fixture.id }}">{{ fixture.player_a.name }} vs {{ fixture.player_b.name }}</option>
+                {% endfor %}
+            </select>
+
+            <div class="score-row">
+                <div style="flex: 1;">
+                    <label>Home Score</label>
+                    <input type="number" name="score_a" min="0" required>
+                </div>
+                <div style="flex: 1;">
+                    <label>Away Score</label>
+                    <input type="number" name="score_b" min="0" required>
+                </div>
+            </div>
+
+            <label>Upload PS4 Match Stats Screenshot</label>
+            <input type="file" name="screenshot" accept="image/*" required>
+
+            <button type="submit">Submit to Admin</button>
+            <div style="text-align: center; margin-top: 10px;">
+                <a href="/" style="color: var(--neon-cyan); text-decoration: none;">Cancel & Return</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

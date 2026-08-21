@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panic Keh | League Standings</title>
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --panel-bg: #1f2833;
+            --neon-cyan: #45f3ff;
+            --neon-magenta: #ff007f;
+            --text-main: #c5c6c7;
+            --white: #ffffff;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background: linear-gradient(90deg, var(--panel-bg), #000);
+            border-bottom: 2px solid var(--neon-cyan);
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .css-logo {
+            width: 40px;
+            height: 40px;
+            background: var(--neon-magenta);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #000;
+            font-size: 20px;
+            box-shadow: 0 0 10px var(--neon-magenta);
+        }
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--neon-cyan); }
+        .table-container {
+            background: var(--panel-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border-left: 4px solid var(--neon-magenta);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #333;
+        }
+        th { color: var(--neon-cyan); text-transform: uppercase; }
+        .rank-1 { color: #ffd700; font-weight: bold; }
+        .danger-zone { border-left: 3px solid red; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo-container">
+            <div class="css-logo">PK</div>
+            <h1 style="color: var(--white); margin: 0; text-transform: uppercase; letter-spacing: 2px;">Panic <span style="color: var(--neon-cyan);">Keh</span></h1>
+        </div>
+        <div class="nav-links">
+            <a href="/">Standings</a>
+            <a href="/submit">Submit Result</a>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <h2>Live League Table</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th><th>Player</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in standings %}
+                <tr>
+                    <td class="{% if loop.index == 1 %}rank-1{% endif %}">{{ loop.index }}</td>
+                    <td style="text-align: left; font-weight: bold; color: var(--white);">{{ user.name }}</td>
+                    <td>{{ user.played }}</td>
+                    <td>{{ user.won }}</td>
+                    <td>{{ user.drawn }}</td>
+                    <td>{{ user.lost }}</td>
+                    <td>{{ user.goals_for - user.goals_against }}</td>
+                    <td style="color: var(--neon-magenta); font-weight: bold;">{{ user.points }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
