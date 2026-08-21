@@ -1,6 +1,7 @@
 import os
-from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash
+import itertools
+from datetime import datetime, timedelta
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 
@@ -72,11 +73,10 @@ def update_standings():
                 user.lost += 1
     db.session.commit()
 
-# --- PHASE 3: ROUTES ---
+# --- PHASE 3: PUBLIC ROUTES ---
 @app.route('/')
 def index():
     update_standings()
-    # Sort by Points, then Goal Difference
     users = User.query.filter_by(status='active').all()
     standings = sorted(users, key=lambda u: (u.points, (u.goals_for - u.goals_against)), reverse=True)
     fixtures = Match.query.filter_by(status='pending').all()
@@ -106,6 +106,90 @@ def submit():
             
     fixtures = Match.query.filter_by(status='pending').all()
     return render_template('submit.html', fixtures=fixtures)
+
+# Route to serve the uploaded screenshots
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+# --- PHASE 4: ADMIN DASHBOARD ROUTES ---
+@app.route('/admin')
+def admin():
+    users = User.query.filter_by(status='active').all()
+    pending_matches = Match.query.filter_by(status='submitted').all()
+    return render_template('admin.html', users=users, pending_matches=pending_matches)
+
+@app.route('/admin/add_player', methods=['POST'])
+def add_player():
+    name = request.form.get('name')
+    if name:
+        db.session.add(User(name=name))
+        db.session.commit()
+        flash(f"Player {name} added to the league!", "success")
+    return redirect(url_for('admin'))
+
+@app.route('/admin/generate_fixtures', methods=['POST'])
+def generate_fixtures():
+    users = User.query.filter_by(status='active').all()
+    if len(users) < 2:
+        flash("Need at least 2 players to generate fixtures.", "error")
+        return redirect(url_for('admin'))
+    
+    # Round Robin Matchmaking
+    pairs = list(itertools.combinations(users, 2))
+    base_deadline = datetime.now() + timedelta(days=7) # Sets deadline to 7 days from generation
+    
+    matches_created = 0
+    for player_a, player_b in pairs:
+        existing_match = Match.query.filter(
+            ((Match.player_a_id == player_a.id) & (Match.player_b_id == player_b.id)) |
+            ((Match.player_a_id == player_b.id) & (Match.player_b_id == player_a.id))
+        ).first()
+        
+        if not existing_match:
+            db.session.add(Match(player_a_id=player_a.id, player_b_id=player_b.id, deadline=base_deadline))
+            matches_created += 1
+            
+    db.session.commit()
+    flash(f"Generated {matches_created} new fixtures successfully!", "success")
+    return redirect(url_for('admin'))
+
+@app.route('/admin/approve/<int:match_id>', methods=['POST'])
+def approve_match(match_id):
+    match = Match.query.get_or_404(match_id)
+    match.status = 'approved'
+    db.session.commit()
+    flash("Match result approved and standings updated!", "success")
+    return redirect(url_for('admin'))
+
+@app.route('/admin/reject/<int:match_id>', methods=['POST'])
+def reject_match(match_id):
+    match = Match.query.get_or_404(match_id)
+    match.status = 'pending'
+    match.score_a = None
+    match.score_b = None
+    match.screenshot_path = None
+    db.session.commit()
+    flash("Match rejected and reset. Players must re-submit.", "error")
+    return redirect(url_for('admin'))
+
+@app.route('/admin/eliminate/<int:user_id>', methods=['POST'])
+def eliminate_player(user_id):
+    user = User.query.get_or_404(user_id)
+    user.status = 'eliminated'
+    
+    # Find and delete all future pending matches involving this player
+    unplayed_matches = Match.query.filter(
+        (Match.status == 'pending') & 
+        ((Match.player_a_id == user.id) | (Match.player_b_id == user.id))
+    ).all()
+    
+    for m in unplayed_matches:
+        db.session.delete(m)
+        
+    db.session.commit()
+    flash(f"{user.name} eliminated! {len(unplayed_matches)} future matches were safely removed to restructure the league.", "success")
+    return redirect(url_for('admin'))
 
 with app.app_context():
     db.create_all()

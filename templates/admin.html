@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panic Keh — Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0A0E1A; --bg-panel: #10162C; --bg-panel-alt: #161D38;
+    --cyan: #00E5FF; --magenta: #FF2E9A; --green: #33E6A0; --red: #FF4D6D;
+    --text-hi: #F2F5FA; --text-mid: #A8B2D1; --text-low: #64709A;
+    --grad-brand: linear-gradient(90deg, var(--cyan), var(--magenta));
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background-color: var(--bg-primary); color: var(--text-hi);
+    font-family: 'Inter', sans-serif; padding: 30px;
+  }
+  .header { border-bottom: 2px solid var(--magenta); padding-bottom: 20px; margin-bottom: 30px; }
+  .header h1 { font-family: 'Orbitron', sans-serif; color: var(--cyan); }
+  
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+  @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+  
+  .card { background: var(--bg-panel); padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+  .card h2 { font-family: 'Rajdhani', sans-serif; color: var(--text-hi); margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+  
+  .btn { padding: 10px 15px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; }
+  .btn-primary { background: var(--grad-brand); color: #000; }
+  .btn-success { background: var(--green); color: #000; }
+  .btn-danger { background: rgba(255, 77, 109, 0.2); border: 1px solid var(--red); color: var(--red); }
+  .btn-danger:hover { background: var(--red); color: #000; }
+  
+  input { padding: 10px; background: var(--bg-panel-alt); border: 1px solid #333; color: white; border-radius: 5px; width: 100%; margin-bottom: 15px;}
+  
+  .match-card { background: var(--bg-panel-alt); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--cyan); }
+  .match-card img { max-width: 100%; border-radius: 5px; margin: 10px 0; }
+  .score-display { font-size: 1.5rem; font-family: 'Orbitron', sans-serif; text-align: center; color: var(--gold); }
+  
+  .player-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #333; }
+  
+  .flash { padding: 15px; background: var(--green); color: black; font-weight: bold; margin-bottom: 20px; border-radius: 5px; }
+  .flash-error { background: var(--red); }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Panic Keh Admin Control Room</h1>
+    <a href="/" style="color: var(--text-mid); text-decoration: none;">&larr; Back to Public Standings</a>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        <div class="flash {{ 'flash-error' if category == 'error' else '' }}">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="grid">
+    <!-- Pending Approvals Column -->
+    <div class="card">
+      <h2>Pending Match Approvals ({{ pending_matches|length }})</h2>
+      {% for match in pending_matches %}
+      <div class="match-card">
+        <div style="text-align: center; font-weight: bold;">{{ match.player_a.name }} vs {{ match.player_b.name }}</div>
+        <div class="score-display">{{ match.score_a }} - {{ match.score_b }}</div>
+        
+        <p style="font-size: 0.8rem; color: var(--text-mid);">Screenshot Proof:</p>
+        <a href="{{ url_for('uploaded_file', filename=match.screenshot_path) }}" target="_blank">
+          <img src="{{ url_for('uploaded_file', filename=match.screenshot_path) }}" alt="Match Screenshot">
+        </a>
+        
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+          <form method="POST" action="{{ url_for('approve_match', match_id=match.id) }}" style="flex:1;">
+            <button class="btn btn-success" style="width: 100%;">Approve & Update Table</button>
+          </form>
+          <form method="POST" action="{{ url_for('reject_match', match_id=match.id) }}" style="flex:1;">
+            <button class="btn btn-danger" style="width: 100%;">Reject</button>
+          </form>
+        </div>
+      </div>
+      {% else %}
+      <p style="color: var(--text-low); text-align: center; margin-top: 40px;">No pending matches to approve.</p>
+      {% endfor %}
+    </div>
+
+    <!-- League Management Column -->
+    <div>
+      <div class="card" style="margin-bottom: 30px;">
+        <h2>League Operations</h2>
+        <p style="color: var(--text-low); font-size: 0.85rem; margin-bottom: 15px;">Add all players to the database first, then click generate to create the Round-Robin schedule.</p>
+        
+        <form method="POST" action="{{ url_for('add_player') }}" style="display: flex; gap: 10px; margin-bottom: 20px;">
+          <input type="text" name="name" placeholder="Enter Player Name" required style="margin-bottom: 0;">
+          <button type="submit" class="btn btn-primary">Add Player</button>
+        </form>
+
+        <form method="POST" action="{{ url_for('generate_fixtures') }}">
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 1rem;">Generate Full League Fixtures</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Active Players ({{ users|length }})</h2>
+        {% for user in users %}
+        <div class="player-row">
+          <span>{{ user.name }}</span>
+          <form method="POST" action="{{ url_for('eliminate_player', user_id=user.id) }}" onsubmit="return confirm('Are you sure? This eliminates the player and cancels their future games.');">
+            <button type="submit" class="btn btn-danger">Eliminate (2 Strikes)</button>
+          </form>
+        </div>
+        {% else %}
+        <p style="color: var(--text-low);">No active players yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
