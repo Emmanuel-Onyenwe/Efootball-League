@@ -1,95 +1,549 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panic Keh | Submit Score</title>
-    <style>
-        /* Inherit the same neon dark theme variables from index.html */
-        :root {
-            --bg-color: #0b0c10;
-            --panel-bg: #1f2833;
-            --neon-cyan: #45f3ff;
-            --neon-magenta: #ff007f;
-            --text-main: #c5c6c7;
-            --white: #ffffff;
-        }
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding: 40px;
-            display: flex;
-            justify-content: center;
-        }
-        .form-card {
-            background: var(--panel-bg);
-            padding: 30px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 500px;
-            border-top: 4px solid var(--neon-cyan);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-        }
-        input, select, button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 8px;
-            margin-bottom: 20px;
-            background: #111;
-            border: 1px solid #333;
-            color: var(--white);
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-        button {
-            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
-            border: none;
-            color: #000;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            transition: opacity 0.3s;
-        }
-        button:hover { opacity: 0.8; }
-        .score-row {
-            display: flex;
-            gap: 15px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eLeague — Submit Result</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0A0E1A;
+    --bg-panel: #10162C;
+    --bg-panel-alt: #161D38;
+    --bg-elevated: #1B2340;
+    --line: rgba(255,255,255,0.08);
+    --line-strong: rgba(255,255,255,0.16);
+    --cyan: #00E5FF;
+    --magenta: #FF2E9A;
+    --violet: #7C5CFF;
+    --gold: #FFC93C;
+    --green: #33E6A0;
+    --red: #FF4D6D;
+    --text-hi: #F2F5FA;
+    --text-mid: #A8B2D1;
+    --text-low: #64709A;
+    --grad-brand: linear-gradient(90deg, var(--cyan), var(--violet) 55%, var(--magenta));
+    --radius: 12px;
+    --radius-sm: 7px;
+    --font-display: 'Orbitron', sans-serif;
+    --font-heading: 'Rajdhani', sans-serif;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background:
+      radial-gradient(circle at 12% -10%, rgba(124,92,255,0.20), transparent 42%),
+      radial-gradient(circle at 88% 0%, rgba(255,46,154,0.14), transparent 40%),
+      var(--bg-primary);
+    color: var(--text-hi);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(180deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 3px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  /* ---------- Top bar (shared with index) ---------- */
+  .top-bar {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 16px 32px;
+    background: rgba(16, 22, 44, 0.72);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .top-bar::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -2px;
+    height: 2px;
+    background: var(--grad-brand);
+    opacity: 0.8;
+  }
+
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .crest { width: 36px; height: auto; flex-shrink: 0; }
+
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: 0.06em;
+    background: var(--grad-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .wordmark small {
+    display: block;
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: 0.62rem;
+    letter-spacing: 0.22em;
+    color: var(--text-low);
+    -webkit-text-fill-color: var(--text-low);
+  }
+
+  nav.top-nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 0.92rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  nav.top-nav a {
+    position: relative;
+    color: var(--text-mid);
+    padding-bottom: 4px;
+    transition: color 0.2s ease;
+  }
+
+  nav.top-nav a::after {
+    content: '';
+    position: absolute;
+    left: 0; bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--grad-brand);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s ease;
+  }
+
+  nav.top-nav a:hover { color: var(--text-hi); }
+  nav.top-nav a:hover::after { transform: scaleX(1); }
+  nav.top-nav a.active { color: var(--text-hi); }
+  nav.top-nav a.active::after { transform: scaleX(1); }
+
+  /* ---------- Layout ---------- */
+  main.wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 48px 20px 64px;
+  }
+
+  .flash-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .flash {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-panel-alt);
+    border-left: 3px solid var(--text-low);
+    animation: flash-in 0.3s ease;
+  }
+
+  .flash-success { border-left-color: var(--green); color: var(--green); }
+  .flash-error { border-left-color: var(--red); color: var(--red); }
+
+  @keyframes flash-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 20px 60px -25px rgba(0,0,0,0.65);
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 26px 28px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .card-header h1 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .card-header p {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    color: var(--text-low);
+  }
+
+  form { padding: 26px 28px 28px; }
+
+  .field-group { margin-bottom: 20px; }
+
+  .field-group label {
+    display: block;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    margin-bottom: 8px;
+  }
+
+  select {
+    width: 100%;
+    appearance: none;
+    background: var(--bg-panel-alt) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A8B2D1' stroke-width='1.6' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E") no-repeat right 14px center;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    color: var(--text-hi);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    padding: 11px 36px 11px 14px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  select:focus {
+    outline: none;
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.15);
+  }
+
+  /* ---------- Scoreboard ---------- */
+  .scoreboard {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background: var(--bg-panel-alt);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+  }
+
+  .score-input-wrap { text-align: center; }
+
+  .score-input-wrap span {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-low);
+    margin-bottom: 8px;
+  }
+
+  input[type="number"] {
+    width: 84px;
+    text-align: center;
+    background: var(--bg-elevated);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    color: var(--text-hi);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.8rem;
+    padding: 10px 0;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  input[type="number"]:focus {
+    outline: none;
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.15);
+  }
+
+  .score-divider {
+    font-family: var(--font-display);
+    font-weight: 800;
+    color: var(--text-low);
+    font-size: 0.9rem;
+    padding-top: 18px;
+  }
+
+  /* ---------- Dropzone ---------- */
+  .dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
+    border: 1.5px dashed var(--line-strong);
+    border-radius: var(--radius-sm);
+    padding: 26px 16px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .dropzone:hover, .dropzone.dragover {
+    border-color: var(--cyan);
+    background: rgba(0, 229, 255, 0.05);
+  }
+
+  .dropzone svg { width: 26px; height: 26px; color: var(--text-low); }
+  .dropzone .dz-title { font-family: var(--font-heading); font-weight: 600; font-size: 0.9rem; }
+  .dropzone .dz-sub { font-size: 0.76rem; color: var(--text-low); }
+
+  .dropzone input[type="file"] { display: none; }
+
+  .preview-thumb {
+    max-width: 100%;
+    max-height: 160px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line);
+    display: none;
+  }
+
+  /* ---------- Submit button ---------- */
+  button.submit-btn {
+    width: 100%;
+    margin-top: 6px;
+    padding: 14px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--grad-brand);
+    color: #060911;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  button.submit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 30px -10px rgba(0, 229, 255, 0.5);
+  }
+
+  button.submit-btn:active { transform: translateY(0); }
+
+  .helper-note {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-low);
+  }
+
+  a:focus-visible, button:focus-visible, select:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+</style>
 </head>
 <body>
-    <div class="form-card">
-        <h2 style="color: var(--white); text-align: center; text-transform: uppercase;">Submit Match Result</h2>
-        <form method="POST" enctype="multipart/form-data">
-            
-            <label>Select Scheduled Fixture</label>
-            <select name="match_id" required>
-                <option value="">-- Choose Match --</option>
-                {% for fixture in fixtures %}
-                <option value="{{ fixture.id }}">{{ fixture.player_a.name }} vs {{ fixture.player_b.name }}</option>
-                {% endfor %}
-            </select>
 
-            <div class="score-row">
-                <div style="flex: 1;">
-                    <label>Home Score</label>
-                    <input type="number" name="score_a" min="0" required>
-                </div>
-                <div style="flex: 1;">
-                    <label>Away Score</label>
-                    <input type="number" name="score_b" min="0" required>
-                </div>
-            </div>
-
-            <label>Upload PS4 Match Stats Screenshot</label>
-            <input type="file" name="screenshot" accept="image/*" required>
-
-            <button type="submit">Submit to Admin</button>
-            <div style="text-align: center; margin-top: 10px;">
-                <a href="/" style="color: var(--neon-cyan); text-decoration: none;">Cancel & Return</a>
-            </div>
-        </form>
+  <header class="top-bar">
+    <div class="brand">
+      <svg class="crest" viewBox="0 0 100 108" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="crestEdge2" x1="0" y1="0" x2="100" y2="108" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#00E5FF"/>
+            <stop offset="55%" stop-color="#7C5CFF"/>
+            <stop offset="100%" stop-color="#FF2E9A"/>
+          </linearGradient>
+        </defs>
+        <polygon points="50,3 92,22 92,64 50,105 8,64 8,22" fill="#10162C" stroke="url(#crestEdge2)" stroke-width="4"/>
+        <circle cx="50" cy="46" r="22" fill="#0A0E1A" stroke="url(#crestEdge2)" stroke-width="2.5"/>
+        <polygon points="50,32 60,39 56,50 44,50 40,39" fill="url(#crestEdge2)"/>
+        <line x1="50" y1="32" x2="50" y2="24" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="60" y1="39" x2="67" y2="34" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="56" y1="50" x2="59" y2="58" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="44" y1="50" x2="41" y2="58" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="40" y1="39" x2="33" y2="34" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="42" y="78" width="4" height="10" fill="url(#crestEdge2)"/>
+        <rect x="48" y="72" width="4" height="16" fill="url(#crestEdge2)"/>
+        <rect x="54" y="82" width="4" height="6" fill="url(#crestEdge2)"/>
+      </svg>
+      <div class="wordmark">eLEAGUE<small>Season Table</small></div>
     </div>
+
+    <nav class="top-nav">
+      <a href="{{ url_for('index') }}" class="{{ 'active' if request.path == url_for('index') else '' }}">Standings</a>
+      <a href="{{ url_for('submit') }}" class="{{ 'active' if request.path == url_for('submit') else '' }}">Submit Result</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="flash-stack">
+        {% for category, msg in messages %}
+        <div class="flash flash-{{ category }}">{{ msg }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="card">
+      <div class="card-header">
+        <h1>Report Match Result</h1>
+        <p>Log your final score and attach a screenshot as proof of the result.</p>
+      </div>
+
+      <form method="POST" action="{{ url_for('submit') }}" enctype="multipart/form-data" id="result-form">
+
+        <div class="field-group">
+          <label for="player_id">You played as</label>
+          <select name="player_id" id="player_id" required>
+            <option value="" disabled selected>Select your name</option>
+            {% for u in active_users %}
+            <option value="{{ u.id }}">{{ u.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label for="opponent_id">Opponent</label>
+          <select name="opponent_id" id="opponent_id" required>
+            <option value="" disabled selected>Select your opponent</option>
+            {% for u in active_users %}
+            <option value="{{ u.id }}">{{ u.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label>Final score</label>
+          <div class="scoreboard">
+            <div class="score-input-wrap">
+              <span>You</span>
+              <input type="number" name="score_player" min="0" step="1" required inputmode="numeric">
+            </div>
+            <div class="score-divider">:</div>
+            <div class="score-input-wrap">
+              <span>Opponent</span>
+              <input type="number" name="score_opponent" min="0" step="1" required inputmode="numeric">
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="screenshot">Result screenshot</label>
+          <label class="dropzone" id="dropzone" for="screenshot">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span class="dz-title" id="dz-title">Click or drag a screenshot here</span>
+            <span class="dz-sub" id="dz-sub">PNG, JPG, GIF or WEBP</span>
+            <img class="preview-thumb" id="preview-thumb" alt="Screenshot preview">
+          </label>
+          <input type="file" name="screenshot" id="screenshot" accept=".png,.jpg,.jpeg,.gif,.webp" required>
+        </div>
+
+        <button type="submit" class="submit-btn">Submit Result</button>
+      </form>
+    </div>
+
+    <p class="helper-note">Match not showing up? Ask your league admin to check the schedule.</p>
+
+  </main>
+
+  <script>
+    // Prevent selecting the same player on both sides.
+    var playerSelect = document.getElementById('player_id');
+    var opponentSelect = document.getElementById('opponent_id');
+
+    function syncOptions(source, target) {
+      var chosen = source.value;
+      Array.prototype.forEach.call(target.options, function (opt) {
+        if (!opt.value) return;
+        opt.disabled = (opt.value === chosen);
+        if (opt.disabled && opt.selected) {
+          target.value = '';
+        }
+      });
+    }
+
+    playerSelect.addEventListener('change', function () { syncOptions(playerSelect, opponentSelect); });
+    opponentSelect.addEventListener('change', function () { syncOptions(opponentSelect, playerSelect); });
+
+    // Screenshot preview + drag-and-drop support.
+    var fileInput = document.getElementById('screenshot');
+    var dropzone = document.getElementById('dropzone');
+    var dzTitle = document.getElementById('dz-title');
+    var dzSub = document.getElementById('dz-sub');
+    var previewThumb = document.getElementById('preview-thumb');
+
+    function handleFile(file) {
+      if (!file) return;
+      dzTitle.textContent = file.name;
+      dzSub.textContent = 'Click to change file';
+
+      if (file.type && file.type.indexOf('image/') === 0) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          previewThumb.src = e.target.result;
+          previewThumb.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    fileInput.addEventListener('change', function () {
+      handleFile(fileInput.files[0]);
+    });
+
+    ['dragenter', 'dragover'].forEach(function (evt) {
+      dropzone.addEventListener(evt, function (e) {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(function (evt) {
+      dropzone.addEventListener(evt, function (e) {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', function (e) {
+      var file = e.dataTransfer.files[0];
+      if (file) {
+        var dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+        handleFile(file);
+      }
+    });
+  </script>
+
 </body>
 </html>
