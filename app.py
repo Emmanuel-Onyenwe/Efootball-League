@@ -396,10 +396,28 @@ def reset_league():
     flash("League has been completely wiped and reset for a fresh season!", "success")
     return redirect(url_for('admin'))
     
+# --- SECRET RESCUE ROUTE ---
+@app.route('/panic-hq/rescue')
+def rescue_founder():
+    founder = User.query.get(1) # Gets the Head Admin (You)
+    if founder:
+        founder.status = 'active'
+        founder.in_league = True
+        founder.role = 'admin'
+        db.session.commit()
+        return "<h3>God Mode Activated. Head Admin Restored!</h3><a href='/panic-hq'>Click here to return to Control Room</a>"
+    return "Head Admin not found."
+
+# --- UPGRADED ELIMINATE FUNCTION ---
 @app.route('/panic-hq/eliminate/<int:user_id>', methods=['POST'])
 @login_required
 def eliminate_player(user_id):
     if current_user.role == 'admin':
+        # IMMUNITY FOR HEAD ADMIN
+        if user_id == 1:
+            flash("ACCESS DENIED: You cannot eliminate the Head Admin.", "error")
+            return redirect(url_for('admin'))
+            
         user = User.query.get_or_404(user_id)
         user.status = 'eliminated'
         unplayed_matches = Match.query.filter(
