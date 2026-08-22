@@ -173,6 +173,75 @@
 
   <main class="layout-grid">
     <section class="panel">
+      <!-- EDIT PROFILE ACCORDION -->
+  {% if current_user.is_authenticated and current_user.in_league %}
+  <div class="panel" style="margin-bottom: 20px; padding: 15px;">
+    <details>
+      <summary style="cursor: pointer; font-weight: 700; color: #00E5FF; font-size: 1.1rem; list-style: none;">
+        ⚙️ Edit Profile (Gamertag & Emblem)
+      </summary>
+      <form action="{{ url_for('edit_profile') }}" method="POST" style="margin-top: 15px;">
+        
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">New Gamertag (One-time change only!)</label>
+          <input type="text" name="gamertag" value="{{ current_user.name }}" 
+                 style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;" 
+                 {% if current_user.name_changed %}disabled{% endif %}>
+          {% if current_user.name_changed %}
+            <small style="color: #FF5252; display: block; margin-top: 5px;">You have already used your one-time name change.</small>
+          {% endif %}
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">New Emblem</label>
+          <!-- Update these options to match the emojis you use in your registration form -->
+          <select name="emblem" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+            <option value="🛡️" {% if current_user.emblem == '🛡️' %}selected{% endif %}>🛡️ Shield (Default)</option>
+            <option value="🦁" {% if current_user.emblem == '🦁' %}selected{% endif %}>🦁 Lion</option>
+            <option value="🐯" {% if current_user.emblem == '🐯' %}selected{% endif %}>🐯 Tiger</option>
+            <option value="🐆" {% if current_user.emblem == '🐆' %}selected{% endif %}>🐆 Leopard</option>
+            <option value="🐺" {% if current_user.emblem == '🐺' %}selected{% endif %}>🐺 Wolf</option>
+            <option value="🐻" {% if current_user.emblem == '🐻' %}selected{% endif %}>🐻 Bear</option>
+            <option value="🦅" {% if current_user.emblem == '🦅' %}selected{% endif %}>🦅 Eagle</option>
+            <option value="🦉" {% if current_user.emblem == '🦉' %}selected{% endif %}>🦉 Owl</option>
+            <option value="🦇" {% if current_user.emblem == '🦇' %}selected{% endif %}>🦇 Bat</option>
+            <option value="🦈" {% if current_user.emblem == '🦈' %}selected{% endif %}>🦈 Shark</option>
+            <option value="🐬" {% if current_user.emblem == '🐬' %}selected{% endif %}>🐬 Dolphin</option>
+            <option value="🐊" {% if current_user.emblem == '🐊' %}selected{% endif %}>🐊 Crocodile</option>
+            <option value="🐍" {% if current_user.emblem == '🐍' %}selected{% endif %}>🐍 Snake</option>
+            <option value="🐢" {% if current_user.emblem == '🐢' %}selected{% endif %}>🐢 Turtle</option>
+            <option value="🦍" {% if current_user.emblem == '🦍' %}selected{% endif %}>🦍 Gorilla</option>
+            <option value="🦏" {% if current_user.emblem == '🦏' %}selected{% endif %}>🦏 Rhino</option>
+            <option value="🐘" {% if current_user.emblem == '🐘' %}selected{% endif %}>🐘 Elephant</option>
+            <option value="🐂" {% if current_user.emblem == '🐂' %}selected{% endif %}>🐂 Bull</option>
+            <option value="🐎" {% if current_user.emblem == '🐎' %}selected{% endif %}>🐎 Horse</option>
+            <option value="🦌" {% if current_user.emblem == '🦌' %}selected{% endif %}>🦌 Stag</option>
+            <option value="🐐" {% if current_user.emblem == '🐐' %}selected{% endif %}>🐐 Goat</option>
+            <option value="🐏" {% if current_user.emblem == '🐏' %}selected{% endif %}>🐏 Ram</option>
+            <option value="🐓" {% if current_user.emblem == '🐓' %}selected{% endif %}>🐓 Rooster</option>
+            <option value="🦂" {% if current_user.emblem == '🦂' %}selected{% endif %}>🦂 Scorpion</option>
+            <option value="🕷️" {% if current_user.emblem == '🕷️' %}selected{% endif %}>🕷️ Spider</option>
+            <option value="🐉" {% if current_user.emblem == '🐉' %}selected{% endif %}>🐉 Dragon</option>
+            <option value="🐲" {% if current_user.emblem == '🐲' %}selected{% endif %}>🐲 Dragon Face</option>
+            <option value="🦖" {% if current_user.emblem == '🦖' %}selected{% endif %}>🦖 T-Rex</option>
+            <option value="🦕" {% if current_user.emblem == '🦕' %}selected{% endif %}>🦕 Brontosaurus</option>
+            <option value="🦑" {% if current_user.emblem == '🦑' %}selected{% endif %}>🦑 Squid</option>
+            <option value="🐙" {% if current_user.emblem == '🐙' %}selected{% endif %}>🐙 Octopus</option>
+            <option value="🦊" {% if current_user.emblem == '🦊' %}selected{% endif %}>🦊 Fox</option>
+            <option value="🦡" {% if current_user.emblem == '🦡' %}selected{% endif %}>🦡 Badger</option>
+            <option value="🐝" {% if current_user.emblem == '🐝' %}selected{% endif %}>🐝 Bee</option>
+            <option value="🦄" {% if current_user.emblem == '🦄' %}selected{% endif %}>🦄 Unicorn</option>
+            <option value="⚔️" {% if current_user.emblem == '⚔️' %}selected{% endif %}>⚔️ Swords</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-brand" style="width: 100%; padding: 12px; font-size: 1rem; border-radius: 8px; background: #00E5FF; color: #161D38; font-weight: bold; border: none; cursor: pointer;">
+          Save Changes
+        </button>
+      </form>
+    </details>
+  </div>
+  {% endif %}
       <div class="panel-header">
         <h2>League Table</h2>
         <p>Ranked by Points Per Game, then Goal Difference.</p>
