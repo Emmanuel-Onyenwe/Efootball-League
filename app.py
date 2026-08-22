@@ -9,6 +9,7 @@ import cloudinary
 import cloudinary.uploader
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignature
+from threading import Thread
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'supersecretkey')
@@ -80,10 +81,17 @@ class Match(db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+def send_async_email(app, msg):
+    with app.app_context():
+        try:
+            mail.send(msg)
+        except Exception as e:
+            print(f"Background email failed: {e}")
+
 def send_email(to, subject, template):
     msg = Message(subject, recipients=[to], html=template)
-    mail.send(msg)
-
+    Thread(target=send_async_email, args=(app, msg)).start()
+    
 # --- AUTHENTICATION ROUTES ---
 @app.route('/register', methods=['GET', 'POST'])
 def register():
