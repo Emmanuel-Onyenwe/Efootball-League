@@ -431,6 +431,53 @@ def eliminate_player(user_id):
         db.session.commit()
         flash(f"{user.name} eliminated! {len(unplayed_matches)} future matches were safely removed.", "success")
     return redirect(url_for('admin'))
+
+from sqlalchemy import text
+
+@app.route('/panic-hq/patch-db')
+@login_required
+def patch_db():
+    if current_user.id != 1:
+        return "Access Denied"
+    try:
+        db.session.execute(text('ALTER TABLE "user" ADD COLUMN name_changed BOOLEAN DEFAULT 0'))
+        db.session.commit()
+        return "<h3>Success! Live database patched for one-time name changes.</h3><a href='/panic-hq'>Back to Admin</a>"
+    except Exception as e:
+        return f"Patch notice (might already exist): {e}"
+
+@app.route('/edit_profile', methods=['POST'])
+@login_required
+def edit_profile():
+    new_name = request.form.get('gamertag', '').strip()
+    new_emblem = request.form.get('emblem')
+    
+    # 1. Check if the chosen emblem is taken by someone else
+    taken_emblems = [u.emblem for u in User.query.all() if u.id != current_user.id]
+    if new_emblem in taken_emblems:
+        flash("That emblem is already taken by another player!", "error")
+        return redirect(url_for('index'))
+        
+    # 2. Check Name Change Rules
+    if new_name and new_name != current_user.name:
+        if current_user.name_changed:
+            flash("You have already used your one-time name change!", "error")
+            return redirect(url_for('index'))
+        
+        # Check if the new Gamertag is already taken
+        if User.query.filter_by(name=new_name).first():
+            flash("That Gamertag is already taken.", "error")
+            return redirect(url_for('index'))
+            
+        current_user.name = new_name
+        current_user.name_changed = True
+        
+    if new_emblem:
+        current_user.emblem = new_emblem
+        
+    db.session.commit()
+    flash("Profile updated successfully!", "success")
+    return redirect(url_for('index'))
     
 @app.route('/panic-hq/reject_player/<int:user_id>', methods=['POST'])
 @login_required
