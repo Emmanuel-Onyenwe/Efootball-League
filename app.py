@@ -489,4 +489,14 @@ def reject_player(user_id):
             
         flash(f"Registration for {gamertag} was rejected and deleted.", "success")
     return redirect(url_for('admin'))
-        
+
+# --- AUTO-PATCH DATABASE ON STARTUP ---
+with app.app_context():
+    try:
+        # PostgreSQL uses FALSE instead of 0
+        db.session.execute(text('ALTER TABLE "user" ADD COLUMN name_changed BOOLEAN DEFAULT FALSE'))
+        db.session.commit()
+        print("Successfully added name_changed column to database!")
+    except Exception as e:
+        # If it fails, it means the column already exists, so we just rollback and continue safely.
+        db.session.rollback()
