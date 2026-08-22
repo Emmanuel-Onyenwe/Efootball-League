@@ -34,7 +34,12 @@
   
   .layout-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 32px; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%;}
   @media (max-width: 960px) { .layout-grid { grid-template-columns: 1fr; } }
-  
+  @media (max-width: 768px) {
+    .top-bar { flex-direction: column; gap: 16px; text-align: center; padding: 20px 15px; }
+    .brand { justify-content: center; }
+    nav.top-nav { flex-wrap: wrap; justify-content: center; gap: 15px; font-size: 0.85rem; }
+  }
+
   .panel { background: var(--bg-panel); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); overflow: hidden; }
   .panel-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
   .panel-header h2 { font-family: var(--font-heading); font-weight: 700; font-size: 1.2rem; text-transform: uppercase; }
@@ -67,6 +72,26 @@
 
   <header class="top-bar">
     <div class="brand">
+      <svg class="crest" viewBox="0 0 100 108" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="crestEdge2" x1="0" y1="0" x2="100" y2="108" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#00E5FF"/>
+            <stop offset="55%" stop-color="#7C5CFF"/>
+            <stop offset="100%" stop-color="#FF2E9A"/>
+          </linearGradient>
+        </defs>
+        <polygon points="50,3 92,22 92,64 50,105 8,64 8,22" fill="#10162C" stroke="url(#crestEdge2)" stroke-width="4"/>
+        <circle cx="50" cy="46" r="22" fill="#0A0E1A" stroke="url(#crestEdge2)" stroke-width="2.5"/>
+        <polygon points="50,32 60,39 56,50 44,50 40,39" fill="url(#crestEdge2)"/>
+        <line x1="50" y1="32" x2="50" y2="24" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="60" y1="39" x2="67" y2="34" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="56" y1="50" x2="59" y2="58" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="44" y1="50" x2="41" y2="58" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="40" y1="39" x2="33" y2="34" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="42" y="78" width="4" height="10" fill="url(#crestEdge2)"/>
+        <rect x="48" y="72" width="4" height="16" fill="url(#crestEdge2)"/>
+        <rect x="54" y="82" width="4" height="6" fill="url(#crestEdge2)"/>
+      </svg>
       <div class="wordmark">PANIC KEH<small>Season Table</small></div>
     </div>
     <nav class="top-nav">
