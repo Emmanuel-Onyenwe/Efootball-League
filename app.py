@@ -318,7 +318,17 @@ def generate_fixtures():
             matches_created += 1
             
     db.session.commit()
-    flash(f"Generated {matches_created} new fixtures successfully!", "success")
+    
+    # --- NEW: Notify all active players about the new fixtures ---
+    if matches_created > 0:
+        for u in users:
+            try:
+                msg = f"<h3>Matchday Alert!</h3><p>New fixtures have just been generated for the Panic Keh League. Log in to check your opponent and coordinate your match!</p>"
+                send_email(u.email, "New League Fixtures Generated!", msg)
+            except Exception as e:
+                print(f"Failed to email {u.email}: {e}")
+                
+    flash(f"Generated {matches_created} new fixtures successfully! Players have been notified via email.", "success")
     return redirect(url_for('admin'))
 
 @app.route('/panic-hq/approve/<int:match_id>', methods=['POST'])
