@@ -374,3 +374,14 @@ def eliminate_player(user_id):
         db.session.commit()
         flash(f"{user.name} eliminated! {len(unplayed_matches)} future matches were safely removed.", "success")
     return redirect(url_for('admin'))
+    
+@app.route('/panic-hq/reject_player/<int:user_id>', methods=['POST'])
+@login_required
+def reject_player(user_id):
+    if current_user.role == 'admin':
+        user = User.query.get_or_404(user_id)
+        db.session.delete(user)
+        db.session.commit()
+        flash(f"Registration for {user.name} was rejected and deleted.", "success")
+    return redirect(url_for('admin'))
+        
