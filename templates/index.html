@@ -94,18 +94,22 @@
       </svg>
       <div class="wordmark">PANIC KEH<small>Season Table</small></div>
     </div>
-    <nav class="top-nav">
-      <a href="{{ url_for('index') }}" style="color: var(--text-hi);">Standings</a>
+        <nav class="top-nav">
+      <a href="{{ url_for('index') }}" class="{{ 'active' if request.path == url_for('index') else '' }}" style="color: var(--text-hi);">Standings</a>
+      
       {% if current_user.is_authenticated %}
-        <a href="{{ url_for('submit') }}" style="color: var(--text-mid);">Submit Result</a>
+        <a href="{{ url_for('submit') }}" class="{{ 'active' if request.path == url_for('submit') else '' }}" style="color: var(--text-hi);">Submit Result</a>
+        
         {% if current_user.role == 'admin' %}
-          <a href="{{ url_for('admin') }}" style="color: var(--gold);">Admin Panel</a>
+          <a href="{{ url_for('admin') }}" class="{{ 'active' if request.path == '/panic-hq' else '' }}" style="color: var(--gold);">Admin Panel</a>
         {% endif %}
+        
         <a href="{{ url_for('logout') }}" style="color: var(--red);">Logout</a>
       {% else %}
         <a href="{{ url_for('login') }}" style="color: var(--cyan);">Login / Register</a>
       {% endif %}
     </nav>
+
   </header>
 
   <div class="ticker-wrap">
