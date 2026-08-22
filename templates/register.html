@@ -6,26 +6,61 @@
     <style>
         body { background-color: #0A0E1A; color: #F2F5FA; font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .card { background: #10162C; padding: 40px; border-radius: 12px; border-top: 4px solid #00E5FF; text-align: center; width: 100%; max-width: 400px; }
-        input { width: 100%; padding: 12px; margin: 10px 0 20px; background: #1B2340; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box;}
-        button { width: 100%; padding: 12px; background: linear-gradient(90deg, #00E5FF, #FF2E9A); border: none; color: black; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        input { width: 100%; padding: 12px; margin: 10px 0; background: #1B2340; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box;}
+        button.primary { width: 100%; padding: 12px; background: linear-gradient(90deg, #00E5FF, #FF2E9A); border: none; color: black; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 15px; }
+        .pw-container { position: relative; display: flex; align-items: center; }
+        .eye-icon { position: absolute; right: 15px; cursor: pointer; font-size: 1.2rem; user-select: none; }
+        .generate-btn { background: none; border: 1px solid #00E5FF; color: #00E5FF; padding: 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; width: 100%; margin-bottom: 20px; transition: 0.2s; }
+        .generate-btn:hover { background: rgba(0, 229, 255, 0.1); }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2 style="font-family: 'Orbitron', sans-serif; margin-top:0;">REGISTER GAMERTAG</h2>
+        <h2 style="font-family: 'Orbitron', sans-serif; margin-top:0;">REGISTER</h2>
         <form method="POST">
             <label style="display:block; text-align:left; font-size: 0.8rem; color:#A8B2D1;">GAMERTAG</label>
             <input type="text" name="gamertag" required>
             
             <label style="display:block; text-align:left; font-size: 0.8rem; color:#A8B2D1;">EMAIL ADDRESS</label>
-            <input type="email" name="email" required>
+            <input type="email" name="email" autocomplete="username" required>
             
             <label style="display:block; text-align:left; font-size: 0.8rem; color:#A8B2D1;">PASSWORD</label>
-            <input type="password" name="password" required>
+            <div class="pw-container">
+                <input type="password" name="password" id="password" autocomplete="new-password" required style="padding-right: 40px;">
+                <span class="eye-icon" id="togglePassword">👁️</span>
+            </div>
             
-            <button type="submit">JOIN LEAGUE</button>
+            <button type="button" class="generate-btn" id="generateBtn">Auto-Generate Secure Password</button>
+            
+            <button type="submit" class="primary">JOIN LEAGUE</button>
         </form>
         <p style="margin-top: 20px; font-size: 0.8rem;"><a href="/login" style="color: #00E5FF; text-decoration: none;">Already have an account? Log in</a></p>
     </div>
+
+    <script>
+        // Toggle Password Visibility
+        const togglePassword = document.querySelector('#togglePassword');
+        const password = document.querySelector('#password');
+
+        togglePassword.addEventListener('click', function (e) {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+
+        // Auto-Generate Secure Password
+        const generateBtn = document.querySelector('#generateBtn');
+        generateBtn.addEventListener('click', function() {
+            const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+            let pass = "";
+            for (let i = 0; i < 14; i++) {
+                pass += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            password.value = pass;
+            password.setAttribute('type', 'text'); // Show it so they can copy it!
+            togglePassword.textContent = '🙈';
+            alert("Secure password generated! Please copy it and save it somewhere safe.");
+        });
+    </script>
 </body>
 </html>
