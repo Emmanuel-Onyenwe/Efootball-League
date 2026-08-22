@@ -354,8 +354,8 @@ def reset_league():
     if current_user.role != 'admin':
         abort(403)
     
-    # Delete all fixtures
-    Fixture.query.delete()
+    # Delete all matches 
+    Match.query.delete()
     
     # Reset stats for all players
     users = User.query.all()
