@@ -125,9 +125,13 @@
               <button type="submit" class="btn btn-warning">Make Admin</button>
             </form>
             {% endif %}
+            
+            <!-- Hide the Eliminate button if this is the currently logged-in user -->
+            {% if user.id != current_user.id %}
             <form method="POST" action="{{ url_for('eliminate_player', user_id=user.id) }}" onsubmit="return confirm('Eliminate this player? This will delete their future matches.');">
               <button type="submit" class="btn btn-danger">Eliminate</button>
             </form>
+            {% endif %}
           </div>
         </div>
         {% else %}
