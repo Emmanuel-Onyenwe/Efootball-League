@@ -148,12 +148,14 @@ def login():
         user = User.query.filter_by(email=email).first() 
         
         if user and check_password_hash(user.password_hash, password):
-            # Now it ONLY checks if you have admitted them to the league
             if not user.in_league:
                 flash("Your account is still waiting for Admin approval.", "error")
                 return redirect(url_for('index', show='login'))
                 
             login_user(user)
+            # --- NEW: Trigger the special welcome category ---
+            flash(f"Welcome back, {user.name}! 🎮", "welcome")
+            
             return redirect(url_for('index'))
         else:
             flash("Invalid email or password.", "error")
