@@ -142,7 +142,7 @@ def login():
         user = User.query.filter_by(email=email).first() 
         
         if user and check_password_hash(user.password_hash, password):
-            if not user.is_verified:
+            if not user.is_verified and not user.in_league:
                 flash("Please verify your email before logging in.", "error")
                 return redirect(url_for('index', show='login'))
                 
