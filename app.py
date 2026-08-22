@@ -107,7 +107,7 @@ def register():
 
         if is_first_user:
             flash("Admin account created and verified!", "success")
-                else:
+        else:
             token = s.dumps(email, salt='email-confirm')
             link = url_for('verify_email', token=token, _external=True)
             html_msg = f"<h3>Welcome to Panic Keh</h3><p>Click the link to verify your account:</p><a href='{link}'>Verify Email</a>"
@@ -120,7 +120,7 @@ def register():
                 flash("Account created, but the verification email was delayed. An Admin will approve your account manually.", "warning")
             
         return redirect(url_for('index', show='login'))
-
+    return redirect(url_for('index', show='register'))
 
 @app.route('/verify_email/<token>')
 def verify_email(token):
