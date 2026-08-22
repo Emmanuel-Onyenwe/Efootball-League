@@ -95,31 +95,27 @@ def register():
         
         if User.query.filter_by(email=email).first() or User.query.filter_by(name=gamertag).first():
             flash("Email or Gamertag already taken.", "error")
-            return redirect(url_for('register'))
+            return redirect(url_for('index', show='register'))
             
         hashed_pw = generate_password_hash(password)
-        
         is_first_user = User.query.count() == 0
         role = 'admin' if is_first_user else 'player'
-        in_league = True if is_first_user else False
-        is_verified = True if is_first_user else False 
         
-        new_user = User(name=gamertag, email=email, password_hash=hashed_pw, role=role, in_league=in_league, is_verified=is_verified, emblem=emblem)
+        new_user = User(name=gamertag, email=email, password_hash=hashed_pw, role=role, in_league=is_first_user, is_verified=is_first_user, emblem=emblem)
         db.session.add(new_user)
         db.session.commit()
 
         if is_first_user:
-            flash("Admin account created and verified! You can log in.", "success")
+            flash("Admin account created and verified!", "success")
         else:
             token = s.dumps(email, salt='email-confirm')
             link = url_for('verify_email', token=token, _external=True)
-            html_msg = f"<h3>Welcome to Panic Keh eFootball League</h3><p>Click the link to verify your account and join the waiting room:</p><a href='{link}'>Verify My Email</a>"
-            send_email(email, "Verify Your League Account", html_msg)
-            flash("Registration successful! Check your email to verify your account.", "success")
+            html_msg = f"<h3>Welcome to Panic Keh</h3><p>Click the link to verify your account:</p><a href='{link}'>Verify Email</a>"
+            send_email(email, "Verify Your Account", html_msg)
+            flash("Registration successful! Check your email to verify.", "success")
             
-        return redirect(url_for('login'))
-        
-    return render_template('register.html')
+        return redirect(url_for('index', show='login'))
+    return redirect(url_for('index', show='register'))
 
 @app.route('/verify_email/<token>')
 def verify_email(token):
@@ -136,7 +132,7 @@ def verify_email(token):
         flash("The verification link has expired. Please register again.", "error")
     except BadTimeSignature:
         flash("Invalid verification link.", "error")
-    return redirect(url_for('login'))
+    return redirect(url_for('index', show='login'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -148,14 +144,14 @@ def login():
         if user and check_password_hash(user.password_hash, password):
             if not user.is_verified:
                 flash("Please verify your email before logging in.", "error")
-                return redirect(url_for('login'))
+                return redirect(url_for('index', show='login'))
                 
             login_user(user)
             return redirect(url_for('index'))
         else:
             flash("Invalid email or password.", "error")
-            
-    return render_template('login.html')
+            return redirect(url_for('index', show='login'))
+    return redirect(url_for('index', show='login'))
 
 @app.route('/logout')
 @login_required
