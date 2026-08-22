@@ -32,8 +32,9 @@ cloudinary.config(
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False) # Gamertag
+    email = db.Column(db.String(120), unique=True, nullable=False) # NEW: Email for login and notifications
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), default='player') # 'player' or 'admin'
+    role = db.Column(db.String(20), default='player') 
     in_league = db.Column(db.Boolean, default=False) 
     
     # Stats
@@ -47,17 +48,7 @@ class User(db.Model, UserMixin):
     goals_against = db.Column(db.Integer, default=0)
     status = db.Column(db.String(20), default='active')
 
-class Match(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    player_a_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    player_b_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    score_a = db.Column(db.Integer, nullable=True)
-    score_b = db.Column(db.Integer, nullable=True)
-    screenshot_path = db.Column(db.String(500), nullable=True) # Now holds the Cloudinary URL
-    deadline = db.Column(db.DateTime, nullable=True)
-    status = db.Column(db.String(20), default='pending') 
-    player_a = db.relationship('User', foreign_keys=[player_a_id])
-    player_b = db.relationship('User', foreign_keys=[player_b_id])
+# ... (Keep the Match model exactly the same) ...
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -68,10 +59,15 @@ def load_user(user_id):
 def register():
     if request.method == 'POST':
         gamertag = request.form.get('gamertag')
+        email = request.form.get('email')
         password = request.form.get('password')
         
+        if User.query.filter_by(email=email).first():
+            flash("Email already registered. Please log in.", "error")
+            return redirect(url_for('register'))
+            
         if User.query.filter_by(name=gamertag).first():
-            flash("Gamertag already taken. Please login or choose another.", "error")
+            flash("Gamertag already taken.", "error")
             return redirect(url_for('register'))
             
         hashed_pw = generate_password_hash(password)
@@ -80,7 +76,7 @@ def register():
         role = 'admin' if is_first_user else 'player'
         in_league = True if is_first_user else False
         
-        new_user = User(name=gamertag, password_hash=hashed_pw, role=role, in_league=in_league)
+        new_user = User(name=gamertag, email=email, password_hash=hashed_pw, role=role, in_league=in_league)
         db.session.add(new_user)
         db.session.commit()
         
@@ -92,15 +88,17 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        gamertag = request.form.get('gamertag')
+        email = request.form.get('email')
         password = request.form.get('password')
-        user = User.query.filter_by(name=gamertag).first()
+        
+        # Now querying by email instead of Gamertag
+        user = User.query.filter_by(email=email).first() 
         
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
             return redirect(url_for('index'))
         else:
-            flash("Invalid Gamertag or password.", "error")
+            flash("Invalid email or password.", "error")
             
     return render_template('login.html')
 
