@@ -348,7 +348,31 @@ def reject_match(match_id):
         db.session.commit()
         flash("Match rejected and reset. Players must re-submit.", "error")
     return redirect(url_for('admin'))
-
+@app.route('/panic-hq/reset', methods=['POST'])
+@login_required
+def reset_league():
+    if current_user.role != 'admin':
+        abort(403)
+    
+    # Delete all fixtures
+    Fixture.query.delete()
+    
+    # Reset stats for all players
+    users = User.query.all()
+    for u in users:
+        u.played = 0
+        u.won = 0
+        u.drawn = 0
+        u.lost = 0
+        u.gd = 0
+        u.points = 0
+        if u.role != 'admin':
+            u.in_league = False  # Optionally send non-admins back to the waiting room
+            
+    db.session.commit()
+    flash("League has been completely wiped and reset for a fresh season!", "success")
+    return redirect(url_for('admin'))
+    
 @app.route('/panic-hq/eliminate/<int:user_id>', methods=['POST'])
 @login_required
 def eliminate_player(user_id):
