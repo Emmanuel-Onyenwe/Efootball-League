@@ -101,7 +101,6 @@ def register():
         is_first_user = User.query.count() == 0
         role = 'admin' if is_first_user else 'player'
         
-        # We automatically set is_verified to True so it never blocks them
         new_user = User(name=gamertag, email=email, password_hash=hashed_pw, role=role, in_league=is_first_user, is_verified=True, emblem=emblem)
         db.session.add(new_user)
         db.session.commit()
@@ -109,10 +108,20 @@ def register():
         if is_first_user:
             flash("Admin account created!", "success")
         else:
+            # --- NEW: Silently notify the Admin ---
+            try:
+                admin_user = User.query.filter_by(role='admin').first()
+                if admin_user:
+                    admin_msg = f"<h3>New Player Alert!</h3><p><b>{gamertag}</b> ({email}) just registered for the league and is waiting in your control room.</p>"
+                    send_email(admin_user.email, f"New Registration: {gamertag}", admin_msg)
+            except Exception as e:
+                print(f"Admin notification failed: {e}")
+                
             flash("Registration successful! An Admin must approve your account before you can log in.", "success")
             
         return redirect(url_for('index', show='login'))
     return redirect(url_for('index', show='register'))
+
 
 @app.route('/verify_email/<token>')
 def verify_email(token):
