@@ -101,30 +101,15 @@ def register():
         is_first_user = User.query.count() == 0
         role = 'admin' if is_first_user else 'player'
         
-        new_user = User(name=gamertag, email=email, password_hash=hashed_pw, role=role, in_league=is_first_user, is_verified=is_first_user, emblem=emblem)
+        # We automatically set is_verified to True so it never blocks them
+        new_user = User(name=gamertag, email=email, password_hash=hashed_pw, role=role, in_league=is_first_user, is_verified=True, emblem=emblem)
         db.session.add(new_user)
         db.session.commit()
 
         if is_first_user:
-            flash("Admin account created and verified!", "success")
+            flash("Admin account created!", "success")
         else:
-            token = s.dumps(email, salt='email-confirm')
-            link = url_for('verify_email', token=token, _external=True)
-            html_msg = f"<h3>Welcome to Panic Keh</h3><p>Click the link to verify your account:</p><a href='{link}'>Verify Email</a>"
-            
-            try:
-                send_email(email, "Verify Your Account", html_msg)
-                
-                # --- NEW: Notify Admin of new registration ---
-                admin_user = User.query.filter_by(role='admin').first()
-                if admin_user:
-                    admin_msg = f"<h3>New Player Alert!</h3><p><b>{gamertag}</b> ({email}) just registered for the league and is waiting in your control room.</p>"
-                    send_email(admin_user.email, f"New Registration: {gamertag}", admin_msg)
-                
-                flash("Registration successful! Check your email to verify.", "success")
-            except Exception as e:
-                print(f"Email failed to send: {e}")
-                flash("Account created, but the verification email was delayed. An Admin will approve your account manually.", "warning")
+            flash("Registration successful! An Admin must approve your account before you can log in.", "success")
             
         return redirect(url_for('index', show='login'))
     return redirect(url_for('index', show='register'))
@@ -154,8 +139,9 @@ def login():
         user = User.query.filter_by(email=email).first() 
         
         if user and check_password_hash(user.password_hash, password):
-            if not user.is_verified and not user.in_league:
-                flash("Please verify your email before logging in.", "error")
+            # Now it ONLY checks if you have admitted them to the league
+            if not user.in_league:
+                flash("Your account is still waiting for Admin approval.", "error")
                 return redirect(url_for('index', show='login'))
                 
             login_user(user)
