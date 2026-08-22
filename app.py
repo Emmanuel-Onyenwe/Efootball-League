@@ -434,18 +434,6 @@ def eliminate_player(user_id):
 
 from sqlalchemy import text
 
-@app.route('/panic-hq/patch-db')
-@login_required
-def patch_db():
-    if current_user.id != 1:
-        return "Access Denied"
-    try:
-        db.session.execute(text('ALTER TABLE "user" ADD COLUMN name_changed BOOLEAN DEFAULT 0'))
-        db.session.commit()
-        return "<h3>Success! Live database patched for one-time name changes.</h3><a href='/panic-hq'>Back to Admin</a>"
-    except Exception as e:
-        return f"Patch notice (might already exist): {e}"
-
 @app.route('/edit_profile', methods=['POST'])
 @login_required
 def edit_profile():
