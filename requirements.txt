@@ -2,3 +2,5 @@ Flask
 Flask-SQLAlchemy
 gunicorn
 Flask-Login
+psycopg2-binary
+cloudinary

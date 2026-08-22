@@ -3,27 +3,38 @@ import itertools
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+import cloudinary
+import cloudinary.uploader
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'supersecretkey'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///league.db'
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'supersecretkey')
+
+# --- PERMANENT DATABASE CONFIGURATION ---
+uri = os.environ.get("DATABASE_URL", "sqlite:///league.db")
+if uri.startswith("postgres://"):
+    uri = uri.replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = uri
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
+# --- CLOUDINARY CONFIGURATION ---
+cloudinary.config( 
+  cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME'), 
+  api_key = os.environ.get('CLOUDINARY_API_KEY'), 
+  api_secret = os.environ.get('CLOUDINARY_API_SECRET') 
+)
+
 # --- DATABASE MODELS ---
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False) # This is the Gamertag
+    name = db.Column(db.String(50), unique=True, nullable=False) # Gamertag
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), default='player') # 'player' or 'admin'
-    in_league = db.Column(db.Boolean, default=False) # True when approved by admin
+    in_league = db.Column(db.Boolean, default=False) 
     
     # Stats
     points = db.Column(db.Integer, default=0)
@@ -42,7 +53,7 @@ class Match(db.Model):
     player_b_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     score_a = db.Column(db.Integer, nullable=True)
     score_b = db.Column(db.Integer, nullable=True)
-    screenshot_path = db.Column(db.String(200), nullable=True)
+    screenshot_path = db.Column(db.String(500), nullable=True) # Now holds the Cloudinary URL
     deadline = db.Column(db.DateTime, nullable=True)
     status = db.Column(db.String(20), default='pending') 
     player_a = db.relationship('User', foreign_keys=[player_a_id])
@@ -65,7 +76,6 @@ def register():
             
         hashed_pw = generate_password_hash(password)
         
-        # Make the first registered user the Admin automatically
         is_first_user = User.query.count() == 0
         role = 'admin' if is_first_user else 'player'
         in_league = True if is_first_user else False
@@ -142,28 +152,30 @@ def submit():
 
         match = Match.query.get(match_id)
         if match and screenshot:
-            filename = secure_filename(screenshot.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            screenshot.save(filepath)
+            # Upload the image directly to Cloudinary
+            upload_result = cloudinary.uploader.upload(screenshot)
             
             match.score_a = int(score_a)
             match.score_b = int(score_b)
-            match.screenshot_path = filename
+            match.screenshot_path = upload_result['secure_url'] # Save the permanent cloud link
             match.status = 'submitted'
             db.session.commit()
+            
             flash("Result submitted and pending admin approval!", "success")
             return redirect(url_for('index'))
             
-    # Only show matches involving the currently logged-in user
     fixtures = Match.query.filter(
         (Match.status == 'pending') & 
         ((Match.player_a_id == current_user.id) | (Match.player_b_id == current_user.id))
     ).all()
     return render_template('submit.html', fixtures=fixtures)
 
-@app.route('/uploads/<filename>')
+@app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    # Smart redirect: if it's a Cloudinary link, send them there.
+    if filename.startswith('http'):
+        return redirect(filename)
+    return "File not found", 404
 
 # --- ADMIN DASHBOARD ---
 @app.route('/admin')
@@ -235,8 +247,41 @@ def approve_match(match_id):
         flash("Match result approved and standings updated!", "success")
     return redirect(url_for('admin'))
 
+@app.route('/admin/reject/<int:match_id>', methods=['POST'])
+@login_required
+def reject_match(match_id):
+    if current_user.role == 'admin':
+        match = Match.query.get_or_404(match_id)
+        match.status = 'pending'
+        match.score_a = None
+        match.score_b = None
+        match.screenshot_path = None
+        db.session.commit()
+        flash("Match rejected and reset. Players must re-submit.", "error")
+    return redirect(url_for('admin'))
+
+@app.route('/admin/eliminate/<int:user_id>', methods=['POST'])
+@login_required
+def eliminate_player(user_id):
+    if current_user.role == 'admin':
+        user = User.query.get_or_404(user_id)
+        user.status = 'eliminated'
+        
+        unplayed_matches = Match.query.filter(
+            (Match.status == 'pending') & 
+            ((Match.player_a_id == user.id) | (Match.player_b_id == user.id))
+        ).all()
+        
+        for m in unplayed_matches:
+            db.session.delete(m)
+            
+        db.session.commit()
+        flash(f"{user.name} eliminated! {len(unplayed_matches)} future matches were safely removed.", "success")
+    return redirect(url_for('admin'))
+
 with app.app_context():
-    db.drop_all() # Resets the database schema so the new password columns are created
+    # Only drops and creates if the tables don't exist yet, 
+    # ensuring your new Neon DB gets properly initialized!
     db.create_all()
 
 if __name__ == '__main__':
