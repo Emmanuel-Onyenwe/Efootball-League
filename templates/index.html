@@ -27,8 +27,27 @@
   
   nav.top-nav { display: flex; gap: 28px; font-family: var(--font-heading); font-weight: 600; text-transform: uppercase; font-size: 0.92rem;}
   nav.top-nav a { color: var(--text-mid); text-decoration: none; }
-  nav.top-nav a:hover { color: var(--text-hi); }
+    nav.top-nav a { position: relative; color: var(--text-mid); text-decoration: none; padding-bottom: 6px; transition: 0.3s; }
+  nav.top-nav a:hover, nav.top-nav a.active { color: var(--text-hi); }
   
+  /* The Animated Underline */
+  nav.top-nav a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0%;
+    height: 3px;
+    background: var(--grad-brand);
+    transition: width 0.3s ease-in-out;
+    border-radius: 2px;
+  }
+  
+  /* Expands the line on hover OR when it is the active page */
+  nav.top-nav a:hover::after, nav.top-nav a.active::after {
+    width: 100%;
+  }
+
   .ticker-wrap { background: #060911; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 0; overflow: hidden; display: flex; align-items: center; }
   .ticker-label { font-family: var(--font-heading); font-weight: 700; color: var(--cyan); padding: 0 16px; font-size: 0.8rem; text-transform: uppercase; white-space: nowrap; z-index: 2;}
   
