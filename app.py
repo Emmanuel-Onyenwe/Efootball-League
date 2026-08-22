@@ -261,7 +261,7 @@ def uploaded_file(filename):
     return "File not found", 404
 
 # --- ADMIN DASHBOARD ---
-@app.route('/admin')
+@app.route('/panic-hq')
 @login_required
 def admin():
     if current_user.role != 'admin':
@@ -272,7 +272,7 @@ def admin():
     pending_matches = Match.query.filter_by(status='submitted').all()
     return render_template('admin.html', active_players=active_players, pending_players=pending_players, pending_matches=pending_matches)
 
-@app.route('/admin/approve_player/<int:user_id>', methods=['POST'])
+@app.route('/panic-hq/approve_player/<int:user_id>', methods=['POST'])
 @login_required
 def approve_player(user_id):
     if current_user.role == 'admin':
@@ -282,7 +282,7 @@ def approve_player(user_id):
         flash(f"{user.name} added to the league roster!", "success")
     return redirect(url_for('admin'))
 
-@app.route('/admin/promote/<int:user_id>', methods=['POST'])
+@app.route('/panic-hq/promote/<int:user_id>', methods=['POST'])
 @login_required
 def promote_player(user_id):
     if current_user.role == 'admin':
@@ -292,7 +292,7 @@ def promote_player(user_id):
         flash(f"{user.name} is now a Co-Admin!", "success")
     return redirect(url_for('admin'))
 
-@app.route('/admin/generate_fixtures', methods=['POST'])
+@app.route('/panic-hq/generate_fixtures', methods=['POST'])
 @login_required
 def generate_fixtures():
     if current_user.role != 'admin': return redirect(url_for('index'))
@@ -317,7 +317,7 @@ def generate_fixtures():
     flash(f"Generated {matches_created} new fixtures successfully!", "success")
     return redirect(url_for('admin'))
 
-@app.route('/admin/approve/<int:match_id>', methods=['POST'])
+@app.route('/panic-hq/approve/<int:match_id>', methods=['POST'])
 @login_required
 def approve_match(match_id):
     if current_user.role == 'admin':
@@ -327,7 +327,7 @@ def approve_match(match_id):
         flash("Match result approved and standings updated!", "success")
     return redirect(url_for('admin'))
 
-@app.route('/admin/reject/<int:match_id>', methods=['POST'])
+@app.route('/panic-hq/reject/<int:match_id>', methods=['POST'])
 @login_required
 def reject_match(match_id):
     if current_user.role == 'admin':
@@ -340,7 +340,7 @@ def reject_match(match_id):
         flash("Match rejected and reset. Players must re-submit.", "error")
     return redirect(url_for('admin'))
 
-@app.route('/admin/eliminate/<int:user_id>', methods=['POST'])
+@app.route('/panic-hq/eliminate/<int:user_id>', methods=['POST'])
 @login_required
 def eliminate_player(user_id):
     if current_user.role == 'admin':
@@ -355,11 +355,3 @@ def eliminate_player(user_id):
         db.session.commit()
         flash(f"{user.name} eliminated! {len(unplayed_matches)} future matches were safely removed.", "success")
     return redirect(url_for('admin'))
-
-with app.app_context():
-    # WARNING: THIS WILL WIPE THE DATABASE ONE LAST TIME TO ADD THE EMBLEMS
-    db.drop_all()
-    db.create_all()
-
-if __name__ == '__main__':
-    app.run(debug=True)
