@@ -497,7 +497,18 @@
 
     <nav class="top-nav">
       <a href="{{ url_for('index') }}" class="{{ 'active' if request.path == url_for('index') else '' }}">Standings</a>
-      <a href="{{ url_for('submit') }}" class="{{ 'active' if request.path == url_for('submit') else '' }}">Submit Result</a>
+      
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('submit') }}" class="{{ 'active' if request.path == url_for('submit') else '' }}">Submit Result</a>
+        
+        {% if current_user.role == 'admin' %}
+          <a href="{{ url_for('admin') }}" style="color: #FFC93C;">Admin Panel</a>
+        {% endif %}
+        
+        <a href="{{ url_for('logout') }}" style="color: #FF4D6D;">Logout ({{ current_user.name }})</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" style="color: #00E5FF;">Login / Register</a>
+      {% endif %}
     </nav>
 
     <div class="live-badge"><span class="live-dot"></span>LIVE</div>

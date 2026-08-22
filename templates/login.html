@@ -17,6 +17,14 @@
 <body>
     <div class="card">
         <h2 style="font-family: 'Orbitron', sans-serif; margin-top:0;">LOGIN</h2>
+        <!-- Error Message Display -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, msg in messages %}
+              <div style="padding: 10px; background: #FF4D6D; color: white; border-radius: 5px; margin-bottom: 15px; font-size: 0.85rem;">{{ msg }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
         <form method="POST">
             <label style="display:block; text-align:left; font-size: 0.8rem; color:#A8B2D1;">EMAIL ADDRESS</label>
             <input type="email" name="email" autocomplete="username" required>
