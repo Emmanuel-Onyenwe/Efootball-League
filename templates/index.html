@@ -100,6 +100,23 @@
 </style>
 </head>
 <body>
+  <!-- WELCOME TOAST NOTIFICATION -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        {% if category == 'welcome' %}
+          <div id="welcome-toast" style="position: fixed; bottom: -80px; left: 50%; transform: translateX(-50%); background: #161D38; color: #00E5FF; padding: 12px 28px; border-radius: 50px; border: 1px solid rgba(0, 229, 255, 0.4); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); z-index: 10000; font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.95rem; white-space: nowrap; transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+            {{ msg }}
+          </div>
+          <script>
+            // Slides up from the bottom, waits 2.5 seconds, then slides back down
+            setTimeout(() => { document.getElementById('welcome-toast').style.bottom = '30px'; }, 150);
+            setTimeout(() => { document.getElementById('welcome-toast').style.bottom = '-80px'; }, 2650);
+          </script>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 
   <header class="top-bar">
     <div class="brand">
