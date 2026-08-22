@@ -125,7 +125,7 @@
         
         <a href="{{ url_for('logout') }}" style="color: var(--red);">Logout</a>
       {% else %}
-        <a href="{{ url_for('login') }}" style="color: var(--cyan);">Login / Register</a>
+        <a href="#" onclick="openModal('login')" style="color: var(--cyan);">Login / Register</a>
       {% endif %}
     </nav>
 
