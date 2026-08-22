@@ -53,6 +53,7 @@ class User(db.Model, UserMixin):
     in_league = db.Column(db.Boolean, default=False) 
     is_verified = db.Column(db.Boolean, default=False)
     emblem = db.Column(db.String(10), default='🛡️') # NEW: The Emoji Emblem
+    name_changed = db.Column(db.Boolean, default=False)
     
     # Stats
     points = db.Column(db.Integer, default=0)
