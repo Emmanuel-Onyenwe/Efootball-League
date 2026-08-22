@@ -114,6 +114,13 @@ def register():
             
             try:
                 send_email(email, "Verify Your Account", html_msg)
+                
+                # --- NEW: Notify Admin of new registration ---
+                admin_user = User.query.filter_by(role='admin').first()
+                if admin_user:
+                    admin_msg = f"<h3>New Player Alert!</h3><p><b>{gamertag}</b> ({email}) just registered for the league and is waiting in your control room.</p>"
+                    send_email(admin_user.email, f"New Registration: {gamertag}", admin_msg)
+                
                 flash("Registration successful! Check your email to verify.", "success")
             except Exception as e:
                 print(f"Email failed to send: {e}")
