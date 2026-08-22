@@ -99,8 +99,8 @@
               </form>
             {% endif %}
             
-            <!-- Hide Eliminate button for the currently logged-in Admin -->
-            {% if user.id != current_user.id %}
+            <!-- Hide Eliminate button for the logged-in user AND the Head Admin (ID: 1) -->
+            {% if user.id != current_user.id and user.id != 1 %}
             <form action="{{ url_for('eliminate_player', user_id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Remove this player from the league?');">
               <button type="submit" class="btn btn-red" style="padding: 6px 12px; font-size: 0.75rem;">Eliminate</button>
             </form>
