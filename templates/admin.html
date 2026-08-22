@@ -51,7 +51,7 @@
     {% endif %}
   {% endwith %}
 
-  <!-- WAITING ROOM -->
+<!-- WAITING ROOM -->
   <div class="panel">
     <h2>Waiting Room</h2>
     <p>New players who registered and need to be approved to join the league.</p>
@@ -61,13 +61,15 @@
       <div class="user-row">
         <div>
           <strong style="font-size: 1rem;">{{ user.name }}</strong> <span style="color: var(--text-low); font-size: 0.85rem;">({{ user.email }})</span>
-          <div style="font-size: 0.75rem; margin-top: 4px;">
-            {% if user.is_verified %}<span style="color: var(--green);">[Verified Email]</span>{% else %}<span style="color: var(--red);">[Unverified]</span>{% endif %}
-          </div>
         </div>
-        <form action="{{ url_for('approve_player', user_id=user.id) }}" method="POST" style="margin:0;">
-          <button type="submit" class="btn btn-green">Admit to League</button>
-        </form>
+        <div style="display: flex; gap: 10px;">
+          <form action="{{ url_for('approve_player', user_id=user.id) }}" method="POST" style="margin:0;">
+            <button type="submit" class="btn btn-green">Admit</button>
+          </form>
+          <form action="{{ url_for('reject_player', user_id=user.id) }}" method="POST" style="margin:0;" onsubmit="return confirm('Reject and permanently delete this registration?');">
+            <button type="submit" class="btn btn-red">Reject</button>
+          </form>
+        </div>
       </div>
       {% endfor %}
     {% else %}
