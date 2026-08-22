@@ -85,6 +85,16 @@
   .fixture-vs { color: var(--text-low); font-size: 0.75rem; font-family: var(--font-display); }
   
   .site-footer { text-align: center; padding: 24px; font-size: 0.8rem; color: var(--text-low); border-top: 1px solid rgba(255,255,255,0.05); margin-top: auto; }
+  
+  /* Modal & Blur Styles */
+  .blur-bg { filter: blur(8px); pointer-events: none; transition: filter 0.3s ease; }
+  .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(10, 14, 26, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(5px); }
+  .modal-overlay.active { opacity: 1; pointer-events: all; }
+  .modal-card { background: var(--bg-panel); padding: 30px; border-radius: 12px; border-top: 4px solid var(--cyan); width: 90%; max-width: 400px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  .close-btn { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; color: var(--text-mid); cursor: pointer; background: none; border: none; }
+  .modal-input { width: 100%; padding: 12px; margin: 10px 0 20px; background: #1B2340; border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 5px; box-sizing: border-box; }
+  .modal-btn { width: 100%; padding: 12px; background: var(--grad-brand); border: none; color: black; font-weight: bold; border-radius: 5px; cursor: pointer; }
+
 </style>
 </head>
 <body>
