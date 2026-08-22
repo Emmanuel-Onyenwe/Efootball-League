@@ -323,19 +323,20 @@ def generate_fixtures():
         flash("Need at least 2 approved players to generate fixtures.", "error")
         return redirect(url_for('admin'))
     
-    pairs = list(itertools.combinations(users, 2))
+    # 'permutations' generates both Leg 1 (Home) and Leg 2 (Away)
+    pairs = list(itertools.permutations(users, 2))
     base_deadline = datetime.now() + timedelta(days=7)
     matches_created = 0
+    
     for player_a, player_b in pairs:
-        existing_match = Match.query.filter(
-            ((Match.player_a_id == player_a.id) & (Match.player_b_id == player_b.id)) |
-            ((Match.player_a_id == player_b.id) & (Match.player_b_id == player_a.id))
-        ).first()
+        existing_match = Match.query.filter_by(player_a_id=player_a.id, player_b_id=player_b.id).first()
         if not existing_match:
             db.session.add(Match(player_a_id=player_a.id, player_b_id=player_b.id, deadline=base_deadline))
             matches_created += 1
             
     db.session.commit()
+    flash(f"Generated {matches_created} new fixtures successfully! (Home & Away format)", "success")
+    return redirect(url_for('admin'))
     
     # --- NEW: Notify all active players about the new fixtures ---
     if matches_created > 0:
