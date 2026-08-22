@@ -246,5 +246,91 @@
   <footer class="site-footer">
     &copy; 2026 Panic Keh &middot; eFootball League
   </footer>
+    <!-- Modal Overlay -->
+  <div id="authModal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+      
+      <!-- Dynamic Error Display inside Modal -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div style="padding: 10px; background: var(--red); color: white; border-radius: 5px; margin-bottom: 15px; font-size: 0.85rem; text-align: center;">{{ msg }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- Login Form -->
+      <div id="loginForm">
+        <h2 style="font-family: var(--font-display); margin-bottom: 20px; text-align: center;">LOGIN</h2>
+        <form method="POST" action="{{ url_for('login') }}">
+          <input type="email" name="email" class="modal-input" placeholder="Email Address" required>
+          <input type="password" name="password" class="modal-input" placeholder="Password" required>
+          <button type="submit" class="modal-btn">LOG IN</button>
+        </form>
+        <p style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: var(--text-mid);">
+          New here? <a href="#" onclick="switchModal('register')" style="color: var(--cyan);">Register</a><br><br>
+          <a href="{{ url_for('forgot_password') }}" style="color: var(--text-low);">Forgot Password?</a>
+        </p>
+      </div>
+
+      <!-- Register Form (Hidden by default) -->
+      <div id="registerForm" style="display: none;">
+        <h2 style="font-family: var(--font-display); margin-bottom: 20px; text-align: center;">REGISTER</h2>
+        <form method="POST" action="{{ url_for('register') }}">
+          <input type="text" name="gamertag" class="modal-input" placeholder="PS4 Gamertag" style="margin-bottom: 10px;" required>
+          <input type="email" name="email" class="modal-input" placeholder="Email Address" style="margin-bottom: 10px;" required>
+          <select name="emblem" class="modal-input" style="margin-bottom: 10px;" required>
+            <option value="🛡️" selected>🛡️ Shield</option>
+            <option value="🦁">🦁 Lion</option><option value="🐉">🐉 Dragon</option><option value="🦅">🦅 Eagle</option>
+          </select>
+          <input type="password" name="password" class="modal-input" placeholder="Password" required>
+          <button type="submit" class="modal-btn">JOIN LEAGUE</button>
+        </form>
+        <p style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: var(--text-mid);">
+          Already playing? <a href="#" onclick="switchModal('login')" style="color: var(--cyan);">Log In</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const modal = document.getElementById('authModal');
+    const mainContent = document.querySelector('main');
+    const header = document.querySelector('header');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+
+    function openModal(type) {
+      modal.classList.add('active');
+      mainContent.classList.add('blur-bg');
+      header.classList.add('blur-bg');
+      switchModal(type);
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+      mainContent.classList.remove('blur-bg');
+      header.classList.remove('blur-bg');
+    }
+
+    function switchModal(type) {
+      if (type === 'register') {
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'block';
+      } else {
+        registerForm.style.display = 'none';
+        loginForm.style.display = 'block';
+      }
+    }
+
+    // Auto-open modal if backend sent a redirect error query
+    const urlParams = new URLSearchParams(window.location.search);
+    const showParam = urlParams.get('show');
+    if (showParam === 'login' || showParam === 'register') {
+      openModal(showParam);
+    }
+  </script>
+  
 </body>
 </html>
