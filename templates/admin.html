@@ -71,6 +71,58 @@
     {% endfor %}
   </div>
 
+    <!-- ACTIVE ROSTER -->
+  <div class="panel">
+    <h2>Active Roster</h2>
+    <p>Manage current players and admin privileges.</p>
+    {% for user in users %}
+      {% if user.in_league %}
+      <div class="user-row">
+        <div>
+          <strong style="font-size: 1rem;">{{ user.name }}</strong> 
+          <span style="color: var(--text-low); font-size: 0.85rem;">({{ user.email }})</span>
+          {% if user.role == 'admin' %}
+            <span style="color: var(--gold); font-size: 0.75rem; font-weight: bold; margin-left: 5px;">[ADMIN]</span>
+          {% endif %}
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 8px;">
+          {% if user.role != 'admin' %}
+            <form action="{{ url_for('make_admin', user_id=user.id) }}" method="POST" style="display:inline;">
+              <button type="submit" class="btn btn-brand" style="padding: 6px 12px; font-size: 0.75rem;">Make Admin</button>
+            </form>
+          {% endif %}
+          <form action="{{ url_for('remove_player', user_id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Remove this player from the league?');">
+            <button type="submit" class="btn btn-red" style="padding: 6px 12px; font-size: 0.75rem;">Remove</button>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <!-- PENDING MATCH APPROVALS -->
+  <div class="panel">
+    <h2>Pending Match Approvals</h2>
+    <p>Review and approve submitted match results and screenshots.</p>
+    {% for match in pending_matches %}
+      <div class="user-row">
+        <div>
+          <strong>{{ match.player_a.name }} ({{ match.score_a }}) vs ({{ match.score_b }}) {{ match.player_b.name }}</strong>
+          <br>
+          <a href="{{ match.screenshot_url }}" target="_blank" style="color: var(--cyan); font-size: 0.85rem;">View Screenshot</a>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <form action="{{ url_for('approve_match', match_id=match.id) }}" method="POST">
+             <button type="submit" class="btn btn-green" style="padding: 6px 12px; font-size: 0.75rem;">Approve</button>
+          </form>
+        </div>
+      </div>
+    {% else %}
+      <p style="color: var(--text-low); font-style: italic;">No pending matches to approve.</p>
+    {% endfor %}
+  </div>
+  
+
   <!-- FIXTURE GENERATOR -->
   <div class="panel">
     <h2>Season Management</h2>
