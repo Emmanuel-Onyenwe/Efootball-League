@@ -356,10 +356,3 @@ def eliminate_player(user_id):
         db.session.commit()
         flash(f"{user.name} eliminated! {len(unplayed_matches)} future matches were safely removed.", "success")
     return redirect(url_for('admin'))
-
-with app.app_context():
-    db.drop_all()
-    db.create_all()
-
-if __name__ == '__main__':
-    app.run(debug=True)
