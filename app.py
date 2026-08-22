@@ -283,6 +283,14 @@ def approve_player(user_id):
         user = User.query.get_or_404(user_id)
         user.in_league = True
         db.session.commit()
+        
+        # --- NEW: Notify user of approval ---
+        try:
+            msg = f"<h3>You are in! 🎮</h3><p>Your registration for the Panic Keh League has been officially approved. You can now log in to the dashboard to check your stats and fixtures.</p>"
+            send_email(user.email, "Welcome to the League!", msg)
+        except Exception as e:
+            print(f"Approval email failed: {e}")
+            
         flash(f"{user.name} added to the league roster!", "success")
     return redirect(url_for('admin'))
 
@@ -399,8 +407,21 @@ def eliminate_player(user_id):
 def reject_player(user_id):
     if current_user.role == 'admin':
         user = User.query.get_or_404(user_id)
+        
+        # Save info before deleting the user from the database
+        target_email = user.email
+        gamertag = user.name
+        
         db.session.delete(user)
         db.session.commit()
-        flash(f"Registration for {user.name} was rejected and deleted.", "success")
+        
+        # --- NEW: Notify user of rejection ---
+        try:
+            msg = f"<h3>Registration Update</h3><p>Unfortunately, your registration for the Panic Keh League under the Gamertag <b>{gamertag}</b> was declined.</p>"
+            send_email(target_email, "Panic Keh Registration Update", msg)
+        except Exception as e:
+            print(f"Rejection email failed: {e}")
+            
+        flash(f"Registration for {gamertag} was rejected and deleted.", "success")
     return redirect(url_for('admin'))
         
