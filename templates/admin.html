@@ -92,15 +92,19 @@
               <span style="color: var(--gold); font-size: 0.75rem; font-weight: bold; margin-left: 5px;">[ADMIN]</span>
             {% endif %}
           </div>
-          <div style="display: flex; gap: 10px; margin-top: 8px;">
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
             {% if user.role != 'admin' %}
               <form action="{{ url_for('promote_player', user_id=user.id) }}" method="POST" style="display:inline;">
                 <button type="submit" class="btn btn-brand" style="padding: 6px 12px; font-size: 0.75rem;">Make Admin</button>
               </form>
             {% endif %}
+            
+            <!-- Hide Eliminate button for the currently logged-in Admin -->
+            {% if user.id != current_user.id %}
             <form action="{{ url_for('eliminate_player', user_id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Remove this player from the league?');">
               <button type="submit" class="btn btn-red" style="padding: 6px 12px; font-size: 0.75rem;">Eliminate</button>
             </form>
+            {% endif %}
           </div>
         </div>
       {% endfor %}
