@@ -32,7 +32,6 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 mail = Mail(app)
 
-# Secure Token Generator for Emails
 s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 # --- CLOUDINARY CONFIGURATION ---
@@ -45,12 +44,13 @@ cloudinary.config(
 # --- DATABASE MODELS ---
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False) # Gamertag
+    name = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), default='player') 
     in_league = db.Column(db.Boolean, default=False) 
-    is_verified = db.Column(db.Boolean, default=False) # NEW: Checks if they clicked the email link
+    is_verified = db.Column(db.Boolean, default=False)
+    emblem = db.Column(db.String(10), default='🛡️') # NEW: The Emoji Emblem
     
     # Stats
     points = db.Column(db.Integer, default=0)
@@ -79,18 +79,18 @@ class Match(db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# --- HELPER ROUTINE: SEND EMAIL ---
 def send_email(to, subject, template):
     msg = Message(subject, recipients=[to], html=template)
     mail.send(msg)
 
-# --- AUTHENTICATION & VERIFICATION ROUTES ---
+# --- AUTHENTICATION ROUTES ---
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         gamertag = request.form.get('gamertag')
         email = request.form.get('email')
         password = request.form.get('password')
+        emblem = request.form.get('emblem', '🛡️')
         
         if User.query.filter_by(email=email).first() or User.query.filter_by(name=gamertag).first():
             flash("Email or Gamertag already taken.", "error")
@@ -101,21 +101,20 @@ def register():
         is_first_user = User.query.count() == 0
         role = 'admin' if is_first_user else 'player'
         in_league = True if is_first_user else False
-        is_verified = True if is_first_user else False # Admin gets auto-verified
+        is_verified = True if is_first_user else False 
         
-        new_user = User(name=gamertag, email=email, password_hash=hashed_pw, role=role, in_league=in_league, is_verified=is_verified)
+        new_user = User(name=gamertag, email=email, password_hash=hashed_pw, role=role, in_league=in_league, is_verified=is_verified, emblem=emblem)
         db.session.add(new_user)
         db.session.commit()
 
         if is_first_user:
             flash("Admin account created and verified! You can log in.", "success")
         else:
-            # Generate email verification token (expires in 1 hour / 3600 seconds)
             token = s.dumps(email, salt='email-confirm')
             link = url_for('verify_email', token=token, _external=True)
             html_msg = f"<h3>Welcome to Panic Keh eFootball League</h3><p>Click the link to verify your account and join the waiting room:</p><a href='{link}'>Verify My Email</a>"
             send_email(email, "Verify Your League Account", html_msg)
-            flash("Registration successful! Check your email to verify your account to avoid the bot filter.", "success")
+            flash("Registration successful! Check your email to verify your account.", "success")
             
         return redirect(url_for('login'))
         
@@ -136,7 +135,6 @@ def verify_email(token):
         flash("The verification link has expired. Please register again.", "error")
     except BadTimeSignature:
         flash("Invalid verification link.", "error")
-        
     return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -164,7 +162,6 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
-# --- FORGOT & RESET PASSWORD ---
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
@@ -175,12 +172,9 @@ def forgot_password():
             link = url_for('reset_password', token=token, _external=True)
             html_msg = f"<h3>Password Reset Request</h3><p>Click the link below to reset your Panic Keh password:</p><a href='{link}'>Reset Password</a><p>If you didn't request this, ignore this email.</p>"
             send_email(email, "Reset Your Password", html_msg)
-        
-        # Always flash success to prevent hackers from knowing which emails exist in the database
         flash("If an account exists with that email, a reset link has been sent.", "success")
         return redirect(url_for('login'))
-        
-    return render_template('forgot.html') # You will need a simple HTML form for this!
+    return render_template('forgot.html') 
 
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
@@ -197,8 +191,7 @@ def reset_password(token):
         db.session.commit()
         flash("Your password has been updated! You can now log in.", "success")
         return redirect(url_for('login'))
-        
-    return render_template('reset.html') # You will need a simple HTML form for this too!
+    return render_template('reset.html') 
 
 # --- CORE LOGIC (Standings) ---
 def update_standings():
@@ -225,7 +218,13 @@ def update_standings():
 def index():
     update_standings()
     users = User.query.filter_by(status='active', in_league=True).all()
-    standings = sorted(users, key=lambda u: (u.points, (u.goals_for - u.goals_against)), reverse=True)
+    
+    for u in users:
+        u.gd = u.goals_for - u.goals_against
+        u.ppg = round(u.points / u.played, 2) if u.played > 0 else 0.0
+
+    # Sort primarily by PPG to make it fair for bye-weeks, then Goal Difference
+    standings = sorted(users, key=lambda u: (u.ppg, u.gd), reverse=True)
     fixtures = Match.query.filter_by(status='pending').all()
     return render_template('index.html', standings=standings, fixtures=fixtures)
 
@@ -356,3 +355,11 @@ def eliminate_player(user_id):
         db.session.commit()
         flash(f"{user.name} eliminated! {len(unplayed_matches)} future matches were safely removed.", "success")
     return redirect(url_for('admin'))
+
+with app.app_context():
+    # WARNING: THIS WILL WIPE THE DATABASE ONE LAST TIME TO ADD THE EMBLEMS
+    db.drop_all()
+    db.create_all()
+
+if __name__ == '__main__':
+    app.run(debug=True)

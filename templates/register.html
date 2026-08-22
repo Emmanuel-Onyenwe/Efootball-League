@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <title>Panic Keh | Register</title>
     <style>
-        body { background-color: #0A0E1A; color: #F2F5FA; font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        body { background-color: #0A0E1A; color: #F2F5FA; font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px;}
         .card { background: #10162C; padding: 40px; border-radius: 12px; border-top: 4px solid #00E5FF; text-align: center; width: 100%; max-width: 400px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; background: #1B2340; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box;}
+        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #1B2340; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box; font-size: 1rem;}
         button.primary { width: 100%; padding: 12px; background: linear-gradient(90deg, #00E5FF, #FF2E9A); border: none; color: black; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 15px; }
         .pw-container { position: relative; display: flex; align-items: center; }
         .eye-icon { position: absolute; right: 15px; cursor: pointer; font-size: 1.2rem; user-select: none; }
@@ -17,7 +17,7 @@
 <body>
     <div class="card">
         <h2 style="font-family: 'Orbitron', sans-serif; margin-top:0;">REGISTER</h2>
-        <!-- Error Message Display -->
+        
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, msg in messages %}
@@ -25,13 +25,31 @@
             {% endfor %}
           {% endif %}
         {% endwith %}
+
         <form method="POST">
-            <label style="display:block; text-align:left; font-size: 0.8rem; color:#A8B2D1;">GAMERTAG</label>
+            <label style="display:block; text-align:left; font-size: 0.8rem; color:#A8B2D1;">PS4 GAMERTAG</label>
             <input type="text" name="gamertag" required>
             
             <label style="display:block; text-align:left; font-size: 0.8rem; color:#A8B2D1;">EMAIL ADDRESS</label>
             <input type="email" name="email" autocomplete="username" required>
             
+            <label style="display:block; text-align:left; font-size: 0.8rem; color:#A8B2D1;">CHOOSE YOUR EMBLEM</label>
+            <select name="emblem" required>
+                <option value="🛡️" selected>🛡️ Shield (Default)</option>
+                <option value="🦁">🦁 Lion</option><option value="🐯">🐯 Tiger</option><option value="🐆">🐆 Leopard</option>
+                <option value="🐺">🐺 Wolf</option><option value="🐻">🐻 Bear</option><option value="🦅">🦅 Eagle</option>
+                <option value="🦉">🦉 Owl</option><option value="🦇">🦇 Bat</option><option value="🦈">🦈 Shark</option>
+                <option value="🐬">🐬 Dolphin</option><option value="鳄">🐊 Crocodile</option><option value="🐍">🐍 Snake</option>
+                <option value="🐢">🐢 Turtle</option><option value="🦍">🦍 Gorilla</option><option value="🦏">🦏 Rhino</option>
+                <option value="🐘">🐘 Elephant</option><option value="🐂">🐂 Bull</option><option value="🐎">🐎 Horse</option>
+                <option value="🦌">🦌 Stag</option><option value="🐐">🐐 Goat</option><option value="🐏">🐏 Ram</option>
+                <option value="🐓">🐓 Rooster</option><option value="🦂">🦂 Scorpion</option><option value="🕷️">🕷️ Spider</option>
+                <option value="🐉">🐉 Dragon</option><option value="🐲">🐲 Dragon Face</option><option value="🦖">🦖 T-Rex</option>
+                <option value="🦕">🦕 Brontosaurus</option><option value="🦑">🦑 Squid</option><option value="🐙">🐙 Octopus</option>
+                <option value="🦊">🦊 Fox</option><option value="🦡">🦡 Badger</option><option value="🐝">🐝 Bee</option>
+                <option value="🦄">🦄 Unicorn</option><option value="⚔️">⚔️ Swords</option>
+            </select>
+
             <label style="display:block; text-align:left; font-size: 0.8rem; color:#A8B2D1;">PASSWORD</label>
             <div class="pw-container">
                 <input type="password" name="password" id="password" autocomplete="new-password" required style="padding-right: 40px;">
@@ -39,24 +57,20 @@
             </div>
             
             <button type="button" class="generate-btn" id="generateBtn">Auto-Generate Secure Password</button>
-            
             <button type="submit" class="primary">JOIN LEAGUE</button>
         </form>
         <p style="margin-top: 20px; font-size: 0.8rem;"><a href="/login" style="color: #00E5FF; text-decoration: none;">Already have an account? Log in</a></p>
     </div>
 
     <script>
-        // Toggle Password Visibility
         const togglePassword = document.querySelector('#togglePassword');
         const password = document.querySelector('#password');
-
         togglePassword.addEventListener('click', function (e) {
             const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
             password.setAttribute('type', type);
             this.textContent = type === 'password' ? '👁️' : '🙈';
         });
 
-        // Auto-Generate Secure Password
         const generateBtn = document.querySelector('#generateBtn');
         generateBtn.addEventListener('click', function() {
             const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
@@ -65,7 +79,7 @@
                 pass += chars.charAt(Math.floor(Math.random() * chars.length));
             }
             password.value = pass;
-            password.setAttribute('type', 'text'); // Show it so they can copy it!
+            password.setAttribute('type', 'text'); 
             togglePassword.textContent = '🙈';
             alert("Secure password generated! Please copy it and save it somewhere safe.");
         });
