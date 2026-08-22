@@ -4,3 +4,5 @@ gunicorn
 Flask-Login
 psycopg2-binary
 cloudinary
+Flask-Mail
+itsdangerous
