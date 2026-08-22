@@ -43,10 +43,10 @@
     <a href="{{ url_for('index') }}" class="back-link">&larr; Back to Standings</a>
   </div>
 
-  {% with messages = get_flashed_messages() %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-      {% for msg in messages %}
-        <div class="flash-msg">{{ msg }}</div>
+      {% for category, msg in messages %}
+        <div class="flash-msg" {% if category == 'error' %}style="background: rgba(255, 77, 109, 0.1); border-color: var(--red); color: var(--red);"{% endif %}>{{ msg }}</div>
       {% endfor %}
     {% endif %}
   {% endwith %}
@@ -56,7 +56,7 @@
     <h2>Waiting Room</h2>
     <p>New players who registered and need to be approved to join the league.</p>
     
-    {% for user in pending_users %}
+    {% for user in pending_players %}
     <div class="user-row">
       <div>
         <strong style="font-size: 1rem;">{{ user.name }}</strong> <span style="color: var(--text-low); font-size: 0.85rem;">({{ user.email }})</span>
@@ -64,19 +64,20 @@
           {% if user.is_verified %}<span style="color: var(--green);">[Verified Email]</span>{% else %}<span style="color: var(--red);">[Unverified]</span>{% endif %}
         </div>
       </div>
-      <a href="{{ url_for('admit_user', user_id=user.id) }}" class="btn btn-green">Admit to League</a>
+      <form action="{{ url_for('approve_player', user_id=user.id) }}" method="POST" style="margin:0;">
+        <button type="submit" class="btn btn-green">Admit to League</button>
+      </form>
     </div>
     {% else %}
     <p style="color: var(--text-low); font-style: italic;">No pending players in the waiting room.</p>
     {% endfor %}
   </div>
 
-    <!-- ACTIVE ROSTER -->
+  <!-- ACTIVE ROSTER -->
   <div class="panel">
     <h2>Active Roster</h2>
     <p>Manage current players and admin privileges.</p>
-    {% for user in users %}
-      {% if user.in_league %}
+    {% for user in active_players %}
       <div class="user-row">
         <div>
           <strong style="font-size: 1rem;">{{ user.name }}</strong> 
@@ -87,16 +88,17 @@
         </div>
         <div style="display: flex; gap: 10px; margin-top: 8px;">
           {% if user.role != 'admin' %}
-            <form action="{{ url_for('make_admin', user_id=user.id) }}" method="POST" style="display:inline;">
+            <form action="{{ url_for('promote_player', user_id=user.id) }}" method="POST" style="display:inline;">
               <button type="submit" class="btn btn-brand" style="padding: 6px 12px; font-size: 0.75rem;">Make Admin</button>
             </form>
           {% endif %}
-          <form action="{{ url_for('remove_player', user_id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Remove this player from the league?');">
-            <button type="submit" class="btn btn-red" style="padding: 6px 12px; font-size: 0.75rem;">Remove</button>
+          <form action="{{ url_for('eliminate_player', user_id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Remove this player from the league?');">
+            <button type="submit" class="btn btn-red" style="padding: 6px 12px; font-size: 0.75rem;">Eliminate</button>
           </form>
         </div>
       </div>
-      {% endif %}
+    {% else %}
+      <p style="color: var(--text-low); font-style: italic;">No active players in the league.</p>
     {% endfor %}
   </div>
 
@@ -107,6 +109,42 @@
     {% for match in pending_matches %}
       <div class="user-row">
         <div>
+          <strong>{{ match.player_a.name }} ({{ match.score_a }}) vs ({{ match.score_b }}) {{ match.player_b.name }}</strong>
+          <br>
+          <a href="{{ match.screenshot_path }}" target="_blank" style="color: var(--cyan); font-size: 0.85rem;">View Screenshot</a>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <form action="{{ url_for('approve_match', match_id=match.id) }}" method="POST" style="display:inline;">
+             <button type="submit" class="btn btn-green" style="padding: 6px 12px; font-size: 0.75rem;">Approve</button>
+          </form>
+          <form action="{{ url_for('reject_match', match_id=match.id) }}" method="POST" style="display:inline;">
+             <button type="submit" class="btn btn-red" style="padding: 6px 12px; font-size: 0.75rem;">Reject</button>
+          </form>
+        </div>
+      </div>
+    {% else %}
+      <p style="color: var(--text-low); font-style: italic;">No pending matches to approve.</p>
+    {% endfor %}
+  </div>
+
+  <!-- FIXTURE GENERATOR & SEASON RESET -->
+  <div class="panel">
+    <h2>Season Management</h2>
+    <p>Generate fixtures for all admitted players or reset the entire league to start over.</p>
+    
+    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+      <form action="{{ url_for('generate_fixtures') }}" method="POST">
+        <button type="submit" class="btn btn-brand">Generate Fixtures</button>
+      </form>
+      
+      <form action="{{ url_for('reset_league') }}" method="POST" onsubmit="return confirm('DANGER: This will wipe all fixtures and reset player stats to zero. Are you sure?');">
+        <button type="submit" class="btn btn-red">Reset Entire League</button>
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>
           <strong>{{ match.player_a.name }} ({{ match.score_a }}) vs ({{ match.score_b }}) {{ match.player_b.name }}</strong>
           <br>
           <a href="{{ match.screenshot_url }}" target="_blank" style="color: var(--cyan); font-size: 0.85rem;">View Screenshot</a>
