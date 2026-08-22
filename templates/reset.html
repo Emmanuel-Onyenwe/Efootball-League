@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Panic Keh | Reset Password</title>
+    <style>
+        body { background-color: #0A0E1A; color: #F2F5FA; font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #10162C; padding: 40px; border-radius: 12px; border-top: 4px solid #33E6A0; text-align: center; width: 100%; max-width: 400px; }
+        input { width: 100%; padding: 12px; margin: 10px 0 20px; background: #1B2340; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box;}
+        button { width: 100%; padding: 12px; background: linear-gradient(90deg, #33E6A0, #00E5FF); border: none; color: black; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        .pw-container { position: relative; display: flex; align-items: center; margin-bottom: 5px;}
+        .eye-icon { position: absolute; right: 15px; top: 22px; cursor: pointer; font-size: 1.2rem; user-select: none; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2 style="font-family: 'Orbitron', sans-serif; margin-top:0;">NEW PASSWORD</h2>
+        <form method="POST">
+            <label style="display:block; text-align:left; font-size: 0.8rem; color:#A8B2D1;">ENTER NEW PASSWORD</label>
+            <div class="pw-container">
+                <input type="password" name="password" id="password" autocomplete="new-password" required style="padding-right: 40px;">
+                <span class="eye-icon" id="togglePassword">👁️</span>
+            </div>
+            <button type="submit">UPDATE PASSWORD</button>
+        </form>
+    </div>
+    
+    <script>
+        const togglePassword = document.querySelector('#togglePassword');
+        const password = document.querySelector('#password');
+
+        togglePassword.addEventListener('click', function (e) {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+    </script>
+</body>
+</html>
