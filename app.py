@@ -292,10 +292,15 @@ def admin():
     if current_user.role != 'admin':
         flash("Access Denied: Admins only.", "error")
         return redirect(url_for('index'))
+    
     active_players = User.query.filter_by(status='active', in_league=True).all()
     pending_players = User.query.filter_by(in_league=False).all()
     pending_matches = Match.query.filter_by(status='submitted').all()
-    return render_template('admin.html', active_players=active_players, pending_players=pending_players, pending_matches=pending_matches)
+    
+    # --- NEW: Grab all pending fixtures for the Admin Master Board ---
+    all_pending_fixtures = Match.query.filter_by(status='pending').all()
+    
+    return render_template('admin.html', active_players=active_players, pending_players=pending_players, pending_matches=pending_matches, all_pending_fixtures=all_pending_fixtures)
 
 @app.route('/panic-hq/approve_player/<int:user_id>', methods=['POST'])
 @login_required
