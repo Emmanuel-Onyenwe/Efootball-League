@@ -299,6 +299,42 @@
       </div>
     </aside>
 
+    <!-- COMPLETED MATCHES BOARD -->
+  <div class="panel" style="margin-bottom: 20px;">
+    <h2 style="margin-bottom: 15px;">Recent Results</h2>
+    
+    <!-- This div acts as the scrollable window -->
+    <div style="max-height: 280px; overflow-y: auto; padding-right: 8px; display: flex; flex-direction: column; gap: 10px;">
+      
+      {% if completed_matches %}
+        {% for match in completed_matches %}
+        <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05);">
+          
+          <!-- Player A -->
+          <div style="flex: 1; text-align: right; font-weight: 600; color: var(--text-high); font-size: 0.95rem;">
+            {{ match.player_a.name }} <span style="font-size: 1.1rem;">{{ match.player_a.emblem }}</span>
+          </div>
+          
+          <!-- Score -->
+          <div style="padding: 0 20px; font-size: 1.3rem; font-weight: 900; color: #00E5FF; text-shadow: 0 0 5px rgba(0,229,255,0.3);">
+            {{ match.player_a_score }} - {{ match.player_b_score }}
+          </div>
+          
+          <!-- Player B -->
+          <div style="flex: 1; text-align: left; font-weight: 600; color: var(--text-high); font-size: 0.95rem;">
+            <span style="font-size: 1.1rem;">{{ match.player_b.emblem }}</span> {{ match.player_b.name }}
+          </div>
+          
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="color: var(--text-low); font-style: italic; text-align: center; margin-top: 10px;">No matches have been completed yet. The pitch is waiting!</p>
+      {% endif %}
+      
+    </div>
+  </div>
+
+
     <!-- LEAGUE BRIEFING & RULES SECTION -->
     <section class="panel" style="grid-column: 1 / -1; margin-top: 10px;">
       <div class="panel-header">
