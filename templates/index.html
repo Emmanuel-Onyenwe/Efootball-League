@@ -83,6 +83,60 @@
 
   .panel { background: var(--bg-panel); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); overflow: hidden; }
   .panel-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+<style>
+  :root {
+    --bg-primary: #0A0E1A; --bg-panel: #10162C; --bg-panel-alt: #161D38;
+    --cyan: #00E5FF; --magenta: #FF2E9A; --violet: #7C5CFF;
+    --gold: #FFC93C; --green: #33E6A0; --red: #FF4D6D;
+    --text-hi: #F2F5FA; --text-mid: #A8B2D1; --text-low: #64709A;
+    --grad-brand: linear-gradient(90deg, var(--cyan), var(--violet) 55%, var(--magenta));
+    --font-display: 'Orbitron', sans-serif; --font-heading: 'Rajdhani', sans-serif; --font-body: 'Inter', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg-primary); color: var(--text-hi); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+  
+  .top-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; background: rgba(16, 22, 44, 0.72); border-bottom: 2px solid var(--magenta); }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .crest { width: 36px; height: auto; }
+  .wordmark { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; background: var(--grad-brand); -webkit-background-clip: text; color: transparent; }
+  .wordmark small { display: block; font-family: var(--font-heading); font-size: 0.62rem; color: var(--text-low); letter-spacing: 0.22em;}
+  
+  nav.top-nav { display: flex; gap: 28px; font-family: var(--font-heading); font-weight: 600; text-transform: uppercase; font-size: 0.92rem;}
+  nav.top-nav a { position: relative; color: var(--text-mid); text-decoration: none; padding-bottom: 6px; transition: 0.3s; }
+  nav.top-nav a:hover, nav.top-nav a.active { color: var(--text-hi); }
+  
+  /* The Animated Underline */
+  nav.top-nav a::after {
+    content: ''; position: absolute; left: 0; bottom: 0; width: 0%; height: 3px;
+    background: var(--grad-brand); transition: width 0.3s ease-in-out; border-radius: 2px;
+  }
+  nav.top-nav a:hover::after, nav.top-nav a.active::after { width: 100%; }
+
+  /* UPDATED TICKER CSS */
+  .ticker-wrap { background: #060911; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 0; overflow: hidden; display: flex; align-items: center; position: relative; }
+  .ticker-label { font-family: var(--font-heading); font-weight: 700; color: var(--cyan); padding: 0 16px; font-size: 0.8rem; text-transform: uppercase; white-space: nowrap; z-index: 2; background: #060911; box-shadow: 10px 0 10px #060911; }
+  
+  .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; }
+  .marquee-content {
+    display: inline-block; padding-left: 100%;
+    animation: marquee 20s linear infinite; color: var(--text-mid); font-size: 0.85rem;
+  }
+  @keyframes marquee {
+    0%   { transform: translate(0, 0); }
+    100% { transform: translate(-100%, 0); }
+  }
+  
+  .layout-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 32px; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%;}
+  @media (max-width: 960px) { .layout-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 768px) {
+    .top-bar { flex-direction: column; gap: 16px; text-align: center; padding: 20px 15px; }
+    .brand { justify-content: center; }
+    nav.top-nav { flex-wrap: wrap; justify-content: center; gap: 15px; font-size: 0.85rem; }
+    .layout-grid { padding: 15px; }
+  }
+
+  .panel { background: var(--bg-panel); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); overflow: hidden; }
+  .panel-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
   .panel-header h2 { font-family: var(--font-heading); font-weight: 700; font-size: 1.2rem; text-transform: uppercase; }
   .panel-header p { font-size: 0.8rem; color: var(--text-low); margin-top: 4px; }
   
@@ -116,7 +170,6 @@
   .close-btn { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; color: var(--text-mid); cursor: pointer; background: none; border: none; }
   .modal-input { width: 100%; padding: 12px; margin: 10px 0 20px; background: #1B2340; border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 5px; box-sizing: border-box; }
   .modal-btn { width: 100%; padding: 12px; background: var(--grad-brand); border: none; color: black; font-weight: bold; border-radius: 5px; cursor: pointer; }
-
 </style>
 </head>
 <body>
@@ -181,11 +234,11 @@
   </header>
 
   <div class="ticker-wrap">
-    <div class="ticker-label" style="background: #060911; box-shadow: 10px 0 10px #060911;">Panic Keh</div>
+    <div class="ticker-label">Panic Keh</div>
     <div class="marquee-container">
       <div class="marquee-content">
-        {% if fixtures %}
-          {% for match in fixtures[:15] %} • {{ match.player_a.name }} vs {{ match.player_b.name }} &nbsp;&nbsp;&nbsp; {% endfor %}
+        {% if ticker_fixtures %}
+          {% for match in ticker_fixtures[:15] %} • <strong style="color: var(--cyan);">{{ match.player_a.name }}</strong> vs <strong style="color: var(--cyan);">{{ match.player_b.name }}</strong> &nbsp;&nbsp;&nbsp; {% endfor %}
         {% else %}
           No upcoming fixtures scheduled.
         {% endif %}
