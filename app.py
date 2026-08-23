@@ -1,3 +1,4 @@
+import random
 import os
 import itertools
 from datetime import datetime, timedelta
@@ -248,6 +249,7 @@ def index():
         ).all()
     else:
         fixtures = Match.query.filter_by(status='pending').all()
+        random.shuffle(fixtures) # This mixes up the 90 matches for guests!
 
     completed_matches = Match.query.filter_by(status='approved').order_by(Match.id.desc()).all()
     return render_template('index.html', standings=standings, fixtures=fixtures, completed_matches=completed_matches)
