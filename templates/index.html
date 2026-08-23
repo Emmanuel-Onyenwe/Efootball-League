@@ -42,7 +42,27 @@
     transition: width 0.3s ease-in-out;
     border-radius: 2px;
   }
-  
+
+  @keyframes scroll-left {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+  .marquee-container {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .marquee-content {
+    display: inline-block;
+    animation: scroll-left 25s linear infinite;
+    padding-left: 100%;
+    color: var(--cyan);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
   /* Expands the line on hover OR when it is the active page */
   nav.top-nav a:hover::after, nav.top-nav a.active::after {
     width: 100%;
@@ -161,13 +181,15 @@
   </header>
 
   <div class="ticker-wrap">
-    <div class="ticker-label">Panic Keh</div>
-    <div style="color: var(--text-mid); font-size: 0.85rem; padding-left: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 15px; width: 100%;">
-      {% if fixtures %}
-        {% for match in fixtures[:5] %} • {{ match.player_a.name }} vs {{ match.player_b.name }} {% endfor %}
-      {% else %}
-        No upcoming fixtures scheduled.
-      {% endif %}
+    <div class="ticker-label" style="background: #060911; box-shadow: 10px 0 10px #060911;">Panic Keh</div>
+    <div class="marquee-container">
+      <div class="marquee-content">
+        {% if fixtures %}
+          {% for match in fixtures[:15] %} • {{ match.player_a.name }} vs {{ match.player_b.name }} &nbsp;&nbsp;&nbsp; {% endfor %}
+        {% else %}
+          No upcoming fixtures scheduled.
+        {% endif %}
+      </div>
     </div>
   </div>
 
