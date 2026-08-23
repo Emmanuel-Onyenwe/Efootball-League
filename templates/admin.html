@@ -82,35 +82,38 @@
     <h2>Active Roster</h2>
     <p>Manage current players and admin privileges.</p>
     
-    {% if active_players %}
-      {% for user in active_players %}
-        <div class="user-row">
-          <div>
-            <strong style="font-size: 1rem;">{{ user.name }}</strong> 
-            <span style="color: var(--text-low); font-size: 0.85rem;">({{ user.email }})</span>
-            {% if user.role == 'admin' %}
-              <span style="color: var(--gold); font-size: 0.75rem; font-weight: bold; margin-left: 5px;">[ADMIN]</span>
-            {% endif %}
-          </div>
-            <div style="display: flex; gap: 10px; margin-top: 8px;">
-            {% if user.role != 'admin' %}
-              <form action="{{ url_for('promote_player', user_id=user.id) }}" method="POST" style="display:inline;">
-                <button type="submit" class="btn btn-brand" style="padding: 6px 12px; font-size: 0.75rem;">Make Admin</button>
+    <!-- Added the scrollable wrapper here -->
+    <div style="max-height: 350px; overflow-y: auto; padding-right: 8px;">
+      {% if active_players %}
+        {% for user in active_players %}
+          <div class="user-row">
+            <div>
+              <strong style="font-size: 1rem;">{{ user.name }}</strong> 
+              <span style="color: var(--text-low); font-size: 0.85rem;">({{ user.email }})</span>
+              {% if user.role == 'admin' %}
+                <span style="color: var(--gold); font-size: 0.75rem; font-weight: bold; margin-left: 5px;">[ADMIN]</span>
+              {% endif %}
+            </div>
+              <div style="display: flex; gap: 10px; margin-top: 8px;">
+              {% if user.role != 'admin' %}
+                <form action="{{ url_for('promote_player', user_id=user.id) }}" method="POST" style="display:inline;">
+                  <button type="submit" class="btn btn-brand" style="padding: 6px 12px; font-size: 0.75rem;">Make Admin</button>
+                </form>
+              {% endif %}
+              
+              <!-- Hide Eliminate button for the logged-in user AND the Head Admin (ID: 1) -->
+              {% if user.id != current_user.id and user.id != 1 %}
+              <form action="{{ url_for('eliminate_player', user_id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Remove this player from the league?');">
+                <button type="submit" class="btn btn-red" style="padding: 6px 12px; font-size: 0.75rem;">Eliminate</button>
               </form>
-            {% endif %}
-            
-            <!-- Hide Eliminate button for the logged-in user AND the Head Admin (ID: 1) -->
-            {% if user.id != current_user.id and user.id != 1 %}
-            <form action="{{ url_for('eliminate_player', user_id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Remove this player from the league?');">
-              <button type="submit" class="btn btn-red" style="padding: 6px 12px; font-size: 0.75rem;">Eliminate</button>
-            </form>
-            {% endif %}
+              {% endif %}
+            </div>
           </div>
-        </div>
-      {% endfor %}
-    {% else %}
-      <p style="color: var(--text-low); font-style: italic;">No active players in the league.</p>
-    {% endif %}
+        {% endfor %}
+      {% else %}
+        <p style="color: var(--text-low); font-style: italic;">No active players in the league.</p>
+      {% endif %}
+    </div>
   </div>
 
   <!-- PENDING MATCH APPROVALS -->
