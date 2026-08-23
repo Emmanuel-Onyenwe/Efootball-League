@@ -299,15 +299,13 @@
       </div>
     </aside>
 
-        <!-- COMPLETED MATCHES BOARD -->
-  <div class="panel" style="margin-bottom: 20px;">
+<!-- COMPLETED MATCHES BOARD -->
+  <div class="panel" style="margin-bottom: 20px; grid-column: 1 / -1;">
     
-    <!-- THE FIX: Using your custom panel-header class -->
     <div class="panel-header">
       <h2>Recent Results</h2>
     </div>
 
-    <!-- Added padding around the scrollable window to match other panels -->
     <div style="padding: 16px 24px;">
       <div style="max-height: 280px; overflow-y: auto; padding-right: 8px; display: flex; flex-direction: column; gap: 10px;">
 
@@ -316,7 +314,7 @@
         <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05);">
           
           <!-- Player A -->
-          <div style="flex: 1; text-align: right; font-weight: 600; color: var(--text-high); font-size: 0.95rem;">
+          <div style="flex: 1; text-align: right; font-weight: 600; color: var(--text-hi); font-size: 0.95rem;">
             {{ match.player_a.name }} <span style="font-size: 1.1rem;">{{ match.player_a.emblem }}</span>
           </div>
           
@@ -326,23 +324,21 @@
           </div>
           
           <!-- Player B -->
-          <div style="flex: 1; text-align: left; font-weight: 600; color: var(--text-high); font-size: 0.95rem;">
+          <div style="flex: 1; text-align: left; font-weight: 600; color: var(--text-hi); font-size: 0.95rem;">
             <span style="font-size: 1.1rem;">{{ match.player_b.emblem }}</span> {{ match.player_b.name }}
           </div>
           
         </div>
         {% endfor %}
       {% else %}
-        <!-- UPGRADED EMPTY STATE: Neat dashed box -->
         <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 8px; text-align: center; border: 1px dashed rgba(255,255,255,0.1);">
            <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem; margin: 0;">No matches have been completed yet.<br>The pitch is waiting!</p>
         </div>
       {% endif %}
       
-    </div>
-  </div> <!-- This is the one we were missing! -->
-</div>
-
+      </div>
+    </div> 
+  </div>
 
     <!-- LEAGUE BRIEFING & RULES SECTION -->
     <section class="panel" style="grid-column: 1 / -1; margin-top: 10px;">
