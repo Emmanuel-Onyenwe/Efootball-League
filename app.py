@@ -241,8 +241,9 @@ def index():
     # Sort primarily by PPG to make it fair for bye-weeks, then Goal Difference
     standings = sorted(users, key=lambda u: (u.ppg, u.gd), reverse=True)
     fixtures = Match.query.filter_by(status='pending').all()
-    completed_matches = Match.query.filter_by(status='approved').order_by(Match.id.desc()).all()
+        completed_matches = Match.query.filter_by(status='approved').order_by(Match.id.desc()).all()
     return render_template('index.html', standings=standings, fixtures=fixtures, completed_matches=completed_matches)
+
 
 
 @app.route('/submit', methods=['GET', 'POST'])
