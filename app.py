@@ -231,7 +231,6 @@ def update_standings():
 
 # --- PUBLIC ROUTES ---
 @app.route('/')
-@app.route('/')
 def index():
     update_standings()
     users = User.query.filter_by(status='active', in_league=True).all()
@@ -334,8 +333,43 @@ def admin():
     pending_players = User.query.filter_by(in_league=False).all()
     pending_matches = Match.query.filter_by(status='submitted').all()
     
-    # --- NEW: Grab all pending fixtures for the Admin Master Board ---
-    all_pending_fixtures = Match.query.filter_by(status='pending').all()
+    # Grab all pending matches
+    all_pending = Match.query.filter_by(status='pending').all()
+    
+    # Split them into Home (Leg 1) and Away (Leg 2)
+    leg_1 = []
+    leg_2 = []
+    seen_pairs = set()
+    
+    for m in all_pending:
+        pair = tuple(sorted([m.player_a_id, m.player_b_id]))
+        if pair not in seen_pairs:
+            leg_1.append(m)
+            seen_pairs.add(pair)
+        else:
+            leg_2.append(m)
+            
+    # The Interleaving Engine
+    def interleave(match_list):
+        interleaved = []
+        temp = match_list.copy()
+        while temp:
+            current_players = set()
+            removed = []
+            for m in temp:
+                if m.player_a_id not in current_players and m.player_b_id not in current_players:
+                    interleaved.append(m)
+                    current_players.add(m.player_a_id)
+                    current_players.add(m.player_b_id)
+                    removed.append(m)
+            for m in removed:
+                temp.remove(m)
+            if not removed and temp:
+                interleaved.append(temp.pop(0))
+        return interleaved
+
+    # Stack Leg 1 and Leg 2 together for the Admin Board
+    all_pending_fixtures = interleave(leg_1) + interleave(leg_2)
     
     return render_template('admin.html', active_players=active_players, pending_players=pending_players, pending_matches=pending_matches, all_pending_fixtures=all_pending_fixtures)
 
