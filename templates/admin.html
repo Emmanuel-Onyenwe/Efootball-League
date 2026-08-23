@@ -140,7 +140,33 @@
       <p style="color: var(--text-low); font-style: italic;">No pending matches to approve.</p>
     {% endif %}
   </div>
-
+  
+  <!-- MASTER FIXTURE TRACKER -->
+  <div class="panel">
+    <h2>Master Fixture List</h2>
+    <p>Search any Gamertag to track their pending matches.</p>
+    
+    <!-- Instant Search Bar -->
+    <div style="margin-bottom: 15px;">
+      <input type="text" id="adminFixtureSearch" onkeyup="filterAdminFixtures()" placeholder="🔍 Search Gamertag..." style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; outline: none;">
+    </div>
+    
+    <!-- Scrollable Fixture List -->
+    <div style="max-height: 400px; overflow-y: auto; padding-right: 8px;">
+      {% if all_pending_fixtures %}
+        {% for match in all_pending_fixtures %}
+        <div class="admin-fixture-card user-row" style="display: flex; justify-content: space-between; border-left: 3px solid var(--violet);">
+          <span style="font-weight: bold; color: var(--text-hi);">{{ match.player_a.name }}</span>
+          <span style="color: var(--text-low); font-size: 0.8rem;">VS</span>
+          <span style="font-weight: bold; color: var(--text-hi);">{{ match.player_b.name }}</span>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="color: var(--text-low); font-style: italic;">No pending fixtures left. Season complete!</p>
+      {% endif %}
+    </div>
+  </div>
+  
   <!-- FIXTURE GENERATOR & SEASON RESET -->
   <div class="panel">
     <h2>Season Management</h2>
@@ -156,6 +182,20 @@
       </form>
     </div>
   </div>
+
+  <!-- Search Logic -->
+  <script>
+    function filterAdminFixtures() {
+      let filter = document.getElementById('adminFixtureSearch').value.toLowerCase();
+      let cards = document.querySelectorAll('.admin-fixture-card');
+      
+      cards.forEach(card => {
+        let text = card.textContent.toLowerCase();
+        // Hide matches that don't include the searched name. We use 'flex' instead of '' because of the user-row class.
+        card.style.display = text.includes(filter) ? 'flex' : 'none';
+      });
+    }
+  </script>
 
 </body>
 </html>
