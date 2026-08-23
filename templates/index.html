@@ -299,9 +299,10 @@
       </div>
     </aside>
 
-    <!-- COMPLETED MATCHES BOARD -->
+      <!-- COMPLETED MATCHES BOARD -->
   <div class="panel" style="margin-bottom: 20px;">
-    <h2 style="margin-bottom: 15px;">Recent Results</h2>
+    <!-- UPGRADED HEADER: Matches your theme -->
+    <h3 style="font-size: 1rem; font-weight: 800; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.5px; color: white;">RECENT RESULTS</h3>
     
     <!-- This div acts as the scrollable window -->
     <div style="max-height: 280px; overflow-y: auto; padding-right: 8px; display: flex; flex-direction: column; gap: 10px;">
@@ -328,7 +329,10 @@
         </div>
         {% endfor %}
       {% else %}
-        <p style="color: var(--text-low); font-style: italic; text-align: center; margin-top: 10px;">No matches have been completed yet. The pitch is waiting!</p>
+        <!-- UPGRADED EMPTY STATE: Neat dashed box -->
+        <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 8px; text-align: center; border: 1px dashed rgba(255,255,255,0.1);">
+           <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem; margin: 0;">No matches have been completed yet.<br>The pitch is waiting!</p>
+        </div>
       {% endif %}
       
     </div>
