@@ -372,12 +372,12 @@
       </div>
     </section>
 
-    <aside class="panel">
+    <aside class="panel side-panel">
       <div class="panel-header">
         <h2>Upcoming Fixtures</h2>
         <p>{{ fixtures|length }} pending matches</p>
       </div>
-        <div class="fixture-list" style="max-height: 240px; overflow-y: auto; padding-right: 5px;">
+        <div class="fixture-list fixture-scroll-box">
         {% for match in fixtures %}
         <div class="fixture-card">
           <div class="fixture-teams">
