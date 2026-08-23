@@ -171,22 +171,22 @@
   .modal-input { width: 100%; padding: 12px; margin: 10px 0 20px; background: #1B2340; border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 5px; box-sizing: border-box; }
   .modal-btn { width: 100%; padding: 12px; background: var(--grad-brand); border: none; color: black; font-weight: bold; border-radius: 5px; cursor: pointer; }
 
-    /* Desktop/Mobile Smart Switch for Fixtures */
+      /* Desktop/Mobile Smart Switch for Fixtures */
   .side-panel {
     display: flex;
     flex-direction: column;
   }
   .fixture-scroll-box {
-    flex: 1;
     overflow-y: auto;
     padding-right: 5px;
+    max-height: 550px; /* Desktop Fix: Locks the height to match the League Table and forces the scrollbar */
   }
   @media (max-width: 960px) {
     .fixture-scroll-box {
-      max-height: 240px;
-      flex: none;
+      max-height: 240px; /* Mobile Fix: Shrinks it even smaller for phone screens */
     }
   }
+
   
 </style>
 </head>
