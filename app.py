@@ -240,7 +240,8 @@ def index():
 
     # Sort primarily by PPG to make it fair for bye-weeks, then Goal Difference
     standings = sorted(users, key=lambda u: (u.ppg, u.gd), reverse=True)
-        if current_user.is_authenticated:
+    
+    if current_user.is_authenticated:
         fixtures = Match.query.filter(
             (Match.status == 'pending') & 
             ((Match.player_a_id == current_user.id) | (Match.player_b_id == current_user.id))
@@ -250,7 +251,6 @@ def index():
 
     completed_matches = Match.query.filter_by(status='approved').order_by(Match.id.desc()).all()
     return render_template('index.html', standings=standings, fixtures=fixtures, completed_matches=completed_matches)
-
 
 
 @app.route('/submit', methods=['GET', 'POST'])
@@ -346,8 +346,6 @@ def generate_fixtures():
             matches_created += 1
             
     db.session.commit()
-    flash(f"Generated {matches_created} new fixtures successfully! (Home & Away format)", "success")
-    return redirect(url_for('admin'))
     
     # --- NEW: Notify all active players about the new fixtures ---
     if matches_created > 0:
