@@ -231,6 +231,7 @@ def update_standings():
 
 # --- PUBLIC ROUTES ---
 @app.route('/')
+@app.route('/')
 def index():
     update_standings()
     users = User.query.filter_by(status='active', in_league=True).all()
@@ -241,46 +242,50 @@ def index():
 
     standings = sorted(users, key=lambda u: (u.ppg, u.gd), reverse=True)
     
-    # 1. Grab all pending matches
+    # Grab all pending matches
     all_pending = Match.query.filter_by(status='pending').all()
     
-    # 2. Deduplicate (Remove the Home/Away repeats for the public view)
-    unique_fixtures = []
+    # Split them into Home (Leg 1) and Away (Leg 2)
+    leg_1 = []
+    leg_2 = []
     seen_pairs = set()
+    
     for m in all_pending:
         pair = tuple(sorted([m.player_a_id, m.player_b_id]))
         if pair not in seen_pairs:
-            unique_fixtures.append(m)
+            leg_1.append(m)
             seen_pairs.add(pair)
+        else:
+            leg_2.append(m)
             
-    # 3. Interleave them to simulate Matchdays (Round 1, Round 2, etc.)
-    interleaved_fixtures = []
-    temp_fixtures = unique_fixtures.copy()
+    # A quick helper function to sort any list of matches into Matchdays
+    def interleave(match_list):
+        interleaved = []
+        temp = match_list.copy()
+        while temp:
+            current_players = set()
+            removed = []
+            for m in temp:
+                if m.player_a_id not in current_players and m.player_b_id not in current_players:
+                    interleaved.append(m)
+                    current_players.add(m.player_a_id)
+                    current_players.add(m.player_b_id)
+                    removed.append(m)
+            for m in removed:
+                temp.remove(m)
+            if not removed and temp: # Failsafe
+                interleaved.append(temp.pop(0))
+        return interleaved
+
+    # Sort Leg 1, sort Leg 2, then stack them together!
+    final_sorted_fixtures = interleave(leg_1) + interleave(leg_2)
     
-    while temp_fixtures:
-        current_round_players = set()
-        matches_to_remove = []
-        for m in temp_fixtures:
-            if m.player_a_id not in current_round_players and m.player_b_id not in current_round_players:
-                interleaved_fixtures.append(m)
-                current_round_players.add(m.player_a_id)
-                current_round_players.add(m.player_b_id)
-                matches_to_remove.append(m)
-                
-        for m in matches_to_remove:
-            temp_fixtures.remove(m)
-            
-        # Failsafe if it gets stuck
-        if not matches_to_remove and temp_fixtures:
-            interleaved_fixtures.append(temp_fixtures.pop(0))
-    
-    # 4. Route the right lists to the right places
-    ticker_fixtures = interleaved_fixtures # Ticker ALWAYS gets the global master list
+    ticker_fixtures = final_sorted_fixtures 
     
     if current_user.is_authenticated:
         fixtures = [m for m in all_pending if m.player_a_id == current_user.id or m.player_b_id == current_user.id]
     else:
-        fixtures = interleaved_fixtures # Guests see the neatly sorted matchdays
+        fixtures = final_sorted_fixtures # Guests see the full 90, neatly sorted
 
     completed_matches = Match.query.filter_by(status='approved').order_by(Match.id.desc()).all()
     return render_template('index.html', standings=standings, fixtures=fixtures, completed_matches=completed_matches, ticker_fixtures=ticker_fixtures)
