@@ -299,14 +299,18 @@
       </div>
     </aside>
 
-      <!-- COMPLETED MATCHES BOARD -->
+        <!-- COMPLETED MATCHES BOARD -->
   <div class="panel" style="margin-bottom: 20px;">
-    <!-- UPGRADED HEADER: Matches your theme -->
-    <h3 style="margin-bottom: 15px;">RECENT RESULTS</h3>
+    
+    <!-- THE FIX: Using your custom panel-header class -->
+    <div class="panel-header">
+      <h2>Recent Results</h2>
+    </div>
 
-    <!-- This div acts as the scrollable window -->
-    <div style="max-height: 280px; overflow-y: auto; padding-right: 8px; display: flex; flex-direction: column; gap: 10px;">
-      
+    <!-- Added padding around the scrollable window to match other panels -->
+    <div style="padding: 16px 24px;">
+      <div style="max-height: 280px; overflow-y: auto; padding-right: 8px; display: flex; flex-direction: column; gap: 10px;">
+
       {% if completed_matches %}
         {% for match in completed_matches %}
         <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05);">
