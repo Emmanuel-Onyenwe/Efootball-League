@@ -282,7 +282,8 @@ def index():
     ticker_fixtures = final_sorted_fixtures 
     
     if current_user.is_authenticated:
-        fixtures = [m for m in all_pending if m.player_a_id == current_user.id or m.player_b_id == current_user.id]
+        # Now it filters your matches from the perfectly sorted Matchday list!
+        fixtures = [m for m in final_sorted_fixtures if m.player_a_id == current_user.id or m.player_b_id == current_user.id]
     else:
         fixtures = final_sorted_fixtures # Guests see the full 90, neatly sorted
 
