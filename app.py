@@ -330,8 +330,10 @@ def admin():
         flash("Access Denied: Admins only.", "error")
         return redirect(url_for('index'))
     
-    active_players = User.query.filter_by(status='active', in_league=True).all()
-    pending_players = User.query.filter_by(in_league=False).all()
+    # Sorts the roster alphabetically by name
+    active_players = User.query.filter_by(status='active', in_league=True).order_by(User.name).all()
+    # Sorts the waiting room by who registered first
+    pending_players = User.query.filter_by(in_league=False).order_by(User.id).all()
     pending_matches = Match.query.filter_by(status='submitted').all()
     
     # Grab all pending matches
