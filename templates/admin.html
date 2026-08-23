@@ -180,7 +180,14 @@
         <button type="submit" class="btn btn-brand">Generate Fixtures</button>
       </form>
       
-      <form action="{{ url_for('reset_league') }}" method="POST" onsubmit="return confirm('DANGER: This will wipe all fixtures and reset player stats to zero. Are you sure?');">
+      <form action="{{ url_for('reset_league') }}" method="POST" onsubmit="
+        const userInput = prompt('DANGER: This will wipe all fixtures and reset player stats to zero!\n\nType RESET in all caps to confirm:');
+        if (userInput !== 'RESET') {
+          alert('Reset canceled. The league is safe.');
+          return false;
+        }
+        return true;
+      ">
         <button type="submit" class="btn btn-red">Reset Entire League</button>
       </form>
     </div>
