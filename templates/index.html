@@ -345,7 +345,7 @@
             <tr>
               <th width="40">#</th>
               <th class="left">PLAYER</th>
-              <th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>PTS</th><th>PPG</th>
+              <th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GD</th><th>PTS</th><th>PPG</th>
             </tr>
           </thead>
           <tbody>
@@ -360,12 +360,13 @@
               <td>{{ user.won }}</td>
               <td>{{ user.drawn }}</td>
               <td>{{ user.lost }}</td>
+              <td style="font-weight: 600;">{{ user.goals_for }}</td>
               <td>{{ user.gd }}</td>
               <td class="stat-pts">{{ user.points }}</td>
               <td class="stat-ppg">{{ "%.2f"|format(user.ppg) }}</td>
             </tr>
             {% else %}
-            <tr><td colspan="9" style="padding: 30px; color: var(--text-low);">No players have joined the league yet.</td></tr>
+            <tr><td colspan="10" style="padding: 30px; color: var(--text-low);">No players have joined the league yet.</td></tr>
             {% endfor %}
           </tbody>
         </table>
