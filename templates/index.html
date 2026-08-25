@@ -125,8 +125,7 @@
     0%   { transform: translate(0, 0); }
     100% { transform: translate(-100%, 0); }
   }
-  
-  .layout-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 32px; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; align-items: start; align-content: start; }
+  .layout-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 32px; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; align-content: start; }
   @media (max-width: 960px) { .layout-grid { grid-template-columns: 1fr; } }
   @media (max-width: 768px) {
     .top-bar { flex-direction: column; gap: 16px; text-align: center; padding: 20px 15px; }
@@ -171,22 +170,22 @@
   .modal-input { width: 100%; padding: 12px; margin: 10px 0 20px; background: #1B2340; border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 5px; box-sizing: border-box; }
   .modal-btn { width: 100%; padding: 12px; background: var(--grad-brand); border: none; color: black; font-weight: bold; border-radius: 5px; cursor: pointer; }
 
-      /* Desktop/Mobile Smart Switch for Fixtures */
+    /* Desktop/Mobile Smart Switch for Fixtures */
   .side-panel {
     display: flex;
     flex-direction: column;
+    height: 100%; /* Forces the panel to match the League Table height */
   }
   .fixture-scroll-box {
     overflow-y: auto;
     padding-right: 5px;
-    max-height: 550px; /* Desktop Fix: Locks the height to match the League Table and forces the scrollbar */
+    flex: 1; /* Automatically expands the scroll area to fill the empty space */
   }
   @media (max-width: 960px) {
     .fixture-scroll-box {
-      max-height: 240px; /* Mobile Fix: Shrinks it even smaller for phone screens */
+      max-height: 300px; /* Keeps it compact on mobile phones */
     }
   }
-
   
 </style>
 </head>
