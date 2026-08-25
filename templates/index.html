@@ -405,21 +405,21 @@
 
       {% if completed_matches %}
         {% for match in completed_matches %}
-        <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05);">
+        <div style="background: rgba(255,255,255,0.05); padding: 12px 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); gap: 10px;">
           
           <!-- Player A -->
-          <div style="flex: 1; text-align: right; font-weight: 600; color: var(--text-hi); font-size: 0.95rem;">
-            {{ match.player_a.name }} <span style="font-size: 1.1rem;">{{ match.player_a.emblem }}</span>
+          <div style="flex: 1; text-align: right; font-weight: 600; color: var(--text-hi); font-size: 0.9rem; word-break: break-word; line-height: 1.3;">
+            {{ match.player_a.name }} <span style="font-size: 1.1rem; vertical-align: middle;">{{ match.player_a.emblem }}</span>
           </div>
           
-          <!-- Score -->
-          <div style="padding: 0 20px; font-size: 1.3rem; font-weight: 900; color: #00E5FF; text-shadow: 0 0 5px rgba(0,229,255,0.3);">
+          <!-- Score (FIXED FOR MOBILE) -->
+          <div style="font-size: 1.25rem; font-weight: 900; color: #00E5FF; text-shadow: 0 0 5px rgba(0,229,255,0.3); white-space: nowrap; text-align: center; min-width: 65px; background: rgba(0,0,0,0.25); padding: 4px 10px; border-radius: 6px;">
             {{ match.score_a }} - {{ match.score_b }}
           </div>
           
           <!-- Player B -->
-          <div style="flex: 1; text-align: left; font-weight: 600; color: var(--text-hi); font-size: 0.95rem;">
-            <span style="font-size: 1.1rem;">{{ match.player_b.emblem }}</span> {{ match.player_b.name }}
+          <div style="flex: 1; text-align: left; font-weight: 600; color: var(--text-hi); font-size: 0.9rem; word-break: break-word; line-height: 1.3;">
+            <span style="font-size: 1.1rem; vertical-align: middle;">{{ match.player_b.emblem }}</span> {{ match.player_b.name }}
           </div>
           
         </div>
@@ -428,8 +428,7 @@
         <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 8px; text-align: center; border: 1px dashed rgba(255,255,255,0.1);">
            <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem; margin: 0;">No matches have been completed yet.<br>The pitch is waiting!</p>
         </div>
-      {% endif %}
-      
+      {% endif %} 
       </div>
     </div> 
   </div>
@@ -462,7 +461,7 @@
         <!-- SUBMISSIONS -->
         <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
           <summary style="color: var(--magenta); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
-            📸 Match Submissions & Deadlines
+            Match Submissions & Deadlines
           </summary>
           <div style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
             <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6; margin-bottom: 10px;">
@@ -478,7 +477,7 @@
         <!-- DISCONNECTS -->
         <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
           <summary style="color: var(--gold); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
-            ⚠️ Network Disconnects
+            Network Disconnects
           </summary>
           <div style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
             <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6;">
@@ -492,7 +491,7 @@
         <!-- PENALTIES -->
         <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border-left: 3px solid var(--red); border-top: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);">
           <summary style="color: var(--red); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
-            🚨 Penalties & Eliminations
+            Penalties & Eliminations
           </summary>
           <div style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
             <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6;">
