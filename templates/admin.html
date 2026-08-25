@@ -215,16 +215,44 @@
     </div>
   </div>
 
-  <!-- Search Logic -->
+    <!-- Search Logic -->
   <script>
     function filterAdminFixtures() {
       let filter = document.getElementById('adminFixtureSearch').value.toLowerCase();
       let cards = document.querySelectorAll('.admin-fixture-card');
+      let visibleCount = 0;
       
       cards.forEach(card => {
-        let text = card.textContent.toLowerCase();
-        // Hide matches that don't include the searched name. We use 'flex' instead of '' because of the user-row class.
-        card.style.display = text.includes(filter) ? 'flex' : 'none';
+        // card.firstElementChild targets ONLY the player names, ignoring the button text!
+        let namesRow = card.firstElementChild;
+        let text = namesRow.textContent.toLowerCase();
+        
+        if (filter !== '' && text.includes(filter)) {
+          card.style.display = 'flex';
+          visibleCount++;
+          
+          // Create or update a dynamic badge showing their match schedule order
+          let badge = card.querySelector('.match-order-badge');
+          if (!badge) {
+              badge = document.createElement('div');
+              badge.className = 'match-order-badge';
+              badge.style.cssText = 'background: rgba(0, 229, 255, 0.15); color: #00E5FF; font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-bottom: 5px; text-align: center; text-transform: uppercase; border: 1px solid rgba(0, 229, 255, 0.3);';
+              card.insertBefore(badge, namesRow);
+          }
+          
+          // The very first visible match is their immediate next fixture
+          badge.innerText = visibleCount === 1 ? "🔥 Current / Next Match" : "Match Sequence: " + visibleCount;
+          badge.style.display = 'block';
+          
+        } else if (filter === '') {
+          // If the search bar is empty, show everything and hide the badges
+          card.style.display = 'flex';
+          let badge = card.querySelector('.match-order-badge');
+          if (badge) badge.style.display = 'none';
+        } else {
+          // Hide matches that don't belong to the searched player
+          card.style.display = 'none';
+        }
       });
     }
   </script>
