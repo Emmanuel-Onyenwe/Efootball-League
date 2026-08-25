@@ -163,10 +163,27 @@
     <div style="max-height: 400px; overflow-y: auto; padding-right: 8px;">
       {% if all_pending_fixtures %}
         {% for match in all_pending_fixtures %}
-        <div class="admin-fixture-card user-row" style="display: flex; justify-content: space-between; border-left: 3px solid var(--violet);">
-          <span style="font-weight: bold; color: var(--text-hi);">{{ match.player_a.name }}</span>
-          <span style="color: var(--text-low); font-size: 0.8rem;">VS</span>
-          <span style="font-weight: bold; color: var(--text-hi);">{{ match.player_b.name }}</span>
+        <div class="admin-fixture-card user-row" style="display: flex; flex-direction: column; gap: 10px; border-left: 3px solid var(--violet);">
+          
+          <!-- Player Names -->
+          <div style="display: flex; justify-content: space-between; width: 100%;">
+            <span style="font-weight: bold; color: var(--text-hi);">{{ match.player_a.name }}</span>
+            <span style="color: var(--text-low); font-size: 0.8rem;">VS</span>
+            <span style="font-weight: bold; color: var(--text-hi);">{{ match.player_b.name }}</span>
+          </div>
+          
+          <!-- HEAD ADMIN ONLY: Override Controls -->
+          {% if current_user.id == 1 %}
+          <form action="{{ url_for('admin_override') }}" method="POST" style="display: flex; justify-content: center; gap: 8px; width: 100%; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px;">
+            <input type="hidden" name="match_id" value="{{ match.id }}">
+            <button type="submit" name="action" value="walkover_home" class="btn" style="background: #00E5FF; color: black; font-size: 0.65rem; padding: 5px 8px;" onclick="return confirm('Give {{ match.player_a.name }} a 3-0 win?');">3-0 Home</button>
+            
+            <button type="submit" name="action" value="void" class="btn btn-red" style="font-size: 0.65rem; padding: 5px 8px;" onclick="return confirm('DANGER: VOID this match? Neither player gets points.');">VOID</button>
+            
+            <button type="submit" name="action" value="walkover_away" class="btn" style="background: #00E5FF; color: black; font-size: 0.65rem; padding: 5px 8px;" onclick="return confirm('Give {{ match.player_b.name }} a 3-0 win?');">3-0 Away</button>
+          </form>
+          {% endif %}
+
         </div>
         {% endfor %}
       {% else %}
