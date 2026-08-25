@@ -487,6 +487,49 @@ def reset_league():
     db.session.commit()
     flash("League has been completely wiped and reset for a fresh season!", "success")
     return redirect(url_for('admin'))
+
+# --- 1. THE STRIKE SYSTEM ---
+@app.route('/panic-hq/add_strike/<int:user_id>', methods=['POST'])
+@login_required
+def add_strike(user_id):
+    if current_user.role == 'admin':
+        user = User.query.get_or_404(user_id)
+        user.strikes += 1
+        db.session.commit()
+        flash(f"Strike added to {user.name}. Total strikes: {user.strikes}", "error")
+    return redirect(url_for('admin'))
+
+# --- 2. HEAD ADMIN GOD-MODE OVERRIDE ---
+@app.route('/panic-hq/admin_override', methods=['POST'])
+@login_required
+def admin_override():
+    # SECURITY: Only Head Admin (ID 1) can access this route
+    if current_user.id != 1:
+        flash("Access Denied: Head Admin Only", "error")
+        return redirect(url_for('admin'))
+
+    match_id = request.form.get('match_id')
+    action = request.form.get('action')
+    
+    match = Match.query.get_or_404(match_id)
+    
+    if action == 'void':
+        db.session.delete(match)
+        flash("Match successfully voided.", "success")
+    elif action == 'walkover_home':
+        match.score_a = 3
+        match.score_b = 0
+        match.status = 'approved'
+        flash(f"Walkover awarded: {match.player_a.name} wins 3-0.", "success")
+    elif action == 'walkover_away':
+        match.score_a = 0
+        match.score_b = 3
+        match.status = 'approved'
+        flash(f"Walkover awarded: {match.player_b.name} wins 3-0.", "success")
+        
+    db.session.commit()
+    update_standings()
+    return redirect(url_for('admin'))
     
 # --- SECRET RESCUE ROUTE ---
 @app.route('/panic-hq/rescue')
