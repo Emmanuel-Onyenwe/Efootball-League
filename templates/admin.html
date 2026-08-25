@@ -215,7 +215,7 @@
     </div>
   </div>
 
-    <!-- Search Logic -->
+      <!-- Search Logic -->
   <script>
     function filterAdminFixtures() {
       let filter = document.getElementById('adminFixtureSearch').value.toLowerCase();
@@ -223,34 +223,32 @@
       let visibleCount = 0;
       
       cards.forEach(card => {
-        // card.firstElementChild targets ONLY the player names, ignoring the button text!
-        let namesRow = card.firstElementChild;
-        let text = namesRow.textContent.toLowerCase();
+        // FIX: Specifically target the div that has the player names, ignoring the dynamic badges
+        let namesRow = card.querySelector('div[style*="justify-content: space-between"]');
+        let text = namesRow ? namesRow.textContent.toLowerCase() : card.textContent.toLowerCase();
         
         if (filter !== '' && text.includes(filter)) {
           card.style.display = 'flex';
           visibleCount++;
           
-          // Create or update a dynamic badge showing their match schedule order
+          // Create or update the dynamic badge
           let badge = card.querySelector('.match-order-badge');
           if (!badge) {
               badge = document.createElement('div');
               badge.className = 'match-order-badge';
               badge.style.cssText = 'background: rgba(0, 229, 255, 0.15); color: #00E5FF; font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-bottom: 5px; text-align: center; text-transform: uppercase; border: 1px solid rgba(0, 229, 255, 0.3);';
-              card.insertBefore(badge, namesRow);
+              card.prepend(badge); // Adds the badge to the very top safely
           }
           
-          // The very first visible match is their immediate next fixture
           badge.innerText = visibleCount === 1 ? "🔥 Current / Next Match" : "Match Sequence: " + visibleCount;
           badge.style.display = 'block';
           
         } else if (filter === '') {
-          // If the search bar is empty, show everything and hide the badges
+          // Reset when search is empty
           card.style.display = 'flex';
           let badge = card.querySelector('.match-order-badge');
           if (badge) badge.style.display = 'none';
         } else {
-          // Hide matches that don't belong to the searched player
           card.style.display = 'none';
         }
       });
