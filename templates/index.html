@@ -434,55 +434,79 @@
     </div> 
   </div>
 
-    <!-- LEAGUE BRIEFING & RULES SECTION -->
+        <!-- LEAGUE BRIEFING & RULES SECTION -->
     <section class="panel" style="grid-column: 1 / -1; margin-top: 10px;">
       <div class="panel-header">
         <h2>League Briefing & Rules</h2>
-        <p>Everything you need to know about how the Panic Keh eFootball League operates.</p>
+        <p>Everything you need to know about how the Panic Keh eFootball League operates. Tap any section to read the details.</p>
       </div>
-      <div style="padding: 20px; display: flex; flex-direction: column; gap: 24px;">
-        <div>
-          <h3 style="color: var(--cyan); font-family: var(--font-heading); text-transform: uppercase; margin-bottom: 12px; font-size: 1.1rem;">Table Glossary</h3>
-          <ul style="list-style: none; color: var(--text-mid); font-size: 0.9rem; line-height: 1.8;">
-            <li><strong style="color: white;">P (Played):</strong> Total matches completed.</li>
-            <li><strong style="color: white;">W, D, L:</strong> Matches Won (3 pts), Drawn (1 pt), and Lost (0 pts).</li>
-            <li><strong style="color: white;">GF (Goals For):</strong> Total number of goals scored by a player.</li>
-            <li><strong style="color: white;">GD (Goal Difference):</strong> Total goals scored minus total goals conceded. Used as the first tiebreaker.</li>
-            <li><strong style="color: white;">Pts (Points):</strong> Total league points earned.</li>
-            <li><strong style="color: white;">PPG (Points Per Game):</strong> Your Total Points divided by your Matches Played. <em>This is the ultimate equalizer! If you play fewer games because an opponent was eliminated, PPG ensures your rank is perfectly balanced and fair.</em></li>
-          </ul>
-        </div>
-                <div>
-          <h3 style="color: var(--magenta); font-family: var(--font-heading); text-transform: uppercase; margin-bottom: 12px; font-size: 1.1rem;">Match Submissions & Deadlines</h3>
-          <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6; margin-bottom: 10px;">
-            <strong>Step 1:</strong> The <strong>WINNER</strong> must post the final score screenshot in the WhatsApp group and tag the opponent to confirm (If a draw, the <strong>HOME</strong> player posts).<br>
-            <strong>Step 2:</strong> Once confirmed, that same player logs in and submits the result via the <strong>Submit Result</strong> tab.
-          </p>
-          <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6;">
-            Active players are free to play ahead. You have strictly <strong>24 hours</strong> to clear your pending fixture.
-          </p>
-        </div>
+      <div style="padding: 20px; display: flex; flex-direction: column; gap: 15px;">
         
-        <div>
-          <h3 style="color: var(--gold); font-family: var(--font-heading); text-transform: uppercase; margin-bottom: 12px; font-size: 1.1rem;">Network Disconnects</h3>
-          <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6;">
-            If the network drops, state the score and half in WhatsApp immediately. We do NOT restart 0-0.<br>
-            • <strong>Before 75th Min:</strong> Start a new match, play <strong>ONE HALF (45 mins)</strong>, quit, and add the new goals to the original score.<br>
-            • <strong>75th Min or Later:</strong> If leading by 2+ goals, the match is over (Leader takes 3 pts). If leading by 1 goal or tied, play <strong>ONE HALF (45 mins)</strong> to settle it.
-          </p>
-        </div>
+        <!-- GLOSSARY -->
+        <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+          <summary style="color: var(--cyan); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
+            📘 Table Glossary
+          </summary>
+          <div style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
+            <ul style="list-style: none; color: var(--text-mid); font-size: 0.9rem; line-height: 1.8;">
+              <li><strong style="color: white;">P (Played):</strong> Total matches completed.</li>
+              <li><strong style="color: white;">W, D, L:</strong> Matches Won (3 pts), Drawn (1 pt), and Lost (0 pts).</li>
+              <li><strong style="color: white;">GF (Goals For):</strong> Total number of goals scored by a player.</li>
+              <li><strong style="color: white;">GD (Goal Difference):</strong> Total goals scored minus total goals conceded. Used as the first tiebreaker.</li>
+              <li><strong style="color: white;">Pts (Points):</strong> Total league points earned.</li>
+              <li><strong style="color: white;">PPG (Points Per Game):</strong> Your Total Points divided by your Matches Played. <em>This is the ultimate equalizer! If you play fewer games because an opponent was eliminated, PPG ensures your rank is perfectly balanced and fair.</em></li>
+            </ul>
+          </div>
+        </details>
 
-        <div style="background: var(--bg-panel-alt); padding: 16px; border-radius: 8px; border-left: 3px solid var(--red);">
-          <h3 style="color: var(--red); font-family: var(--font-heading); text-transform: uppercase; margin-bottom: 12px; font-size: 1.1rem;">Penalties, Walkovers & Eliminations</h3>
-          <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6;">
-            <strong>Ghosting:</strong> Dodging matches results in <strong>1 Strike</strong> and a <strong>3-0 Walkover</strong> loss. If both players fail to make an effort within 24 hours, the match is <strong>VOIDED</strong> (0 points, 0 goals).
-          </p>
-          <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6; margin-top: 10px;">
-            <strong>Elimination:</strong> Hitting <strong>2 Strikes</strong> gets you eliminated. If you are scheduled to play an eliminated player, that match is erased from the schedule (a "Bye Week"). You are not punished for playing fewer games; the <strong>PPG</strong> system automatically balances the table fairly.
-          </p>
-        </div>
+        <!-- SUBMISSIONS -->
+        <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+          <summary style="color: var(--magenta); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
+            📸 Match Submissions & Deadlines
+          </summary>
+          <div style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
+            <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6; margin-bottom: 10px;">
+              <strong>Step 1:</strong> The <strong>WINNER</strong> must post the final score screenshot in the WhatsApp group and tag the opponent to confirm (If a draw, the <strong>HOME</strong> player posts).<br>
+              <strong>Step 2:</strong> Once confirmed, that same player logs in and submits the result via the <strong>Submit Result</strong> tab.
+            </p>
+            <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6;">
+              Active players are free to play ahead. You have strictly <strong>24 hours</strong> to clear your pending fixture.
+            </p>
+          </div>
+        </details>
+
+        <!-- DISCONNECTS -->
+        <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+          <summary style="color: var(--gold); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
+            ⚠️ Network Disconnects
+          </summary>
+          <div style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
+            <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6;">
+              If the network drops, state the score and half in WhatsApp immediately. We do NOT restart 0-0.<br><br>
+              • <strong>Before 75th Min:</strong> Start a new match, play <strong>ONE HALF (45 mins)</strong>, quit, and add the new goals to the original score.<br>
+              • <strong>75th Min or Later:</strong> If leading by 2+ goals, the match is over (Leader takes 3 pts). If leading by 1 goal or tied, play <strong>ONE HALF (45 mins)</strong> to settle it.
+            </p>
+          </div>
+        </details>
+
+        <!-- PENALTIES -->
+        <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border-left: 3px solid var(--red); border-top: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);">
+          <summary style="color: var(--red); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
+            🚨 Penalties & Eliminations
+          </summary>
+          <div style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
+            <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6;">
+              <strong>Ghosting:</strong> Dodging matches results in <strong>1 Strike</strong> and a <strong>3-0 Walkover</strong> loss. If both players fail to make an effort within 24 hours, the match is <strong>VOIDED</strong> (0 points, 0 goals).
+            </p>
+            <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6; margin-top: 10px;">
+              <strong>Elimination:</strong> Hitting <strong>2 Strikes</strong> gets you eliminated. If you are scheduled to play an eliminated player, that match is erased from the schedule (a "Bye Week"). You are not punished for playing fewer games; the <strong>PPG</strong> system automatically balances the table fairly.
+            </p>
+          </div>
+        </details>
+
       </div>
     </section>
+
   </main>
 
   <footer class="site-footer">
