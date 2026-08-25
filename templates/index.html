@@ -378,13 +378,14 @@
         <h2>Upcoming Fixtures</h2>
         <p>{{ fixtures|length }} pending matches</p>
       </div>
-        <div class="fixture-list fixture-scroll-box">
+              <div class="fixture-list fixture-scroll-box">
         {% for match in fixtures %}
         <div class="fixture-card">
-          <div class="fixture-teams">
-            <span>{{ match.player_a.name }}</span>
-            <span class="fixture-vs">VS</span>
-            <span>{{ match.player_b.name }}</span>
+          <!-- UPDATED: Uses a 3-column grid to lock the VS perfectly in the middle -->
+          <div class="fixture-teams" style="display: grid; grid-template-columns: 1fr 40px 1fr; align-items: center; gap: 5px;">
+            <span style="text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem;">{{ match.player_a.name }}</span>
+            <span class="fixture-vs" style="text-align: center;">VS</span>
+            <span style="text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem;">{{ match.player_b.name }}</span>
           </div>
         </div>
         {% else %}
@@ -444,7 +445,7 @@
         <!-- GLOSSARY -->
         <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
           <summary style="color: var(--cyan); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
-            📘 Table Glossary
+            Table Glossary
           </summary>
           <div style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
             <ul style="list-style: none; color: var(--text-mid); font-size: 0.9rem; line-height: 1.8;">
