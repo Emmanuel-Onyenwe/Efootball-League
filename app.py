@@ -72,37 +72,17 @@ class User(db.Model, UserMixin):
 
 class Match(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    player_a_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    player_b_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    score_a = db.Column(db.Integer, nullable=True)
-    score_b = db.Column(db.Integer, nullable=True)
+    player_a_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    player_b_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    score_a = db.Column(db.Integer, default=0)
+    score_b = db.Column(db.Integer, default=0)
     screenshot_path = db.Column(db.String(500), nullable=True) 
     deadline = db.Column(db.DateTime, nullable=True)
     status = db.Column(db.String(20), default='pending') 
+    matchday = db.Column(db.Integer, default=0)
+    
     player_a = db.relationship('User', foreign_keys=[player_a_id])
     player_b = db.relationship('User', foreign_keys=[player_b_id])
-
-class Match(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    player_a_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
-    player_b_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
-    score_a = db.Column(db.Integer, default=0)
-    score_b = db.Column(db.Integer, default=0)
-    status = db.Column(db.String(20), default='pending')
-    matchday = db.Column(db.Integer, default=0) # ADD THIS EXACT LINE
-
-class Match(db.Model):
-    __table_args__ = {'extend_existing': True} # ADD THIS EXACT LINE
-    
-    id = db.Column(db.Integer, primary_key=True)
-    player_a_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
-    player_b_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
-    score_a = db.Column(db.Integer, default=0)
-    score_b = db.Column(db.Integer, default=0)
-    status = db.Column(db.String(20), default='pending')
-    matchday = db.Column(db.Integer, default=0) 
-    
-    
 
 @login_manager.user_loader
 def load_user(user_id):
