@@ -612,14 +612,15 @@ with app.app_context():
         db.session.rollback()
 
     try:
-        db.session.execute(text('ALTER TABLE match ADD COLUMN matchday INTEGER DEFAULT 0'))
+        # Added quotes around "match"
+        db.session.execute(text('ALTER TABLE "match" ADD COLUMN matchday INTEGER DEFAULT 0'))
         db.session.commit()
     except Exception:
         db.session.rollback()
         
     try:
-        # Patch Match table for reminders
-        db.session.execute(text('ALTER TABLE match ADD COLUMN reminder_sent BOOLEAN DEFAULT FALSE'))
+        # Added quotes around "match"
+        db.session.execute(text('ALTER TABLE "match" ADD COLUMN reminder_sent BOOLEAN DEFAULT FALSE'))
         db.session.commit()
     except Exception:
         db.session.rollback()
