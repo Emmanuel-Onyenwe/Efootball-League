@@ -651,3 +651,81 @@ with app.app_context():
     except Exception as e:
         # If it fails, it means the column already exists, so we just rollback and continue safely.
         db.session.rollback()
+@app.route('/rebuild-matchdays')
+def rebuild_matchdays():
+    from sqlalchemy import text
+    
+    # 1. Safely inject the new Matchday column into the live database
+    try:
+        db.session.execute(text('ALTER TABLE match ADD COLUMN matchday INTEGER DEFAULT 0'))
+        db.session.commit()
+    except Exception:
+        db.session.rollback() # Ignores error if column already exists
+        
+    players = Player.query.all()
+    player_ids = [p.id for p in players]
+    n = len(player_ids)
+    
+    # 2. Log completed matches so we don't accidentally erase them
+    completed_matches = Match.query.filter_by(status='completed').all()
+    completed_tracker = {}
+    for m in completed_matches:
+        pair = tuple(sorted([m.player_a_id, m.player_b_id]))
+        completed_tracker[pair] = completed_tracker.get(pair, 0) + 1
+        
+    # 3. Wipe all the chaotic pending matches
+    Match.query.filter_by(status='pending').delete()
+    db.session.commit()
+    
+    # 4. The Circle Method: Generate perfect Matchdays 1 through 18
+    fixed_player = player_ids[0]
+    rotating_players = player_ids[1:]
+    
+    # LEG 1 (Matchdays 1 to 9)
+    for round_num in range(n - 1):
+        matchday = round_num + 1
+        
+        home = fixed_player
+        away = rotating_players[-1]
+        pair = tuple(sorted([home, away]))
+        if completed_tracker.get(pair, 0) > 0:
+            completed_tracker[pair] -= 1
+        else:
+            db.session.add(Match(player_a_id=home, player_b_id=away, status='pending', matchday=matchday))
+            
+        for i in range((n // 2) - 1):
+            home = rotating_players[i]
+            away = rotating_players[-(i + 2)]
+            pair = tuple(sorted([home, away]))
+            if completed_tracker.get(pair, 0) > 0:
+                completed_tracker[pair] -= 1
+            else:
+                db.session.add(Match(player_a_id=home, player_b_id=away, status='pending', matchday=matchday))
+                
+        rotating_players.insert(0, rotating_players.pop()) # Rotate players
+        
+    # LEG 2 (Matchdays 10 to 18)
+    for round_num in range(n - 1):
+        matchday = round_num + n
+        home = rotating_players[-1] 
+        away = fixed_player         
+        pair = tuple(sorted([home, away]))
+        if completed_tracker.get(pair, 0) > 0:
+            completed_tracker[pair] -= 1
+        else:
+            db.session.add(Match(player_a_id=home, player_b_id=away, status='pending', matchday=matchday))
+            
+        for i in range((n // 2) - 1):
+            home = rotating_players[-(i + 2)] 
+            away = rotating_players[i]        
+            pair = tuple(sorted([home, away]))
+            if completed_tracker.get(pair, 0) > 0:
+                completed_tracker[pair] -= 1
+            else:
+                db.session.add(Match(player_a_id=home, player_b_id=away, status='pending', matchday=matchday))
+                
+        rotating_players.insert(0, rotating_players.pop())
+        
+    db.session.commit()
+    return "SUCCESS: Database upgraded! The schedule is now perfectly locked into Matchdays. Go back to the homepage."
+    
