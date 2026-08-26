@@ -381,7 +381,7 @@ def generate_fixtures():
     matches_created = 0
 
     for matchday_index, round_matches in enumerate(schedule, start=1):
-        # Matchday 1 expires tonight. Matchday 2 expires tomorrow night, etc.
+        # Matchday 1 expires tonight, Matchday 2 expires tomorrow night, etc.
         matchday_deadline = end_of_today + timedelta(days=(matchday_index - 1))
         
         for home_id, away_id in round_matches:
@@ -390,7 +390,7 @@ def generate_fixtures():
                 db.session.add(Match(
                     player_a_id=home_id,
                     player_b_id=away_id,
-                    deadline=matchday_deadline, # Uses the new strict midnight deadline
+                    deadline=matchday_deadline,
                     matchday=matchday_index,
                     status='pending'
                 ))
@@ -408,7 +408,7 @@ def generate_fixtures():
                 
     flash(f"Generated {matches_created} new fixtures successfully! Players have been notified via email.", "success")
     return redirect(url_for('admin'))
-
+    
 @app.route('/panic-hq/approve/<int:match_id>', methods=['POST'])
 @login_required
 def approve_match(match_id):
