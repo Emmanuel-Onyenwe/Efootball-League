@@ -636,13 +636,19 @@ def reject_player(user_id):
 # --- AUTO-PATCH DATABASE ON STARTUP ---
 with app.app_context():
     try:
-        # PostgreSQL uses FALSE instead of 0
+        # Patch User table
         db.session.execute(text('ALTER TABLE "user" ADD COLUMN name_changed BOOLEAN DEFAULT FALSE'))
         db.session.commit()
-        print("Successfully added name_changed column to database!")
-    except Exception as e:
-        # If it fails, it means the column already exists, so we just rollback and continue safely.
+    except Exception:
         db.session.rollback()
+
+    try:
+        # Patch Match table
+        db.session.execute(text('ALTER TABLE match ADD COLUMN matchday INTEGER DEFAULT 0'))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
 @app.route('/rebuild-matchdays')
 def rebuild_matchdays():
     from sqlalchemy import text
