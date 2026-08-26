@@ -693,6 +693,31 @@ def sync_matchdays():
     flash(f"Matchdays synced: {updated} existing matches corrected, {created} missing fixtures created. No matches were deleted.", "success")
     return redirect(url_for('admin'))
 
+@app.route('/panic-hq/purge')
+@login_required
+def purge_everything():
+    # Only the Admin can push the red button
+    if current_user.role != 'admin':
+        return "Access Denied", 403
+        
+    try:
+        # Step 1: Wipe all matches to prevent database errors (Foreign Key constraints)
+        Match.query.delete()
+        
+        # Step 2: Delete every user EXCEPT your admin account
+        users_to_purge = User.query.filter(User.id != current_user.id).all()
+        for u in users_to_purge:
+            db.session.delete(u)
+            
+        db.session.commit()
+        flash("Purge complete: All players and fixtures have been permanently deleted.", "success")
+        return redirect(url_for('admin'))
+        
+    except Exception as e:
+        db.session.rollback()
+        return f"Purge failed: {e}", 500
+        
+
 # --- CRON ROUTE: DEADLINE REMINDERS (BACKGROUND THREAD FIX) ---
 @app.route('/api/cron/deadline-reminders')
 def cron_deadline_reminders():
@@ -750,3 +775,5 @@ def cron_deadline_reminders():
 
     # Instantly reply to UptimeRobot so it stays GREEN
     return f"Cron Triggered: Processing {len(match_ids)} fixtures in the background.", 200
+
+
