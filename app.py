@@ -90,6 +90,18 @@ class Match(db.Model):
     score_b = db.Column(db.Integer, default=0)
     status = db.Column(db.String(20), default='pending')
     matchday = db.Column(db.Integer, default=0) # ADD THIS EXACT LINE
+
+class Match(db.Model):
+    __table_args__ = {'extend_existing': True} # ADD THIS EXACT LINE
+    
+    id = db.Column(db.Integer, primary_key=True)
+    player_a_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
+    player_b_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
+    score_a = db.Column(db.Integer, default=0)
+    score_b = db.Column(db.Integer, default=0)
+    status = db.Column(db.String(20), default='pending')
+    matchday = db.Column(db.Integer, default=0) 
+    
     
 
 @login_manager.user_loader
