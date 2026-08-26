@@ -98,7 +98,64 @@ def send_async_email(app, msg):
 def send_email(to, subject, template):
     msg = Message(subject, recipients=[to], html=template)
     Thread(target=send_async_email, args=(app, msg)).start()
-    
+
+# --- ROUND-ROBIN SCHEDULING (Circle / Berger method) ---
+def generate_round_robin_schedule(player_ids):
+    """
+    Builds a proper double round-robin schedule for an EVEN number of players.
+
+    Returns a list of rounds (index 0 == Matchday 1, index 1 == Matchday 2, ...).
+    Each round is a list of (home_id, away_id) tuples.
+
+    Guarantees, by construction:
+      - Every player appears in EXACTLY ONE match per round (a "matchday").
+      - Every unordered pair meets exactly twice across the full schedule:
+        once in Leg 1 (rounds 1..n-1) and once in Leg 2 (rounds n..2n-2), with
+        home/away reversed for the return leg.
+    This is what makes "the person at the top of your list" symmetric: within
+    any given matchday, a match is the ONE match both of its players have
+    scheduled for that round.
+    """
+    players = list(player_ids)
+    n = len(players)
+    if n < 2:
+        return []
+    if n % 2 != 0:
+        raise ValueError("Round-robin scheduling requires an even number of players.")
+
+    fixed = players[0]
+    rotating = players[1:]
+    leg1_rounds = []
+
+    for r in range(n - 1):
+        round_matches = []
+
+        home, away = (fixed, rotating[-1]) if r % 2 == 0 else (rotating[-1], fixed)
+        round_matches.append((home, away))
+
+        for i in range((n // 2) - 1):
+            p1, p2 = rotating[i], rotating[-(i + 2)]
+            home, away = (p1, p2) if i % 2 == 0 else (p2, p1)
+            round_matches.append((home, away))
+
+        leg1_rounds.append(round_matches)
+        rotating.insert(0, rotating.pop())
+
+    leg2_rounds = [[(away, home) for (home, away) in rnd] for rnd in leg1_rounds]
+    return leg1_rounds + leg2_rounds
+
+
+def get_pending_fixtures_sorted():
+    """
+    Single source of truth for 'Upcoming Fixtures' ordering.
+    Sorting purely by (matchday, id) is enough for symmetry BECAUSE matchday
+    numbers now come from generate_round_robin_schedule() / sync_matchdays(),
+    which guarantee one match per player per round. No more ad-hoc
+    'interleaving' needed at request time.
+    """
+    return Match.query.filter_by(status='pending').order_by(Match.matchday, Match.id).all()
+
+
 # --- AUTHENTICATION ROUTES ---
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -108,6 +165,296 @@ def register():
         password = request.form.get('password')
         emblem = request.form.get('emblem', '🛡️')
         
+        if User.query.filter_by(email=email).first() or User.query.filter_by(name=gamertag).first():
+            flash("Email or Gamertag already taken.", "error")
+            return redirect(url_for('index', show='register'))
+            
+        hashed_pw = generate_password_hash(password)
+        is_first_user = User.query.count() == 0
+        role = 'admin' if is_first_user else 'player'
+        
+        new_user = User(name=gamertag, email=email, password_hash=hashed_pw, role=role, in_league=is_first_user, is_verified=True, emblem=emblem)
+        db.session.add(new_user)
+        db.session.commit()
+
+        if is_first_user:
+            flash("Admin account created!", "success")
+        else:
+            # --- NEW: Silently notify the Admin ---
+            try:
+                admin_user = User.query.filter_by(role='admin').first()
+                if admin_user:
+                    admin_msg = f"<h3>New Player Alert!</h3><p><b>{gamertag}</b> ({email}) just registered for the league and is waiting in your control room.</p>"
+                    send_email(admin_user.email, f"New Registration: {gamertag}", admin_msg)
+            except Exception as e:
+                print(f"Admin notification failed: {e}")
+                
+            flash("Registration successful! An Admin must approve your account before you can log in.", "success")
+            
+        return redirect(url_for('index', show='login'))
+    return redirect(url_for('index', show='register'))
+
+
+@app.route('/verify_email/<token>')
+def verify_email(token):
+    try:
+        email = s.loads(token, salt='email-confirm', max_age=3600)
+        user = User.query.filter_by(email=email).first_or_404()
+        if user.is_verified:
+            flash("Account already verified. Please log in.", "success")
+        else:
+            user.is_verified = True
+            db.session.commit()
+            flash("Email verified successfully! An admin will review your entry soon.", "success")
+    except SignatureExpired:
+        flash("The verification link has expired. Please register again.", "error")
+    except BadTimeSignature:
+        flash("Invalid verification link.", "error")
+    return redirect(url_for('index', show='login'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        user = User.query.filter_by(email=email).first() 
+        
+        if user and check_password_hash(user.password_hash, password):
+            if not user.in_league:
+                flash("Your account is still waiting for Admin approval.", "error")
+                return redirect(url_for('index', show='login'))
+                
+            login_user(user)
+            # --- NEW: Trigger the special welcome category ---
+            flash(f"Welcome back, {user.name}! 🎮", "welcome")
+            
+            return redirect(url_for('index'))
+        else:
+            flash("Invalid email or password.", "error")
+            return redirect(url_for('index', show='login'))
+    return redirect(url_for('index', show='login'))
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        user = User.query.filter_by(email=email).first()
+        if user:
+            token = s.dumps(email, salt='password-reset')
+            link = url_for('reset_password', token=token, _external=True)
+            html_msg = f"<h3>Password Reset Request</h3><p>Click the link below to reset your Panic Keh password:</p><a href='{link}'>Reset Password</a><p>If you didn't request this, ignore this email.</p>"
+            send_email(email, "Reset Your Password", html_msg)
+        flash("If an account exists with that email, a reset link has been sent.", "success")
+        return redirect(url_for('login'))
+    return render_template('forgot.html') 
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    try:
+        email = s.loads(token, salt='password-reset', max_age=3600)
+    except:
+        flash("The reset link is invalid or has expired.", "error")
+        return redirect(url_for('login'))
+        
+    if request.method == 'POST':
+        password = request.form.get('password')
+        user = User.query.filter_by(email=email).first_or_404()
+        user.password_hash = generate_password_hash(password)
+        db.session.commit()
+        flash("Your password has been updated! You can now log in.", "success")
+        return redirect(url_for('login'))
+    return render_template('reset.html') 
+
+# --- CORE LOGIC (Standings) ---
+def update_standings():
+    users = User.query.filter_by(status='active', in_league=True).all()
+    for user in users:
+        matches_as_a = Match.query.filter_by(player_a_id=user.id, status='approved').all()
+        matches_as_b = Match.query.filter_by(player_b_id=user.id, status='approved').all()
+        user.played = len(matches_as_a) + len(matches_as_b)
+        user.won = user.drawn = user.lost = user.goals_for = user.goals_against = user.points = 0
+        for m in matches_as_a:
+            user.goals_for += m.score_a; user.goals_against += m.score_b
+            if m.score_a > m.score_b: user.won += 1; user.points += 3
+            elif m.score_a == m.score_b: user.drawn += 1; user.points += 1
+            else: user.lost += 1
+        for m in matches_as_b:
+            user.goals_for += m.score_b; user.goals_against += m.score_a
+            if m.score_b > m.score_a: user.won += 1; user.points += 3
+            elif m.score_b == m.score_a: user.drawn += 1; user.points += 1
+            else: user.lost += 1
+    db.session.commit()
+
+# --- PUBLIC ROUTES ---
+@app.route('/')
+def index():
+    update_standings()
+    users = User.query.filter_by(status='active', in_league=True).all()
+    
+    for u in users:
+        u.gd = u.goals_for - u.goals_against
+        u.ppg = round(u.points / u.played, 2) if u.played > 0 else 0.0
+
+    standings = sorted(users, key=lambda u: (u.ppg, u.gd), reverse=True)
+
+    # Single source of truth: sorted strictly by (matchday, id). Because
+    # matchday numbers come from a real Circle Method schedule (one match per
+    # player per round), this ordering is already globally consistent -
+    # no per-request "interleaving" reconstruction needed or wanted.
+    final_sorted_fixtures = get_pending_fixtures_sorted()
+
+    ticker_fixtures = final_sorted_fixtures
+
+    if current_user.is_authenticated:
+        # Each player's earliest entry here is their lowest-matchday pending
+        # match - the same Match row will be the earliest entry for BOTH
+        # player_a and player_b once they're both caught up to that round.
+        fixtures = [m for m in final_sorted_fixtures if m.player_a_id == current_user.id or m.player_b_id == current_user.id]
+    else:
+        fixtures = final_sorted_fixtures # Guests see the full 90, neatly sorted
+
+    completed_matches = Match.query.filter_by(status='approved').order_by(Match.id.desc()).all()
+    return render_template('index.html', standings=standings, fixtures=fixtures, completed_matches=completed_matches, ticker_fixtures=ticker_fixtures)
+
+@app.route('/submit', methods=['GET', 'POST'])
+@login_required
+def submit():
+    if request.method == 'POST':
+        match_id = request.form.get('match_id')
+        score_a = request.form.get('score_a')
+        score_b = request.form.get('score_b')
+        screenshot = request.files.get('screenshot')
+
+        match = Match.query.get(match_id)
+        if match and screenshot:
+            upload_result = cloudinary.uploader.upload(screenshot)
+            match.score_a = int(score_a)
+            match.score_b = int(score_b)
+            match.screenshot_path = upload_result['secure_url']
+            match.status = 'submitted'
+            db.session.commit()
+            flash("Result submitted and pending admin approval!", "success")
+            return redirect(url_for('index'))
+            
+    fixtures = Match.query.filter(
+        (Match.status == 'pending') & 
+        ((Match.player_a_id == current_user.id) | (Match.player_b_id == current_user.id))
+    ).all()
+    return render_template('submit.html', fixtures=fixtures)
+
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    if filename.startswith('http'):
+        return redirect(filename)
+    return "File not found", 404
+
+# --- ADMIN DASHBOARD ---
+@app.route('/panic-hq')
+@login_required
+def admin():
+    if current_user.role != 'admin':
+        flash("Access Denied: Admins only.", "error")
+        return redirect(url_for('index'))
+    
+    # Sorts the roster alphabetically by name
+    active_players = User.query.filter_by(status='active', in_league=True).order_by(User.name).all()
+    # Sorts the waiting room by who registered first
+    pending_players = User.query.filter_by(in_league=False).order_by(User.id).all()
+    pending_matches = Match.query.filter_by(status='submitted').all()
+
+    # Same single source of truth as index() - see get_pending_fixtures_sorted().
+    all_pending_fixtures = get_pending_fixtures_sorted()
+
+    return render_template('admin.html', active_players=active_players, pending_players=pending_players, pending_matches=pending_matches, all_pending_fixtures=all_pending_fixtures)
+
+@app.route('/panic-hq/approve_player/<int:user_id>', methods=['POST'])
+@login_required
+def approve_player(user_id):
+    if current_user.role == 'admin':
+        user = User.query.get_or_404(user_id)
+        user.in_league = True
+        db.session.commit()
+        
+        # --- NEW: Notify user of approval ---
+        try:
+            msg = f"<h3>You are in! 🎮</h3><p>Your registration for the Panic Keh League has been officially approved. You can now log in to the dashboard to check your stats and fixtures.</p>"
+            send_email(user.email, "Welcome to the League!", msg)
+        except Exception as e:
+            print(f"Approval email failed: {e}")
+            
+        flash(f"{user.name} added to the league roster!", "success")
+    return redirect(url_for('admin'))
+
+@app.route('/panic-hq/promote/<int:user_id>', methods=['POST'])
+@login_required
+def promote_player(user_id):
+    if current_user.role == 'admin':
+        user = User.query.get_or_404(user_id)
+        user.role = 'admin'
+        db.session.commit()
+        flash(f"{user.name} is now a Co-Admin!", "success")
+    return redirect(url_for('admin'))
+
+@app.route('/panic-hq/generate_fixtures', methods=['POST'])
+@login_required
+def generate_fixtures():
+    if current_user.role != 'admin': return redirect(url_for('index'))
+    users = User.query.filter_by(status='active', in_league=True).order_by(User.id).all()
+    if len(users) < 2:
+        flash("Need at least 2 approved players to generate fixtures.", "error")
+        return redirect(url_for('admin'))
+    if len(users) % 2 != 0:
+        flash("The Circle Method schedule needs an EVEN number of active players. Approve/remove a player first.", "error")
+        return redirect(url_for('admin'))
+
+    # Proper Circle Method schedule: every matchday, every player has exactly
+    # one match. This is what generate_round_robin_schedule() guarantees, and
+    # it's what makes "top of your fixture list" the same match for both
+    # players in it, instead of a random flat pairing order.
+    user_ids = [u.id for u in users]
+    schedule = generate_round_robin_schedule(user_ids)
+    base_deadline = datetime.now() + timedelta(days=7)
+    matches_created = 0
+
+    for matchday_index, round_matches in enumerate(schedule, start=1):
+        for home_id, away_id in round_matches:
+            existing_match = Match.query.filter_by(player_a_id=home_id, player_b_id=away_id).first()
+            if not existing_match:
+                db.session.add(Match(
+                    player_a_id=home_id,
+                    player_b_id=away_id,
+                    deadline=base_deadline,
+                    matchday=matchday_index,
+                    status='pending'
+                ))
+                matches_created += 1
+
+    db.session.commit()
+    
+    # --- NEW: Notify all active players about the new fixtures ---
+    if matches_created > 0:
+        for u in users:
+            try:
+                msg = f"<h3>Matchday Alert!</h3><p>New fixtures have just been generated for the Panic Keh League. Log in to check your opponent and coordinate your match!</p>"
+                send_email(u.email, "New League Fixtures Generated!", msg)
+            except Exception as e:
+                print(f"Failed to email {u.email}: {e}")
+                
+    flash(f"Generated {matches_created} new fixtures successfully! Players have been notified via email.", "success")
+    return redirect(url_for('admin'))
+
+@app.route('/panic-hq/approve/<int:match_id>', methods=['POST'])
+@login_required
+def approve_match(match_id):
+    if current_user.role == 'admin':
+        match = Match.query.get_or_404(match_id)
+        match.status = 'approved        
         if User.query.filter_by(email=email).first() or User.query.filter_by(name=gamertag).first():
             flash("Email or Gamertag already taken.", "error")
             return redirect(url_for('index', show='register'))
