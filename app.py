@@ -660,15 +660,23 @@ def sync_matchdays():
 
     updated = 0
     created = 0
-    base_deadline = datetime.now() + timedelta(days=7)
+    
+    now = datetime.now()
+    end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=0)
 
     for pair, matchdays in pair_matchdays.items():
         existing = matches_by_pair.get(pair, [])
         for leg_index, matchday in enumerate(matchdays):
+            
+            # The exact midnight deadline for this specific matchday
+            matchday_deadline = end_of_today + timedelta(days=(matchday - 1))
+            
             if leg_index < len(existing):
                 m = existing[leg_index]
-                if m.matchday != matchday:
+                # Force update both the matchday number AND the new midnight deadline
+                if m.matchday != matchday or m.deadline != matchday_deadline:
                     m.matchday = matchday
+                    m.deadline = matchday_deadline 
                     updated += 1
             else:
                 home_id, away_id = next(
@@ -676,14 +684,13 @@ def sync_matchdays():
                 )
                 db.session.add(Match(
                     player_a_id=home_id, player_b_id=away_id,
-                    deadline=base_deadline, status='pending', matchday=matchday
+                    deadline=matchday_deadline, status='pending', matchday=matchday
                 ))
                 created += 1
 
     db.session.commit()
     flash(f"Matchdays synced: {updated} existing matches corrected, {created} missing fixtures created. No matches were deleted.", "success")
     return redirect(url_for('admin'))
-
 
 # --- CRON ROUTE: DEADLINE REMINDERS ---
 @app.route('/api/cron/deadline-reminders')
