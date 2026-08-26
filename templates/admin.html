@@ -165,6 +165,9 @@
         {% for match in all_pending_fixtures %}
         <div class="admin-fixture-card user-row" style="display: flex; flex-direction: column; gap: 10px; border-left: 3px solid var(--violet);">
           
+          {% if match.matchday %}
+          <div style="font-size: 0.65rem; color: var(--text-low); text-transform: uppercase; letter-spacing: 0.05em;">Matchday {{ match.matchday }}</div>
+          {% endif %}
           <!-- Player Names -->
           <div style="display: flex; justify-content: space-between; width: 100%;">
             <span style="font-weight: bold; color: var(--text-hi);">{{ match.player_a.name }}</span>
@@ -201,7 +204,11 @@
       <form action="{{ url_for('generate_fixtures') }}" method="POST">
         <button type="submit" class="btn btn-brand">Generate Fixtures</button>
       </form>
-      
+
+      <form action="{{ url_for('sync_matchdays') }}" method="POST">
+        <button type="submit" class="btn" style="background: #00E5FF; color: black;" title="Safely re-numbers every match's Matchday to a proper round-robin schedule. Never deletes or duplicates matches.">Sync Matchdays</button>
+      </form>
+
       <form action="{{ url_for('reset_league') }}" method="POST" onsubmit="
         const userInput = prompt('DANGER: This will wipe all fixtures and reset player stats to zero!\n\nType RESET in all caps to confirm:');
         if (userInput !== 'RESET') {
@@ -257,3 +264,5 @@
 
 </body>
 </html>
+
+              
