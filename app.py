@@ -343,21 +343,25 @@ def admin():
     pending_players = User.query.filter_by(in_league=False).order_by(User.id).all()
     pending_matches = Match.query.filter_by(status='submitted').all()
     
-    # Grab all pending matches
-    all_pending = Match.query.filter_by(status='pending').all()
+        # Grab all matches ordered by creation to preserve the true Leg 1 vs Leg 2 split
+    all_matches = Match.query.order_by(Match.id).all()
     
-    # Split them into Home (Leg 1) and Away (Leg 2)
-    leg_1 = []
-    leg_2 = []
+    leg_1_ids = set()
+    leg_2_ids = set()
     seen_pairs = set()
     
-    for m in all_pending:
+    for m in all_matches:
         pair = tuple(sorted([m.player_a_id, m.player_b_id]))
         if pair not in seen_pairs:
-            leg_1.append(m)
+            leg_1_ids.add(m.id)
             seen_pairs.add(pair)
         else:
-            leg_2.append(m)
+            leg_2_ids.add(m.id)
+            
+    # Filter only pending matches into their permanent legs
+    leg_1 = [m for m in all_matches if m.status == 'pending' and m.id in leg_1_ids]
+    leg_2 = [m for m in all_matches if m.status == 'pending' and m.id in leg_2_ids]
+
             
     # The Interleaving Engine
     def interleave(match_list):
