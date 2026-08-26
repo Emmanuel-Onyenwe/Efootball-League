@@ -693,12 +693,12 @@ def sync_matchdays():
     flash(f"Matchdays synced: {updated} existing matches corrected, {created} missing fixtures created. No matches were deleted.", "success")
     return redirect(url_for('admin'))
 
-# --- CRON ROUTE: DEADLINE REMINDERS ---
+# --- CRON ROUTE: DEADLINE REMINDERS (BULK SEND FIX) ---
 @app.route('/api/cron/deadline-reminders')
 def cron_deadline_reminders():
     """
     Pings the database to find matches expiring in < 24 hours.
-    Sends one reminder email per player.
+    Opens a SINGLE secure connection to Gmail to bulk-send all reminders.
     """
     now = datetime.now()
     tomorrow = now + timedelta(hours=24)
@@ -711,26 +711,38 @@ def cron_deadline_reminders():
         Match.reminder_sent == False
     ).all()
 
+    if not matches:
+        return "Cron Executed: 0 fixtures processed for reminders.", 200
+
     reminders_sent = 0
     
-    for match in matches:
-        subject = f"⚠️ URGENT: Match Deadline Approaching!"
-        html_msg = f"""
-        <h3>Panic Keh League Alert</h3>
-        <p>Your Matchday {match.matchday} fixture (<b>{match.player_a.name} vs {match.player_b.name}</b>) is expiring in less than 24 hours!</p>
-        <p>Please coordinate with your opponent, play the match, and submit the result on the dashboard immediately to avoid a penalty strike.</p>
-        """
-        
-        send_email(match.player_a.email, subject, html_msg)
-        send_email(match.player_b.email, subject, html_msg)
-        
-        match.reminder_sent = True
-        reminders_sent += 1
+    try:
+        # Open ONE single connection to Gmail to prevent rate-limiting timeouts
+        with mail.connect() as conn:
+            for match in matches:
+                subject = f"⚠️ URGENT: Match Deadline Approaching!"
+                html_msg = f"""
+                <h3>Panic Keh League Alert</h3>
+                <p>Your Matchday {match.matchday} fixture (<b>{match.player_a.name} vs {match.player_b.name}</b>) is expiring in less than 24 hours!</p>
+                <p>Please coordinate with your opponent, play the match, and submit the result on the dashboard immediately to avoid a penalty strike.</p>
+                """
+                
+                # Create and send Player A's email
+                msg_a = Message(subject, recipients=[match.player_a.email], html=html_msg)
+                conn.send(msg_a)
+                
+                # Create and send Player B's email
+                msg_b = Message(subject, recipients=[match.player_b.email], html=html_msg)
+                conn.send(msg_b)
+                
+                match.reminder_sent = True
+                reminders_sent += 1
 
-    if reminders_sent > 0:
-        db.session.commit()
+        if reminders_sent > 0:
+            db.session.commit()
+            
+        return f"Cron Executed: {reminders_sent} fixtures processed for reminders.", 200
         
-    return f"Cron Executed: {reminders_sent} fixtures processed for reminders.", 200
-
-if __name__ == '__main__':
-    app.run(debug=True)
+    except Exception as e:
+        print(f"CRON BULK EMAIL FAILED: {e}")
+        return f"Cron Failed: {e}", 500
