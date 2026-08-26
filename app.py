@@ -373,17 +373,24 @@ def generate_fixtures():
 
     user_ids = [u.id for u in users]
     schedule = generate_round_robin_schedule(user_ids)
-    base_deadline = datetime.now() + timedelta(days=7)
+    
+    # Calculate the end of TODAY (11:59:59 PM)
+    now = datetime.now()
+    end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=0)
+    
     matches_created = 0
 
     for matchday_index, round_matches in enumerate(schedule, start=1):
+        # Matchday 1 expires tonight. Matchday 2 expires tomorrow night, etc.
+        matchday_deadline = end_of_today + timedelta(days=(matchday_index - 1))
+        
         for home_id, away_id in round_matches:
             existing_match = Match.query.filter_by(player_a_id=home_id, player_b_id=away_id).first()
             if not existing_match:
                 db.session.add(Match(
                     player_a_id=home_id,
                     player_b_id=away_id,
-                    deadline=base_deadline,
+                    deadline=matchday_deadline, # Uses the new strict midnight deadline
                     matchday=matchday_index,
                     status='pending'
                 ))
