@@ -1,4 +1,4 @@
-limport random
+import random
 import os
 import itertools
 from datetime import datetime, timedelta
