@@ -693,16 +693,17 @@ def sync_matchdays():
     flash(f"Matchdays synced: {updated} existing matches corrected, {created} missing fixtures created. No matches were deleted.", "success")
     return redirect(url_for('admin'))
 
-# --- CRON ROUTE: DEADLINE REMINDERS (BULK SEND FIX) ---
+# --- CRON ROUTE: DEADLINE REMINDERS (BACKGROUND THREAD FIX) ---
 @app.route('/api/cron/deadline-reminders')
 def cron_deadline_reminders():
     """
-    Pings the database to find matches expiring in < 24 hours.
-    Opens a SINGLE secure connection to Gmail to bulk-send all reminders.
+    Instantly returns 200 OK to keep UptimeRobot happy, 
+    then securely processes emails in the background to avoid timeouts.
     """
     now = datetime.now()
     tomorrow = now + timedelta(hours=24)
     
+    # Query the matches expiring in < 24 hours
     matches = Match.query.filter(
         Match.status == 'pending',
         Match.deadline != None,
@@ -710,39 +711,42 @@ def cron_deadline_reminders():
         Match.deadline > now,
         Match.reminder_sent == False
     ).all()
+    
+    # Extract IDs to safely pass to the background thread
+    match_ids = [m.id for m in matches]
 
-    if not matches:
+    if not match_ids:
         return "Cron Executed: 0 fixtures processed for reminders.", 200
 
-    reminders_sent = 0
+    import threading
     
-    try:
-        # Open ONE single connection to Gmail to prevent rate-limiting timeouts
-        with mail.connect() as conn:
-            for match in matches:
-                subject = f"⚠️ URGENT: Match Deadline Approaching!"
+    def process_in_background(app_context, m_ids):
+        with app_context:
+            reminders_sent = 0
+            for mid in m_ids:
+                match = Match.query.get(mid)
+                if not match: continue
+                
+                subject = "⚠️ URGENT: Match Deadline Approaching!"
                 html_msg = f"""
                 <h3>Panic Keh League Alert</h3>
                 <p>Your Matchday {match.matchday} fixture (<b>{match.player_a.name} vs {match.player_b.name}</b>) is expiring in less than 24 hours!</p>
                 <p>Please coordinate with your opponent, play the match, and submit the result on the dashboard immediately to avoid a penalty strike.</p>
                 """
                 
-                # Create and send Player A's email
-                msg_a = Message(subject, recipients=[match.player_a.email], html=html_msg)
-                conn.send(msg_a)
-                
-                # Create and send Player B's email
-                msg_b = Message(subject, recipients=[match.player_b.email], html=html_msg)
-                conn.send(msg_b)
+                # Send using the reliable synchronous function
+                send_email(match.player_a.email, subject, html_msg)
+                send_email(match.player_b.email, subject, html_msg)
                 
                 match.reminder_sent = True
                 reminders_sent += 1
+                
+            if reminders_sent > 0:
+                db.session.commit()
 
-        if reminders_sent > 0:
-            db.session.commit()
-            
-        return f"Cron Executed: {reminders_sent} fixtures processed for reminders.", 200
-        
-    except Exception as e:
-        print(f"CRON BULK EMAIL FAILED: {e}")
-        return f"Cron Failed: {e}", 500
+    # Start the background worker so the server doesn't hang
+    thread = threading.Thread(target=process_in_background, args=(app.app_context(), match_ids))
+    thread.start()
+
+    # Instantly reply to UptimeRobot so it stays GREEN
+    return f"Cron Triggered: Processing {len(match_ids)} fixtures in the background.", 200
