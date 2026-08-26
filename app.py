@@ -1,4 +1,4 @@
-import random
+limport random
 import os
 import itertools
 from datetime import datetime, timedelta
@@ -81,6 +81,16 @@ class Match(db.Model):
     status = db.Column(db.String(20), default='pending') 
     player_a = db.relationship('User', foreign_keys=[player_a_id])
     player_b = db.relationship('User', foreign_keys=[player_b_id])
+
+class Match(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    player_a_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
+    player_b_id = db.Column(db.Integer, db.ForeignKey('player.id'), nullable=False)
+    score_a = db.Column(db.Integer, default=0)
+    score_b = db.Column(db.Integer, default=0)
+    status = db.Column(db.String(20), default='pending')
+    matchday = db.Column(db.Integer, default=0) # ADD THIS EXACT LINE
+    
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -245,8 +255,8 @@ def index():
     standings = sorted(users, key=lambda u: (u.ppg, u.gd), reverse=True)
     
         # Grab all matches ordered by creation to preserve the true Leg 1 vs Leg 2 split
-    all_matches = Match.query.order_by(Match.id).all()
-    
+    all_matches = Match.query.order_by(Match.matchday, Match.id).all()
+
     leg_1_ids = set()
     leg_2_ids = set()
     seen_pairs = set()
@@ -344,8 +354,8 @@ def admin():
     pending_matches = Match.query.filter_by(status='submitted').all()
     
         # Grab all matches ordered by creation to preserve the true Leg 1 vs Leg 2 split
-    all_matches = Match.query.order_by(Match.id).all()
-    
+    all_matches = Match.query.order_by(Match.matchday, Match.id).all()
+
     leg_1_ids = set()
     leg_2_ids = set()
     seen_pairs = set()
