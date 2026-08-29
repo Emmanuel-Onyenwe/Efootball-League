@@ -373,51 +373,45 @@ def get_mon_wed_deadlines(start_date, num_matchdays):
 @login_required
 def generate_fixtures():
     if current_user.role != 'admin': return redirect(url_for('index'))
-    users = User.query.filter_by(status='active', in_league=True).order_by(User.id).all()
-    if len(users) < 2:
-        flash("Need at least 2 approved players to generate fixtures.", "error")
-        return redirect(url_for('admin'))
-    if len(users) % 2 != 0:
-        flash("The Circle Method schedule needs an EVEN number of active players. Approve/remove a player first.", "error")
-        return redirect(url_for('admin'))
+    users = User.query.filter_by(status='active', in_league=True).order_by(User.id).all() #
+    if len(users) < 2: #[cite: 1]
+        flash("Need at least 2 approved players to generate fixtures.", "error") #[cite: 1]
+        return redirect(url_for('admin')) #[cite: 1]
+    if len(users) % 2 != 0: #[cite: 1]
+        flash("The Circle Method schedule needs an EVEN number of active players. Approve/remove a player first.", "error") #[cite: 1]
+        return redirect(url_for('admin')) #[cite: 1]
 
-    user_ids = [u.id for u in users]
-    schedule = generate_round_robin_schedule(user_ids)
+    user_ids = [u.id for u in users] #[cite: 1]
+    schedule = generate_round_robin_schedule(user_ids) #[cite: 1]
     
-    # Calculate the end of TODAY (11:59:59 PM)
-    now = datetime.now()
-    end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=0)
+    now = datetime.now() #[cite: 1]
+    end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=0) #[cite: 1]
     
-    matches_created = 0
+    # Pre-calculate all Monday/Wednesday deadlines for the season
+    total_matchdays = len(schedule)
+    deadlines = get_mon_wed_deadlines(end_of_today, total_matchdays)
+    
+    matches_created = 0 #[cite: 1]
 
-    for matchday_index, round_matches in enumerate(schedule, start=1):
-        # Matchday 1 expires tonight, Matchday 2 expires tomorrow night, etc.
-        matchday_deadline = end_of_today + timedelta(days=(matchday_index - 1))
+    for matchday_index, round_matches in enumerate(schedule, start=1): #[cite: 1]
+        # Pull the correct Mon/Wed deadline from the pre-calculated list
+        matchday_deadline = deadlines[matchday_index - 1]
         
-        for home_id, away_id in round_matches:
-            existing_match = Match.query.filter_by(player_a_id=home_id, player_b_id=away_id).first()
-            if not existing_match:
-                db.session.add(Match(
-                    player_a_id=home_id,
-                    player_b_id=away_id,
-                    deadline=matchday_deadline,
-                    matchday=matchday_index,
-                    status='pending'
-                ))
-                matches_created += 1
+        for home_id, away_id in round_matches: #[cite: 1]
+            existing_match = Match.query.filter_by(player_a_id=home_id, player_b_id=away_id).first() #[cite: 1]
+            if not existing_match: #[cite: 1]
+                db.session.add(Match( #[cite: 1]
+                    player_a_id=home_id, #[cite: 1]
+                    player_b_id=away_id, #[cite: 1]
+                    deadline=matchday_deadline, #[cite: 1]
+                    matchday=matchday_index, #[cite: 1]
+                    status='pending' #[cite: 1]
+                )) #[cite: 1]
+                matches_created += 1 #[cite: 1]
 
-    db.session.commit()
+    db.session.commit() #[cite: 1]
     
-    if matches_created > 0:
-        for u in users:
-            try:
-                msg = f"<h3>Matchday Alert!</h3><p>New fixtures have just been generated for the Panic Keh League. Log in to check your opponent and coordinate your match!</p>"
-                send_email(u.email, "New League Fixtures Generated!", msg)
-            except Exception as e:
-                print(f"Failed to email {u.email}: {e}")
-                
-    flash(f"Generated {matches_created} new fixtures successfully! Players have been notified via email.", "success")
-    return redirect(url_for('admin'))
+    # ... (Keep the rest of your email notification logic exactly the same)
     
 @app.route('/panic-hq/approve/<int:match_id>', methods=['POST'])
 @login_required
