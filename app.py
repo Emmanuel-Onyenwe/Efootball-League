@@ -359,6 +359,16 @@ def promote_player(user_id):
         flash(f"{user.name} is now a Co-Admin!", "success")
     return redirect(url_for('admin'))
 
+def get_mon_wed_deadlines(start_date, num_matchdays):
+    deadlines = []
+    # Start checking from tomorrow so fixtures don't expire instantly on generation day
+    current_date = start_date + timedelta(days=1) 
+    while len(deadlines) < num_matchdays:
+        if current_date.weekday() in [0, 2]: # 0 = Monday, 2 = Wednesday
+            deadlines.append(current_date)
+        current_date += timedelta(days=1)
+    return deadlines
+
 @app.route('/panic-hq/generate_fixtures', methods=['POST'])
 @login_required
 def generate_fixtures():
