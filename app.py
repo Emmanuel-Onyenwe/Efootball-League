@@ -632,70 +632,40 @@ with app.app_context():
 @app.route('/panic-hq/sync-matchdays', methods=['POST'])
 @login_required
 def sync_matchdays():
-    if current_user.role != 'admin':
-        flash("Access Denied: Admins only.", "error")
-        return redirect(url_for('index'))
-
-    try:
-        db.session.execute(text('ALTER TABLE match ADD COLUMN matchday INTEGER DEFAULT 0'))
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-
-    users = User.query.filter_by(status='active', in_league=True).order_by(User.id).all()
-    user_ids = [u.id for u in users]
-
-    if len(user_ids) % 2 != 0:
-        flash("Can't sync: the Circle Method needs an EVEN number of active players.", "error")
-        return redirect(url_for('admin'))
-
-    schedule = generate_round_robin_schedule(user_ids)
-
-    pair_matchdays = {} 
-    for matchday_index, round_matches in enumerate(schedule, start=1):
-        for home_id, away_id in round_matches:
-            pair = tuple(sorted([home_id, away_id]))
-            pair_matchdays.setdefault(pair, []).append(matchday_index)
-
-    all_matches = Match.query.order_by(Match.id).all()
-    matches_by_pair = {}
-    for m in all_matches:
-        pair = tuple(sorted([m.player_a_id, m.player_b_id]))
-        matches_by_pair.setdefault(pair, []).append(m)
-
-    updated = 0
-    created = 0
+    # ... (Keep the beginning of your sync function the same down to end_of_today)
     
-    now = datetime.now()
-    end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=0)
+    now = datetime.now() #[cite: 1]
+    end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=0) #[cite: 1]
 
-    for pair, matchdays in pair_matchdays.items():
-        existing = matches_by_pair.get(pair, [])
-        for leg_index, matchday in enumerate(matchdays):
-            
-            # The exact midnight deadline for this specific matchday
-            matchday_deadline = end_of_today + timedelta(days=(matchday - 1))
-            
-            if leg_index < len(existing):
-                m = existing[leg_index]
-                # Force update both the matchday number AND the new midnight deadline
-                if m.matchday != matchday or m.deadline != matchday_deadline:
-                    m.matchday = matchday
-                    m.deadline = matchday_deadline 
-                    updated += 1
-            else:
-                home_id, away_id = next(
-                    (h, a) for (h, a) in schedule[matchday - 1] if tuple(sorted([h, a])) == pair
-                )
-                db.session.add(Match(
-                    player_a_id=home_id, player_b_id=away_id,
-                    deadline=matchday_deadline, status='pending', matchday=matchday
-                ))
-                created += 1
+    # Pre-calculate Monday/Wednesday deadlines
+    total_matchdays = len(schedule)
+    deadlines = get_mon_wed_deadlines(end_of_today, total_matchdays)
 
-    db.session.commit()
-    flash(f"Matchdays synced: {updated} existing matches corrected, {created} missing fixtures created. No matches were deleted.", "success")
-    return redirect(url_for('admin'))
+    for pair, matchdays in pair_matchdays.items(): #[cite: 1]
+        existing = matches_by_pair.get(pair, []) #[cite: 1]
+        for leg_index, matchday in enumerate(matchdays): #[cite: 1]
+            
+            # Map directly to the Monday/Wednesday calendar helper
+            matchday_deadline = deadlines[matchday - 1]
+            
+            if leg_index < len(existing): #[cite: 1]
+                m = existing[leg_index] #[cite: 1]
+                if m.matchday != matchday or m.deadline != matchday_deadline: #[cite: 1]
+                    m.matchday = matchday #[cite: 1]
+                    m.deadline = matchday_deadline  #[cite: 1]
+                    updated += 1 #[cite: 1]
+            else: #[cite: 1]
+                home_id, away_id = next( #[cite: 1]
+                    (h, a) for (h, a) in schedule[matchday - 1] if tuple(sorted([h, a])) == pair #[cite: 1]
+                ) #[cite: 1]
+                db.session.add(Match( #[cite: 1]
+                    player_a_id=home_id, player_b_id=away_id, #[cite: 1]
+                    deadline=matchday_deadline, status='pending', matchday=matchday #[cite: 1]
+                )) #[cite: 1]
+                created += 1 #[cite: 1]
+
+    db.session.commit() #[cite: 1]
+    # ... (Keep the flash message and return redirect identical)
 
 @app.route('/panic-hq/purge')
 @login_required
