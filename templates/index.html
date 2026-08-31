@@ -298,7 +298,7 @@
         <p>{{ fixtures|length }} pending matches</p>
       </div>
       
-      <!-- FIXTURE LIST WITH COUNTDOWN TIMER -->
+            <!-- FIXTURE LIST WITH COUNTDOWN TIMER -->
       <div class="fixture-list fixture-scroll-box">
         {% for match in fixtures %}
         <div class="fixture-card">
@@ -315,4 +315,13 @@
           <!-- TIMER ADDED HERE -->
           {% if match.deadline %}
           <div class="match-countdown" data-deadline="{{ match.deadline.isoformat() }}Z" style="text-align: center; font-size: 0.75rem; color: var(--gold); margin-top: 8px; font-family: var(--font-display);">
-           
+            Calculating time...
+          </div>
+          {% endif %} <!-- THIS IS THE TAG THAT WAS MISSING -->
+          
+        </div>
+        {% else %}
+        <p style="color: var(--text-low); text-align: center; font-size: 0.9rem; padding: 20px 0;">No upcoming fixtures.</p>
+        {% endfor %}
+      </div>
+
