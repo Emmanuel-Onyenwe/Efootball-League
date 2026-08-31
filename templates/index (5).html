@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panic Keh eFootball League</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0A0E1A; --bg-panel: #10162C; --bg-panel-alt: #161D38;
+    --cyan: #00E5FF; --magenta: #FF2E9A; --violet: #7C5CFF;
+    --gold: #FFC93C; --green: #33E6A0; --red: #FF4D6D;
+    --text-hi: #F2F5FA; --text-mid: #A8B2D1; --text-low: #64709A;
+    --grad-brand: linear-gradient(90deg, var(--cyan), var(--violet) 55%, var(--magenta));
+    --font-display: 'Orbitron', sans-serif; --font-heading: 'Rajdhani', sans-serif; --font-body: 'Inter', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg-primary); color: var(--text-hi); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+  
+  .top-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; background: rgba(16, 22, 44, 0.72); border-bottom: 2px solid var(--magenta); }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .crest { width: 36px; height: auto; }
+  .wordmark { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; background: var(--grad-brand); -webkit-background-clip: text; color: transparent; }
+  .wordmark small { display: block; font-family: var(--font-heading); font-size: 0.62rem; color: var(--text-low); letter-spacing: 0.22em;}
+  
+  nav.top-nav { display: flex; gap: 28px; font-family: var(--font-heading); font-weight: 600; text-transform: uppercase; font-size: 0.92rem;}
+  nav.top-nav a { position: relative; color: var(--text-mid); text-decoration: none; padding-bottom: 6px; transition: 0.3s; }
+  nav.top-nav a:hover, nav.top-nav a.active { color: var(--text-hi); }
+  
+  /* The Animated Underline */
+  nav.top-nav a::after {
+    content: ''; position: absolute; left: 0; bottom: 0; width: 0%; height: 3px;
+    background: var(--grad-brand); transition: width 0.3s ease-in-out; border-radius: 2px;
+  }
+  nav.top-nav a:hover::after, nav.top-nav a.active::after { width: 100%; }
+
+  /* UPDATED TICKER CSS */
+  .ticker-wrap { background: #060911; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 0; overflow: hidden; display: flex; align-items: center; position: relative; }
+  .ticker-label { font-family: var(--font-heading); font-weight: 700; color: var(--cyan); padding: 0 16px; font-size: 0.8rem; text-transform: uppercase; white-space: nowrap; z-index: 2; background: #060911; box-shadow: 10px 0 10px #060911; }
+  
+  .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; }
+  .marquee-content {
+    display: inline-block; padding-left: 100%;
+    animation: marquee 90s linear infinite; color: var(--text-mid); font-size: 0.85rem;
+  }
+  @keyframes marquee {
+    0%   { transform: translate(0, 0); }
+    100% { transform: translate(-100%, 0); }
+  }
+  .layout-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 32px; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; align-content: start; }
+  @media (max-width: 960px) { .layout-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 768px) {
+    .top-bar { flex-direction: column; gap: 16px; text-align: center; padding: 20px 15px; }
+    .brand { justify-content: center; }
+    nav.top-nav { flex-wrap: wrap; justify-content: center; gap: 15px; font-size: 0.85rem; }
+    .layout-grid { padding: 15px; }
+  }
+
+  .panel { background: var(--bg-panel); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); overflow: hidden; }
+  .panel-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .panel-header h2 { font-family: var(--font-heading); font-weight: 700; font-size: 1.2rem; text-transform: uppercase; }
+  .panel-header p { font-size: 0.8rem; color: var(--text-low); margin-top: 4px; }
+  
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; text-align: center; }
+  th { font-family: var(--font-heading); font-size: 0.75rem; color: var(--text-low); padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  th.left { text-align: left; }
+  td { padding: 14px 16px; font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.03); }
+  
+  .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--bg-panel-alt); font-size: 0.75rem; font-weight: 600; color: var(--text-mid); }
+  .rank-1 .rank-badge { background: rgba(255,201,60,0.15); color: var(--gold); }
+  
+  .player-cell { text-align: left; display: flex; align-items: center; gap: 10px; }
+  .emblem { font-size: 1.2rem; }
+  
+  .stat-pts { font-family: var(--font-display); font-weight: 700; color: var(--gold); }
+  .stat-ppg { color: var(--cyan); font-weight: bold; }
+  
+  .fixture-list { padding: 16px 24px; display: flex; flex-direction: column; gap: 12px; }
+  .fixture-card { background: var(--bg-panel-alt); padding: 12px 16px; border-radius: 8px; border-left: 3px solid var(--violet); }
+  .fixture-teams { display: flex; justify-content: space-between; font-weight: 600; font-size: 0.9rem; }
+  .fixture-vs { color: var(--text-low); font-size: 0.75rem; font-family: var(--font-display); }
+  
+  .site-footer { text-align: center; padding: 24px; font-size: 0.8rem; color: var(--text-low); border-top: 1px solid rgba(255,255,255,0.05); margin-top: auto; }
+  
+  /* Modal & Blur Styles */
+  .blur-bg { filter: blur(8px); pointer-events: none; transition: filter 0.3s ease; }
+  .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(10, 14, 26, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(5px); }
+  .modal-overlay.active { opacity: 1; pointer-events: all; }
+  .modal-card { background: var(--bg-panel); padding: 30px; border-radius: 12px; border-top: 4px solid var(--cyan); width: 90%; max-width: 400px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  .close-btn { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; color: var(--text-mid); cursor: pointer; background: none; border: none; }
+  .modal-input { width: 100%; padding: 12px; margin: 10px 0 20px; background: #1B2340; border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 5px; box-sizing: border-box; }
+  .modal-btn { width: 100%; padding: 12px; background: var(--grad-brand); border: none; color: black; font-weight: bold; border-radius: 5px; cursor: pointer; }
+
+  /* Desktop/Mobile Smart Switch for Fixtures */
+  .side-panel {
+    display: flex;
+    flex-direction: column;
+  }
+  .fixture-scroll-box {
+    overflow-y: auto;
+    padding-right: 5px;
+    max-height: 650px; 
+  }
+  @media (max-width: 960px) {
+    .fixture-scroll-box {
+      max-height: 240px; 
+    }
+  }
+
+</style>
+</head>
+<body>
+  <!-- WELCOME TOAST NOTIFICATION -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        {% if category == 'welcome' %}
+          <div id="welcome-toast" style="position: fixed; bottom: -80px; left: 50%; transform: translateX(-50%); background: #161D38; color: #00E5FF; padding: 12px 28px; border-radius: 50px; border: 1px solid rgba(0, 229, 255, 0.4); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); z-index: 10000; font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.95rem; white-space: nowrap; transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+            {{ msg }}
+          </div>
+          <script>
+            setTimeout(() => { document.getElementById('welcome-toast').style.bottom = '30px'; }, 150);
+            setTimeout(() => { document.getElementById('welcome-toast').style.bottom = '-80px'; }, 2650);
+          </script>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <header class="top-bar">
+    <div class="brand">
+      <svg class="crest" viewBox="0 0 100 108" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="crestEdge2" x1="0" y1="0" x2="100" y2="108" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#00E5FF"/>
+            <stop offset="55%" stop-color="#7C5CFF"/>
+            <stop offset="100%" stop-color="#FF2E9A"/>
+          </linearGradient>
+        </defs>
+        <polygon points="50,3 92,22 92,64 50,105 8,64 8,22" fill="#10162C" stroke="url(#crestEdge2)" stroke-width="4"/>
+        <circle cx="50" cy="46" r="22" fill="#0A0E1A" stroke="url(#crestEdge2)" stroke-width="2.5"/>
+        <polygon points="50,32 60,39 56,50 44,50 40,39" fill="url(#crestEdge2)"/>
+        <line x1="50" y1="32" x2="50" y2="24" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="60" y1="39" x2="67" y2="34" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="56" y1="50" x2="59" y2="58" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="44" y1="50" x2="41" y2="58" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="40" y1="39" x2="33" y2="34" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="42" y="78" width="4" height="10" fill="url(#crestEdge2)"/>
+        <rect x="48" y="72" width="4" height="16" fill="url(#crestEdge2)"/>
+        <rect x="54" y="82" width="4" height="6" fill="url(#crestEdge2)"/>
+      </svg>
+      <div class="wordmark">PANIC KEH<small>Season Table</small></div>
+    </div>
+        <nav class="top-nav">
+      <a href="{{ url_for('index') }}" class="{{ 'active' if request.path == url_for('index') else '' }}" style="color: var(--text-hi);">Standings</a>
+      
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('submit') }}" class="{{ 'active' if request.path == url_for('submit') else '' }}" style="color: var(--text-hi);">Submit Result</a>
+        
+        {% if current_user.role == 'admin' %}
+          <a href="{{ url_for('admin') }}" class="{{ 'active' if request.path == '/panic-hq' else '' }}" style="color: var(--gold);">Admin Panel</a>
+        {% endif %}
+        
+        <a href="{{ url_for('logout') }}" style="color: var(--red);">Logout</a>
+      {% else %}
+        <a href="#" onclick="openModal('login')" style="color: var(--cyan);">Login / Register</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <div class="ticker-wrap">
+    <div class="ticker-label">Panic Keh</div>
+    <div class="marquee-container">
+      <div class="marquee-content">
+        {% if ticker_fixtures %}
+          {% for match in ticker_fixtures[:15] %} • <strong style="color: var(--cyan);">{{ match.player_a.name }}</strong> vs <strong style="color: var(--cyan);">{{ match.player_b.name }}</strong> &nbsp;&nbsp;&nbsp; {% endfor %}
+        {% else %}
+          No upcoming fixtures scheduled.
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <main class="layout-grid">
+    <section class="panel">
+      <!-- EDIT PROFILE ACCORDION -->
+  {% if current_user.is_authenticated and current_user.in_league %}
+  <div class="panel" style="margin-bottom: 20px; padding: 15px;">
+    <details>
+      <summary style="cursor: pointer; font-weight: 700; color: #00E5FF; font-size: 1.1rem; list-style: none;">
+        ⚙️ Edit Profile (Gamertag & Emblem)
+      </summary>
+      <form action="{{ url_for('edit_profile') }}" method="POST" style="margin-top: 15px;">
+        
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">New Gamertag (One-time change only!)</label>
+          <input type="text" name="gamertag" value="{{ current_user.name }}" 
+                 style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;" 
+                 {% if current_user.name_changed %}disabled{% endif %}>
+          {% if current_user.name_changed %}
+            <small style="color: #FF5252; display: block; margin-top: 5px;">You have already used your one-time name change.</small>
+          {% endif %}
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">New Emblem</label>
+          <select name="emblem" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+            <option value="🛡️" {% if current_user.emblem == '🛡️' %}selected{% endif %}>🛡️ Shield (Default)</option>
+            <option value="🦁" {% if current_user.emblem == '🦁' %}selected{% endif %}>🦁 Lion</option>
+            <option value="🐯" {% if current_user.emblem == '🐯' %}selected{% endif %}>🐯 Tiger</option>
+            <option value="🐆" {% if current_user.emblem == '🐆' %}selected{% endif %}>🐆 Leopard</option>
+            <option value="🐺" {% if current_user.emblem == '🐺' %}selected{% endif %}>🐺 Wolf</option>
+            <option value="🐻" {% if current_user.emblem == '🐻' %}selected{% endif %}>🐻 Bear</option>
+            <option value="🦅" {% if current_user.emblem == '🦅' %}selected{% endif %}>🦅 Eagle</option>
+            <option value="🦉" {% if current_user.emblem == '🦉' %}selected{% endif %}>🦉 Owl</option>
+            <option value="🦇" {% if current_user.emblem == '🦇' %}selected{% endif %}>🦇 Bat</option>
+            <option value="🦈" {% if current_user.emblem == '🦈' %}selected{% endif %}>🦈 Shark</option>
+            <option value="🐬" {% if current_user.emblem == '🐬' %}selected{% endif %}>🐬 Dolphin</option>
+            <option value="🐊" {% if current_user.emblem == '🐊' %}selected{% endif %}>🐊 Crocodile</option>
+            <option value="🐍" {% if current_user.emblem == '🐍' %}selected{% endif %}>🐍 Snake</option>
+            <option value="🐢" {% if current_user.emblem == '🐢' %}selected{% endif %}>🐢 Turtle</option>
+            <option value="🦍" {% if current_user.emblem == '🦍' %}selected{% endif %}>🦍 Gorilla</option>
+            <option value="🦏" {% if current_user.emblem == '🦏' %}selected{% endif %}>🦏 Rhino</option>
+            <option value="🐘" {% if current_user.emblem == '🐘' %}selected{% endif %}>🐘 Elephant</option>
+            <option value="🐂" {% if current_user.emblem == '🐂' %}selected{% endif %}>🐂 Bull</option>
+            <option value="🐎" {% if current_user.emblem == '🐎' %}selected{% endif %}>🐎 Horse</option>
+            <option value="🦌" {% if current_user.emblem == '🦌' %}selected{% endif %}>🦌 Stag</option>
+            <option value="🐐" {% if current_user.emblem == '🐐' %}selected{% endif %}>🐐 Goat</option>
+            <option value="🐏" {% if current_user.emblem == '🐏' %}selected{% endif %}>🐏 Ram</option>
+            <option value="🐓" {% if current_user.emblem == '🐓' %}selected{% endif %}>🐓 Rooster</option>
+            <option value="🦂" {% if current_user.emblem == '🦂' %}selected{% endif %}>🦂 Scorpion</option>
+            <option value="🕷️" {% if current_user.emblem == '🕷️' %}selected{% endif %}>🕷️ Spider</option>
+            <option value="🐉" {% if current_user.emblem == '🐉' %}selected{% endif %}>🐉 Dragon</option>
+            <option value="🐲" {% if current_user.emblem == '🐲' %}selected{% endif %}>🐲 Dragon Face</option>
+            <option value="🦖" {% if current_user.emblem == '🦖' %}selected{% endif %}>🦖 T-Rex</option>
+            <option value="🦕" {% if current_user.emblem == '🦕' %}selected{% endif %}>🦕 Brontosaurus</option>
+            <option value="🦑" {% if current_user.emblem == '🦑' %}selected{% endif %}>🦑 Squid</option>
+            <option value="🐙" {% if current_user.emblem == '🐙' %}selected{% endif %}>🐙 Octopus</option>
+            <option value="🦊" {% if current_user.emblem == '🦊' %}selected{% endif %}>🦊 Fox</option>
+            <option value="🦡" {% if current_user.emblem == '🦡' %}selected{% endif %}>🦡 Badger</option>
+            <option value="🐝" {% if current_user.emblem == '🐝' %}selected{% endif %}>🐝 Bee</option>
+            <option value="🦄" {% if current_user.emblem == '🦄' %}selected{% endif %}>🦄 Unicorn</option>
+            <option value="⚔️" {% if current_user.emblem == '⚔️' %}selected{% endif %}>⚔️ Swords</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-brand" style="width: 100%; padding: 12px; font-size: 1rem; border-radius: 8px; background: #00E5FF; color: #161D38; font-weight: bold; border: none; cursor: pointer;">
+          Save Changes
+        </button>
+      </form>
+    </details>
+  </div>
+  {% endif %}
+      <div class="panel-header">
+        <h2>League Table</h2>
+        <p>Ranked by Points Per Game, then Goal Difference.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th width="40">#</th>
+              <th class="left">PLAYER</th>
+              <th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GD</th><th>PTS</th><th>PPG</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in standings %}
+            <tr class="{% if loop.index == 1 %}rank-1{% endif %}">
+              <td><div class="rank-badge">{{ loop.index }}</div></td>
+              <td class="player-cell">
+                <span class="emblem">{{ user.emblem }}</span>
+                <strong>{{ user.name }}</strong>
+              </td>
+              <td>{{ user.played }}</td>
+              <td>{{ user.won }}</td>
+              <td>{{ user.drawn }}</td>
+              <td>{{ user.lost }}</td>
+              <td style="font-weight: 600;">{{ user.goals_for }}</td>
+              <td>{{ user.gd }}</td>
+              <td class="stat-pts">{{ user.points }}</td>
+              <td class="stat-ppg">{{ "%.2f"|format(user.ppg) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="10" style="padding: 30px; color: var(--text-low);">No players have joined the league yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside class="panel side-panel">
+      <div class="panel-header">
+        <h2>Upcoming Fixtures</h2>
+        <p>{{ fixtures|length }} pending matches</p>
+      </div>
+      
+      <!-- FIXTURE LIST WITH COUNTDOWN TIMER -->
+      <div class="fixture-list fixture-scroll-box">
+        {% for match in fixtures %}
+        <div class="fixture-card">
+          {% if match.matchday %}
+          <div style="text-align: center; font-size: 0.65rem; color: var(--text-low); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Matchday {{ match.matchday }}</div>
+          {% endif %}
+          
+          <div class="fixture-teams" style="display: grid; grid-template-columns: 1fr 40px 1fr; align-items: center; gap: 5px;">
+            <span style="text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem;">{{ match.player_a.name }}</span>
+            <span class="fixture-vs" style="text-align: center;">VS</span>
+            <span style="text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem;">{{ match.player_b.name }}</span>
+          </div>
+          
+          <!-- TIMER ADDED HERE -->
+          {% if match.deadline %}
+          <div class="match-countdown" data-deadline="{{ match.deadline.isoformat() }}Z" style="text-align: center; font-size: 0.75rem; color: var(--gold); margin-top: 8px; font-family: var(--font-display);">
+            Calculating time...
+          </div>
+          {% endif %}
+          
+        </div>
+        {% else %}
+        <p style="color: var(--text-low); text-align: center; font-size: 0.9rem; padding: 20px 0;">No upcoming fixtures.</p>
+        {% endfor %}
+      </div>
+    </aside>
+
+<!-- COMPLETED MATCHES BOARD -->
+  <div class="panel" style="margin-bottom: 20px; grid-column: 1 / -1;">
+    
+    <div class="panel-header">
+      <h2>Recent Results</h2>
+    </div>
+
+    <div style="padding: 16px 24px;">
+      <div style="max-height: 280px; overflow-y: auto; padding-right: 8px; display: flex; flex-direction: column; gap: 10px;">
+
+      {% if completed_matches %}
+        {% for match in completed_matches %}
+        <div style="background: rgba(255,255,255,0.05); padding: 12px 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); gap: 8px;">
+          
+          <div style="flex: 1; text-align: right; font-weight: 600; color: var(--text-hi); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            {{ match.player_a.name }} <span style="font-size: 1rem; vertical-align: middle; margin-left: 3px;">{{ match.player_a.emblem }}</span>
+          </div>
+          
+          <div style="font-size: 1.25rem; font-weight: 900; color: #00E5FF; text-shadow: 0 0 5px rgba(0,229,255,0.3); white-space: nowrap; text-align: center; min-width: 65px; background: rgba(0,0,0,0.25); padding: 4px 10px; border-radius: 6px;">
+            {{ match.score_a }} - {{ match.score_b }}
+          </div>
+          
+          <div style="flex: 1; text-align: left; font-weight: 600; color: var(--text-hi); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <span style="font-size: 1rem; vertical-align: middle; margin-right: 3px;">{{ match.player_b.emblem }}</span> {{ match.player_b.name }}
+          </div>
+          
+        </div>
+        {% endfor %}
+      {% else %}
+        <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 8px; text-align: center; border: 1px dashed rgba(255,255,255,0.1);">
+           <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem; margin: 0;">No matches have been completed yet.<br>The pitch is waiting!</p>
+        </div>
+      {% endif %} 
+      </div>
+    </div> 
+  </div>
+
+    <section class="panel" style="grid-column: 1 / -1; margin-top: 10px;">
+      <div class="panel-header">
+        <h2>League Briefing & Rules</h2>
+        <p>Everything you need to know about how the Panic Keh eFootball League operates. Tap any section to read the details.</p>
+      </div>
+      <div style="padding: 20px; display: flex; flex-direction: column; gap: 15px;">
+        
+        <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+          <summary style="color: var(--cyan); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
+            Table Glossary
+          </summary>
+          <div style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
+            <ul style="list-style: none; color: var(--text-mid); font-size: 0.9rem; line-height: 1.8;">
+              <li><strong style="color: white;">P (Played):</strong> Total matches completed.</li>
+              <li><strong style="color: white;">W, D, L:</strong> Matches Won (3 pts), Drawn (1 pt), and Lost (0 pts).</li>
+              <li><strong style="color: white;">GF (Goals For):</strong> Total number of goals scored by a player.</li>
+              <li><strong style="color: white;">GD (Goal Difference):</strong> Total goals scored minus total goals conceded. Used as the first tiebreaker.</li>
+              <li><strong style="color: white;">Pts (Points):</strong> Total league points earned.</li>
+              <li><strong style="color: white;">PPG (Points Per Game):</strong> Your Total Points divided by your Matches Played. <em>This is the ultimate equalizer! If you play fewer games because an opponent was eliminated, PPG ensures your rank is perfectly balanced and fair.</em></li>
+            </ul>
+          </div>
+        </details>
+
+        <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+          <summary style="color: var(--magenta); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
+            Match Submissions & Deadlines
+          </summary>
+          <div style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
+            <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6; margin-bottom: 10px;">
+              <strong>Step 1:</strong> The <strong>WINNER</strong> must post the final score screenshot in the WhatsApp group and tag the opponent to confirm (If a draw, the <strong>HOME</strong> player posts).<br>
+              <strong>Step 2:</strong> Once confirmed, that same player logs in and submits the result via the <strong>Submit Result</strong> tab.
+            </p>
+            <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6;">
+              Active players are free to play ahead. You have strictly <strong>24 hours</strong> to clear your pending fixture.
+            </p>
+          </div>
+        </details>
+
+        <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+          <summary style="color: var(--gold); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
+            Network Disconnects
+          </summary>
+          <div style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
+            <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6;">
+              If the network drops, state the score and half in WhatsApp immediately. We do NOT restart 0-0.<br><br>
+              • <strong>Before 75th Min:</strong> Start a new match, play <strong>ONE HALF (45 mins)</strong>, quit, and add the new goals to the original score.<br>
+              • <strong>75th Min or Later:</strong> If leading by 2+ goals, the match is over (Leader takes 3 pts). If leading by 1 goal or tied, play <strong>ONE HALF (45 mins)</strong> to settle it.
+            </p>
+          </div>
+        </details>
+
+        <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border-left: 3px solid var(--red); border-top: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);">
+          <summary style="color: var(--red); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
+            Penalties & Eliminations
+          </summary>
+          <div style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
+            <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6;">
+              <strong>Ghosting:</strong> Dodging matches results in <strong>1 Strike</strong> and a <strong>3-0 Walkover</strong> loss. If both players fail to make an effort within 24 hours, the match is <strong>VOIDED</strong> (0 points, 0 goals).
+            </p>
+            <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6; margin-top: 10px;">
+              <strong>Elimination:</strong> Hitting <strong>2 Strikes</strong> gets you eliminated. If you are scheduled to play an eliminated player, that match is erased from the schedule (a "Bye Week"). You are not punished for playing fewer games; the <strong>PPG</strong> system automatically balances the table fairly.
+            </p>
+          </div>
+        </details>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    &copy; 2026 Panic Keh &middot; eFootball League
+  </footer>
+  
+  <div id="authModal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+      
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div style="padding: 10px; background: var(--red); color: white; border-radius: 5px; margin-bottom: 15px; font-size: 0.85rem; text-align: center;">{{ msg }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div id="loginForm">
+        <h2 style="font-family: var(--font-display); margin-bottom: 20px; text-align: center;">LOGIN</h2>
+        <form method="POST" action="{{ url_for('login') }}">
+          <input type="email" name="email" class="modal-input" placeholder="Email Address" required>
+          <input type="password" name="password" class="modal-input" placeholder="Password" required>
+          <button type="submit" class="modal-btn">LOG IN</button>
+        </form>
+        <p style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: var(--text-mid);">
+          New here? <a href="#" onclick="switchModal('register')" style="color: var(--cyan);">Register</a><br><br>
+          <a href="{{ url_for('forgot_password') }}" style="color: var(--text-low);">Forgot Password?</a>
+        </p>
+      </div>
+
+      <div id="registerForm" style="display: none;">
+        <h2 style="font-family: var(--font-display); margin-bottom: 20px; text-align: center;">REGISTER</h2>
+        <form method="POST" action="{{ url_for('register') }}">
+          <input type="text" name="gamertag" class="modal-input" placeholder="Gamertag" style="margin-bottom: 10px;" required>
+          <input type="email" name="email" class="modal-input" placeholder="Email Address" style="margin-bottom: 10px;" required>
+          <select name="emblem" class="modal-input" style="margin-bottom: 10px;" required>
+                <option value="🛡️" selected>🛡️ Shield (Default)</option>
+                <option value="🦁">🦁 Lion</option><option value="🐯">🐯 Tiger</option><option value="🐆">🐆 Leopard</option>
+                <option value="🐺">🐺 Wolf</option><option value="🐻">🐻 Bear</option><option value="🦅">🦅 Eagle</option>
+                <option value="🦉">🦉 Owl</option><option value="🦇">🦇 Bat</option><option value="🦈">🦈 Shark</option>
+                <option value="🐬">🐬 Dolphin</option><option value="🐊">🐊 Crocodile</option><option value="🐍">🐍 Snake</option>
+                <option value="🐢">🐢 Turtle</option><option value="🦍">🦍 Gorilla</option><option value="🦏">🦏 Rhino</option>
+                <option value="🐘">🐘 Elephant</option><option value="🐂">🐂 Bull</option><option value="🐎">🐎 Horse</option>
+                <option value="🦌">🦌 Stag</option><option value="🐐">🐐 Goat</option><option value="🐏">🐏 Ram</option>
+                <option value="🐓">🐓 Rooster</option><option value="🦂">🦂 Scorpion</option><option value="🕷️">🕷️ Spider</option>
+                <option value="🐉">🐉 Dragon</option><option value="🐲">🐲 Dragon Face</option><option value="🦖">🦖 T-Rex</option>
+                <option value="🦕">🦕 Brontosaurus</option><option value="🦑">🦑 Squid</option><option value="🐙">🐙 Octopus</option>
+                <option value="🦊">🦊 Fox</option><option value="🦡">🦡 Badger</option><option value="🐝">🐝 Bee</option>
+                <option value="🦄">🦄 Unicorn</option><option value="⚔️">⚔️ Swords</option>
+          </select>
+          <input type="password" name="password" class="modal-input" placeholder="Password" required>
+          <button type="submit" class="modal-btn">JOIN LEAGUE</button>
+        </form>
+        <p style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: var(--text-mid);">
+          Already playing? <a href="#" onclick="switchModal('login')" style="color: var(--cyan);">Log In</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const modal = document.getElementById('authModal');
+    const mainContent = document.querySelector('main');
+    const header = document.querySelector('header');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+
+    function openModal(type) {
+      modal.classList.add('active');
+      mainContent.classList.add('blur-bg');
+      header.classList.add('blur-bg');
+      switchModal(type);
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+      mainContent.classList.remove('blur-bg');
+      header.classList.remove('blur-bg');
+    }
+
+    function switchModal(type) {
+      if (type === 'register') {
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'block';
+      } else {
+        registerForm.style.display = 'none';
+        loginForm.style.display = 'block';
+      }
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const showParam = urlParams.get('show');
+    if (showParam === 'login' || showParam === 'register') {
+      openModal(showParam);
+    }
+  </script>
+
+    <!-- JAVASCRIPT FOR COUNTDOWN TIMER -->
+  <script>
+    function getNextMatchDeadline() {
+      const now = new Date();
+      const day = now.getDay(); // 0 is Sunday, 1 is Monday, etc.
+      let daysToAdd = 0;
+
+      if (day === 1 || day === 3) {
+        // Today is Mon or Wed: Deadline is tonight
+        daysToAdd = 0; 
+      } else if (day === 2) {
+        // Today is Tue: Next match is Wed
+        daysToAdd = 1;
+      } else {
+        // Today is Thu, Fri, Sat, Sun: Next match is Mon
+        daysToAdd = (1 - day + 7) % 7; 
+      }
+
+      const targetDate = new Date(now);
+      targetDate.setDate(now.getDate() + daysToAdd);
+      targetDate.setHours(23, 59, 59, 999); 
+      
+      return targetDate.getTime();
+    }
+
+    function updateTimers() {
+      const timers = document.querySelectorAll('.match-countdown');
+      const now = new Date().getTime();
+      const deadline = getNextMatchDeadline();
+      const distance = deadline - now;
+      
+      // Dynamic label based on the current day
+      const today = new Date().getDay();
+      const labelText = (today === 1 || today === 3) ? "MATCHDAY DEADLINE" : "NEXT LEAGUE FIXTURE";
+
+      timers.forEach(timer => {
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        
+        timer.innerHTML = `
+          <div style="color: var(--text-mid); font-size: 0.65rem; margin-bottom: 2px;">${labelText}</div>
+          ⏳ <b>${days}d ${hours}h ${minutes}m</b> remaining
+        `;
+      });
+    }
+    
+    updateTimers();
+    setInterval(updateTimers, 60000); 
+  </script>
+
+  
+</body>
+</html>
