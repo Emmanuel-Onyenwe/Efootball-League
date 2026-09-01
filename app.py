@@ -563,16 +563,18 @@ def rescue_founder():
         return "<h3>God Mode Activated. Head Admin Restored!</h3><a href='/panic-hq'>Click here to return to Control Room</a>"
     return "Head Admin not found."
 
-@app.route('/panic-hq/force-rename/<old_name>/<new_name>')
+@app.route('/panic-hq/unlock-all')
 @login_required
-def force_rename(old_name, new_name):
-    # Security check: Only admins can trigger this
+def unlock_all_names():
     if current_user.role != 'admin':
         return "Access Denied: Admins only!"
         
-    user = User.query.filter_by(name=old_name).first()
-    if not user:
-        return f"Error: Could not find a player named '{old_name}'"
+    users = User.query.all()
+    for u in users:
+        u.name_changed = False 
+    db.session.commit()
+    
+    return "SUCCESS: All players have had their name-change locks removed! They can now edit their profiles."
         
     # Update the name and unlock their account
     user.name = new_name
