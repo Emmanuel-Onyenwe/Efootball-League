@@ -188,7 +188,7 @@
             
             <button type="submit" name="action" value="void" class="btn btn-red" style="font-size: 0.65rem; padding: 5px 8px;" onclick="return confirm('DANGER: VOID this match? Neither player gets points.');">VOID</button>
 
-            <button type="submit" name="action" value="unvoid" style="background: #FFC93C; color: black; border: none; padding: 4px 8px; border-radius: 4px; font-weight: bold; cursor: pointer;">UNVOID</button>
+            <button type="submit" name="action" value="unvoid" style="background: var(--violet); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; cursor: pointer; text-transform: uppercase;">UNVOID</button>
             
             <button type="submit" name="action" value="walkover_away" class="btn" style="background: #00E5FF; color: black; font-size: 0.65rem; padding: 5px 8px;" onclick="return confirm('Give {{ match.player_b.name }} a 3-0 win?');">3-0 Away</button>
           </form>
