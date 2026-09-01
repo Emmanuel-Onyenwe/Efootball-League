@@ -747,15 +747,3 @@ def cron_deadline_reminders():
     thread.start()
 
     return f"Cron Triggered: Processing {len(match_data)} fixtures in the background.", 200
-
-@app.route('/panic-hq/test-email')
-@login_required
-def test_email():
-    if current_user.role != 'admin':
-        return "Admins only"
-    try:
-        send_email(current_user.email, "SYSTEM TEST", "<p>Cron job email pipeline is active and working!</p>")
-        return "Test email fired! Check your admin inbox."
-    except Exception as e:
-        return f"Email failed: {e}"
-            
