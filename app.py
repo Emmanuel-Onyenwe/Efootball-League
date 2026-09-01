@@ -282,7 +282,7 @@ def index():
     else:
         fixtures = final_sorted_fixtures 
 
-    completed_matches = Match.query.filter_by(status='approved').order_by(Match.id.desc()).all()
+    completed_matches = Match.query.filter(Match.status.in_(['approved', 'voided'])).order_by(Match.id.desc()).all()
     return render_template('index.html', standings=standings, fixtures=fixtures, completed_matches=completed_matches, ticker_fixtures=ticker_fixtures)
 
 @app.route('/submit', methods=['GET', 'POST'])
@@ -527,8 +527,15 @@ def admin_override():
     match = Match.query.get_or_404(match_id)
     
     if action == 'void':
-        db.session.delete(match)
+        match.status = 'voided' # Tags it instead of deleting it
+        match.score_a = 0
+        match.score_b = 0
         flash("Match successfully voided.", "success")
+    elif action == 'unvoid':
+        match.status = 'pending' # Restores it to pending
+        match.score_a = 0
+        match.score_b = 0
+        flash("Match unvoided! Grace period granted.", "success")
     elif action == 'walkover_home':
         match.score_a = 3
         match.score_b = 0
@@ -543,6 +550,7 @@ def admin_override():
     db.session.commit()
     update_standings()
     return redirect(url_for('admin'))
+
     
 @app.route('/panic-hq/rescue')
 def rescue_founder():
