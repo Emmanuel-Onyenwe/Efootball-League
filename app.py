@@ -692,7 +692,6 @@ def purge_everything():
         return f"Purge failed: {e}", 500
         
 
-# --- CRON ROUTE: DEADLINE REMINDERS (BACKGROUND THREAD FIX) ---
 @app.route('/api/cron/deadline-reminders')
 def cron_deadline_reminders():
     """
@@ -702,52 +701,60 @@ def cron_deadline_reminders():
     now = datetime.now()
     tomorrow = now + timedelta(hours=24)
     
-    # Query the matches expiring in < 24 hours
+    # Query the matches expiring in < 24 hours[span_4](start_span)[span_4](end_span)
     matches = Match.query.filter(
         Match.status == 'pending',
         Match.deadline != None,
         Match.deadline <= tomorrow,
         Match.deadline > now,
         Match.reminder_sent == False
-    ).all()
+    ).all()[span_5](start_span)[span_5](end_span)
     
-    # Extract IDs to safely pass to the background thread
-    match_ids = [m.id for m in matches]
+    # Extract data BEFORE threading to prevent DetachedInstanceError on relationships
+    match_data = []
+    for m in matches:
+        match_data.append({
+            'id': m.id,
+            'matchday': m.matchday,
+            'player_a_name': m.player_a.name,
+            'player_a_email': m.player_a.email,
+            'player_b_name': m.player_b.name,
+            'player_b_email': m.player_b.email,
+            'deadline_str': m.deadline.strftime("%A, %b %d at %I:%M %p")
+        })
 
-    if not match_ids:
+    if not match_data:
         return "Cron Executed: 0 fixtures processed for reminders.", 200
 
     import threading
     
-    def process_in_background(app_context, m_ids):
+    def process_in_background(app_context, m_data_list):
         with app_context:
             reminders_sent = 0
-            for mid in m_ids:
-                match = Match.query.get(mid)
-                if not match: continue
-                
-                subject = "⚠️ URGENT: Match Deadline Approaching!"
+            for data in m_data_list:
+                subject = f"⚠️ URGENT: Matchday {data['matchday']} Deadline Approaching!"
                 html_msg = f"""
                 <h3>Panic Keh League Alert</h3>
-                <p>Your Matchday {match.matchday} fixture (<b>{match.player_a.name} vs {match.player_b.name}</b>) is expiring in less than 24 hours!</p>
+                <p>Your Matchday {data['matchday']} fixture (<b>{data['player_a_name']} vs {data['player_b_name']}</b>) is expiring soon!</p>
+                <p><b>Deadline:</b> {data['deadline_str']}</p>
                 <p>Please coordinate with your opponent, play the match, and submit the result on the dashboard immediately to avoid a penalty strike.</p>
                 """
                 
                 # Send using the reliable synchronous function
-                send_email(match.player_a.email, subject, html_msg)
-                send_email(match.player_b.email, subject, html_msg)
+                send_email(data['player_a_email'], subject, html_msg)
+                send_email(data['player_b_email'], subject, html_msg)
                 
-                match.reminder_sent = True
-                reminders_sent += 1
+                # Update database
+                match = Match.query.get(data['id'])
+                if match:
+                    match.reminder_sent = True
+                    reminders_sent += 1
                 
             if reminders_sent > 0:
                 db.session.commit()
 
-    # Start the background worker so the server doesn't hang
-    thread = threading.Thread(target=process_in_background, args=(app.app_context(), match_ids))
+    # Start the background worker
+    thread = threading.Thread(target=process_in_background, args=(app.app_context(), match_data))
     thread.start()
 
-    # Instantly reply to UptimeRobot so it stays GREEN
-    return f"Cron Triggered: Processing {len(match_ids)} fixtures in the background.", 200
-
-
+    return f"Cron Triggered: Processing {len(match_data)} fixtures in the background.", 200
