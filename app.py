@@ -2,7 +2,7 @@ import random
 import os
 import itertools
 from datetime import datetime, timedelta
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -359,59 +359,78 @@ def promote_player(user_id):
         flash(f"{user.name} is now a Co-Admin!", "success")
     return redirect(url_for('admin'))
 
-def get_mon_wed_deadlines(start_date, num_matchdays):
-    deadlines = []
-    # Start checking from tomorrow so fixtures don't expire instantly on generation day
-    current_date = start_date + timedelta(days=1) 
-    while len(deadlines) < num_matchdays:
-        if current_date.weekday() in [0, 2]: # 0 = Monday, 2 = Wednesday
-            deadlines.append(current_date)
-        current_date += timedelta(days=1)
-    return deadlines
+# --- MATHEMATICAL CALENDAR GENERATOR ---
+def get_deadline_for_matchday(matchday):
+    # Anchor date: Season officially started on Monday, August 31, 2026
+    start_date = datetime(2026, 8, 31, 23, 59, 59)
+    zero_index = matchday - 1
+    weeks_added = zero_index // 2
+    is_wednesday = (zero_index % 2 == 1)
+    
+    # Add 7 days for every full week passed, and 2 extra days for Wednesday matchdays
+    days_added = (weeks_added * 7) + (2 if is_wednesday else 0)
+    return start_date + timedelta(days=days_added)
 
 @app.route('/panic-hq/generate_fixtures', methods=['POST'])
 @login_required
 def generate_fixtures():
-    if current_user.role != 'admin': return redirect(url_for('index'))
-    users = User.query.filter_by(status='active', in_league=True).order_by(User.id).all() #
-    if len(users) < 2: #[cite: 1]
-        flash("Need at least 2 approved players to generate fixtures.", "error") #[cite: 1]
-        return redirect(url_for('admin')) #[cite: 1]
-    if len(users) % 2 != 0: #[cite: 1]
-        flash("The Circle Method schedule needs an EVEN number of active players. Approve/remove a player first.", "error") #[cite: 1]
-        return redirect(url_for('admin')) #[cite: 1]
+    # Redirect directly to the smart-sync function to avoid old algorithm issues
+    return sync_matchdays()
 
-    user_ids = [u.id for u in users] #[cite: 1]
-    schedule = generate_round_robin_schedule(user_ids) #[cite: 1]
-    
-    now = datetime.now() #[cite: 1]
-    end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=0) #[cite: 1]
-    
-    # Pre-calculate all Monday/Wednesday deadlines for the season
-    total_matchdays = len(schedule)
-    deadlines = get_mon_wed_deadlines(end_of_today, total_matchdays)
-    
-    matches_created = 0 #[cite: 1]
+@app.route('/panic-hq/sync-matchdays', methods=['POST', 'GET'])
+@login_required
+def sync_matchdays():
+    if current_user.role != 'admin':
+        return redirect(url_for('admin'))
 
-    for matchday_index, round_matches in enumerate(schedule, start=1): #[cite: 1]
-        # Pull the correct Mon/Wed deadline from the pre-calculated list
-        matchday_deadline = deadlines[matchday_index - 1]
+    users = User.query.filter_by(status='active', in_league=True).all()
+    added_count = 0
+    
+    # 1. SMART GENERATOR: Scan every possible matchup and create only the missing ones
+    for p1, p2 in itertools.combinations(users, 2):
+        # Check Home Leg
+        if not Match.query.filter_by(player_a_id=p1.id, player_b_id=p2.id).first():
+            db.session.add(Match(player_a_id=p1.id, player_b_id=p2.id, status='pending', matchday=1))
+            added_count += 1
+        # Check Away Leg
+        if not Match.query.filter_by(player_a_id=p2.id, player_b_id=p1.id).first():
+            db.session.add(Match(player_a_id=p2.id, player_b_id=p1.id, status='pending', matchday=1))
+            added_count += 1
+            
+    db.session.commit()
+
+    # 2. SMART CALENDAR: Find gaps and assign matchdays without double-booking
+    booked_matchdays = {u.id: set() for u in users}
+    
+    # Track matchdays for matches that are already submitted or completed
+    for m in Match.query.filter(Match.status != 'pending').all():
+        if m.matchday:
+            if m.player_a_id in booked_matchdays: booked_matchdays[m.player_a_id].add(m.matchday)
+            if m.player_b_id in booked_matchdays: booked_matchdays[m.player_b_id].add(m.matchday)
+
+    updated_count = 0
+    pending_matches = Match.query.filter_by(status='pending').order_by(Match.id).all()
+    
+    for m in pending_matches:
+        if m.player_a_id not in booked_matchdays: booked_matchdays[m.player_a_id] = set()
+        if m.player_b_id not in booked_matchdays: booked_matchdays[m.player_b_id] = set()
         
-        for home_id, away_id in round_matches: #[cite: 1]
-            existing_match = Match.query.filter_by(player_a_id=home_id, player_b_id=away_id).first() #[cite: 1]
-            if not existing_match: #[cite: 1]
-                db.session.add(Match( #[cite: 1]
-                    player_a_id=home_id, #[cite: 1]
-                    player_b_id=away_id, #[cite: 1]
-                    deadline=matchday_deadline, #[cite: 1]
-                    matchday=matchday_index, #[cite: 1]
-                    status='pending' #[cite: 1]
-                )) #[cite: 1]
-                matches_created += 1 #[cite: 1]
-
-    db.session.commit() #[cite: 1]
+        md = 1
+        # Loop until we find a matchday where BOTH players are free to play
+        while md in booked_matchdays[m.player_a_id] or md in booked_matchdays[m.player_b_id]:
+            md += 1
+            
+        m.matchday = md
+        m.deadline = get_deadline_for_matchday(md)
+        
+        booked_matchdays[m.player_a_id].add(md)
+        booked_matchdays[m.player_b_id].add(md)
+        updated_count += 1
+        
+    db.session.commit()
     
-    # ... (Keep the rest of your email notification logic exactly the same)
+    flash(f"League Synced! {added_count} missing matches created. All Matchdays and Timers mathematically aligned.", "success")
+    return redirect(url_for('admin'))
     
 @app.route('/panic-hq/approve/<int:match_id>', methods=['POST'])
 @login_required
@@ -469,292 +488,4 @@ def add_strike(user_id):
         user = User.query.get_or_404(user_id)
         user.strikes += 1
         db.session.commit()
-        flash(f"Strike added to {user.name}. Total strikes: {user.strikes}", "error")
-    return redirect(url_for('admin'))
-
-@app.route('/panic-hq/remove_strike/<int:user_id>', methods=['POST'])
-@login_required
-def remove_strike(user_id):
-    if current_user.role == 'admin':
-        user = User.query.get_or_404(user_id)
-        user.strikes = max(0, user.strikes - 1)
-        db.session.commit()
-        flash(f"Strike removed from {user.name}. Total strikes: {user.strikes}", "success")
-    return redirect(url_for('admin'))
-
-@app.route('/panic-hq/reset_strikes', methods=['POST'])
-@login_required
-def reset_strikes():
-    if current_user.role != 'admin':
-        flash("Access Denied: Admins only.", "error")
-        return redirect(url_for('index'))
-    users = User.query.all()
-    for u in users:
-        u.strikes = 0
-    db.session.commit()
-    flash("All player strikes have been cleared.", "success")
-    return redirect(url_for('admin'))
-
-@app.route('/panic-hq/admin_override', methods=['POST'])
-@login_required
-def admin_override():
-    if current_user.id != 1:
-        flash("Access Denied: Head Admin Only", "error")
-        return redirect(url_for('admin'))
-
-    match_id = request.form.get('match_id')
-    action = request.form.get('action')
-    
-    match = Match.query.get_or_404(match_id)
-    
-    if action == 'void':
-        db.session.delete(match)
-        flash("Match successfully voided.", "success")
-    elif action == 'walkover_home':
-        match.score_a = 3
-        match.score_b = 0
-        match.status = 'approved'
-        flash(f"Walkover awarded: {match.player_a.name} wins 3-0.", "success")
-    elif action == 'walkover_away':
-        match.score_a = 0
-        match.score_b = 3
-        match.status = 'approved'
-        flash(f"Walkover awarded: {match.player_b.name} wins 3-0.", "success")
-        
-    db.session.commit()
-    update_standings()
-    return redirect(url_for('admin'))
-    
-@app.route('/panic-hq/rescue')
-def rescue_founder():
-    founder = User.query.get(1)
-    if founder:
-        founder.status = 'active'
-        founder.in_league = True
-        founder.role = 'admin'
-        db.session.commit()
-        return "<h3>God Mode Activated. Head Admin Restored!</h3><a href='/panic-hq'>Click here to return to Control Room</a>"
-    return "Head Admin not found."
-
-@app.route('/panic-hq/eliminate/<int:user_id>', methods=['POST'])
-@login_required
-def eliminate_player(user_id):
-    if current_user.role == 'admin':
-        if user_id == 1:
-            flash("ACCESS DENIED: You cannot eliminate the Head Admin.", "error")
-            return redirect(url_for('admin'))
-            
-        user = User.query.get_or_404(user_id)
-        user.status = 'eliminated'
-        unplayed_matches = Match.query.filter(
-            (Match.status == 'pending') & 
-            ((Match.player_a_id == user.id) | (Match.player_b_id == user.id))
-        ).all()
-        for m in unplayed_matches:
-            db.session.delete(m)
-        db.session.commit()
-        flash(f"{user.name} eliminated! {len(unplayed_matches)} future matches were safely removed.", "success")
-    return redirect(url_for('admin'))
-
-@app.route('/edit_profile', methods=['POST'])
-@login_required
-def edit_profile():
-    new_name = request.form.get('gamertag', '').strip()
-    new_emblem = request.form.get('emblem')
-    
-    taken_emblems = [u.emblem for u in User.query.all() if u.id != current_user.id]
-    if new_emblem in taken_emblems:
-        flash("That emblem is already taken by another player!", "error")
-        return redirect(url_for('index'))
-        
-    if new_name and new_name != current_user.name:
-        if current_user.name_changed:
-            flash("You have already used your one-time name change!", "error")
-            return redirect(url_for('index'))
-        
-        if User.query.filter_by(name=new_name).first():
-            flash("That Gamertag is already taken.", "error")
-            return redirect(url_for('index'))
-            
-        current_user.name = new_name
-        current_user.name_changed = True
-        
-    if new_emblem:
-        current_user.emblem = new_emblem
-        
-    db.session.commit()
-    flash("Profile updated successfully!", "success")
-    return redirect(url_for('index'))
-    
-@app.route('/panic-hq/reject_player/<int:user_id>', methods=['POST'])
-@login_required
-def reject_player(user_id):
-    if current_user.role == 'admin':
-        user = User.query.get_or_404(user_id)
-        
-        target_email = user.email
-        gamertag = user.name
-        
-        db.session.delete(user)
-        db.session.commit()
-        
-        try:
-            msg = f"<h3>Registration Update</h3><p>Unfortunately, your registration for the Panic Keh League under the Gamertag <b>{gamertag}</b> was declined.</p>"
-            send_email(target_email, "Panic Keh Registration Update", msg)
-        except Exception as e:
-            print(f"Rejection email failed: {e}")
-            
-        flash(f"Registration for {gamertag} was rejected and deleted.", "success")
-    return redirect(url_for('admin'))
-
-# --- AUTO-PATCH DATABASE ON STARTUP ---
-with app.app_context():
-    try:
-        db.session.execute(text('ALTER TABLE "user" ADD COLUMN name_changed BOOLEAN DEFAULT FALSE'))
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-
-    try:
-        # Added quotes around "match"
-        db.session.execute(text('ALTER TABLE "match" ADD COLUMN matchday INTEGER DEFAULT 0'))
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-        
-    try:
-        # Added quotes around "match"
-        db.session.execute(text('ALTER TABLE "match" ADD COLUMN reminder_sent BOOLEAN DEFAULT FALSE'))
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-
-@app.route('/panic-hq/sync-matchdays', methods=['POST'])
-@login_required
-def sync_matchdays():
-    # ... (Keep the beginning of your sync function the same down to end_of_today)
-    
-    now = datetime.now() #[cite: 1]
-    end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=0) #[cite: 1]
-
-    # Pre-calculate Monday/Wednesday deadlines
-    total_matchdays = len(schedule)
-    deadlines = get_mon_wed_deadlines(end_of_today, total_matchdays)
-
-    for pair, matchdays in pair_matchdays.items(): #[cite: 1]
-        existing = matches_by_pair.get(pair, []) #[cite: 1]
-        for leg_index, matchday in enumerate(matchdays): #[cite: 1]
-            
-            # Map directly to the Monday/Wednesday calendar helper
-            matchday_deadline = deadlines[matchday - 1]
-            
-            if leg_index < len(existing): #[cite: 1]
-                m = existing[leg_index] #[cite: 1]
-                if m.matchday != matchday or m.deadline != matchday_deadline: #[cite: 1]
-                    m.matchday = matchday #[cite: 1]
-                    m.deadline = matchday_deadline  #[cite: 1]
-                    updated += 1 #[cite: 1]
-            else: #[cite: 1]
-                home_id, away_id = next( #[cite: 1]
-                    (h, a) for (h, a) in schedule[matchday - 1] if tuple(sorted([h, a])) == pair #[cite: 1]
-                ) #[cite: 1]
-                db.session.add(Match( #[cite: 1]
-                    player_a_id=home_id, player_b_id=away_id, #[cite: 1]
-                    deadline=matchday_deadline, status='pending', matchday=matchday #[cite: 1]
-                )) #[cite: 1]
-                created += 1 #[cite: 1]
-
-    db.session.commit() #[cite: 1]
-    # ... (Keep the flash message and return redirect identical)
-
-@app.route('/panic-hq/purge')
-@login_required
-def purge_everything():
-    # Only the Admin can push the red button
-    if current_user.role != 'admin':
-        return "Access Denied", 403
-        
-    try:
-        # Step 1: Wipe all matches to prevent database errors (Foreign Key constraints)
-        Match.query.delete()
-        
-        # Step 2: Delete every user EXCEPT your admin account
-        users_to_purge = User.query.filter(User.id != current_user.id).all()
-        for u in users_to_purge:
-            db.session.delete(u)
-            
-        db.session.commit()
-        flash("Purge complete: All players and fixtures have been permanently deleted.", "success")
-        return redirect(url_for('admin'))
-        
-    except Exception as e:
-        db.session.rollback()
-        return f"Purge failed: {e}", 500
-        
-
-@app.route('/api/cron/deadline-reminders')
-def cron_deadline_reminders():
-    """
-    Instantly returns 200 OK to keep UptimeRobot happy, 
-    then securely processes emails in the background to avoid timeouts.
-    """
-    now = datetime.now()
-    tomorrow = now + timedelta(hours=24)
-    
-    # Query the matches expiring in < 24 hours[span_4](start_span)[span_4](end_span)
-    matches = Match.query.filter(
-        Match.status == 'pending',
-        Match.deadline != None,
-        Match.deadline <= tomorrow,
-        Match.deadline > now,
-        Match.reminder_sent == False
-    ).all()[span_5](start_span)[span_5](end_span)
-    
-    # Extract data BEFORE threading to prevent DetachedInstanceError on relationships
-    match_data = []
-    for m in matches:
-        match_data.append({
-            'id': m.id,
-            'matchday': m.matchday,
-            'player_a_name': m.player_a.name,
-            'player_a_email': m.player_a.email,
-            'player_b_name': m.player_b.name,
-            'player_b_email': m.player_b.email,
-            'deadline_str': m.deadline.strftime("%A, %b %d at %I:%M %p")
-        })
-
-    if not match_data:
-        return "Cron Executed: 0 fixtures processed for reminders.", 200
-
-    import threading
-    
-    def process_in_background(app_context, m_data_list):
-        with app_context:
-            reminders_sent = 0
-            for data in m_data_list:
-                subject = f"⚠️ URGENT: Matchday {data['matchday']} Deadline Approaching!"
-                html_msg = f"""
-                <h3>Panic Keh League Alert</h3>
-                <p>Your Matchday {data['matchday']} fixture (<b>{data['player_a_name']} vs {data['player_b_name']}</b>) is expiring soon!</p>
-                <p><b>Deadline:</b> {data['deadline_str']}</p>
-                <p>Please coordinate with your opponent, play the match, and submit the result on the dashboard immediately to avoid a penalty strike.</p>
-                """
-                
-                # Send using the reliable synchronous function
-                send_email(data['player_a_email'], subject, html_msg)
-                send_email(data['player_b_email'], subject, html_msg)
-                
-                # Update database
-                match = Match.query.get(data['id'])
-                if match:
-                    match.reminder_sent = True
-                    reminders_sent += 1
-                
-            if reminders_sent > 0:
-                db.session.commit()
-
-    # Start the background worker
-    thread = threading.Thread(target=process_in_background, args=(app.app_context(), match_data))
-    thread.start()
-
-    return f"Cron Triggered: Processing {len(match_data)} fixtures in the background.", 200
+        flash(f"Strik
