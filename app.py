@@ -563,6 +563,24 @@ def rescue_founder():
         return "<h3>God Mode Activated. Head Admin Restored!</h3><a href='/panic-hq'>Click here to return to Control Room</a>"
     return "Head Admin not found."
 
+@app.route('/panic-hq/force-rename/<old_name>/<new_name>')
+@login_required
+def force_rename(old_name, new_name):
+    # Security check: Only admins can trigger this
+    if current_user.role != 'admin':
+        return "Access Denied: Admins only!"
+        
+    user = User.query.filter_by(name=old_name).first()
+    if not user:
+        return f"Error: Could not find a player named '{old_name}'"
+        
+    # Update the name and unlock their account
+    user.name = new_name
+    user.name_changed = False 
+    db.session.commit()
+    
+    return f"SUCCESS: Player '{old_name}' has been successfully renamed to '{new_name}'!"
+    
 @app.route('/panic-hq/eliminate/<int:user_id>', methods=['POST'])
 @login_required
 def eliminate_player(user_id):
