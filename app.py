@@ -595,69 +595,87 @@ def unlock_all_names():
 
 @app.route('/panic-hq/hard-reset-schedule')
 @login_required
+@app.route('/panic-hq/hard-reset-schedule')
+@login_required
 def hard_reset_schedule():
     if current_user.role != 'admin':
         return "Access Denied: Admins only!"
 
-    # 1. Lock played matches to Matchday 1 and identify the veterans
+    # 1. Identify the Veterans from their locked, already-played Matchday 1 pairs
     played_matches = Match.query.filter(Match.status != 'pending').all()
-    played_pairs = []
-    veterans = set()
-    
-    for m in played_matches:
-        m.matchday = 1
-        played_pairs.append(tuple(sorted([m.player_a_id, m.player_b_id])))
-        veterans.add(m.player_a_id)
-        veterans.add(m.player_b_id)
 
-    # 2. NUKE all pending duplicate matches
+    veteran_partner = {}
+    veteran_pairs = []
+    for m in played_matches:
+        m.matchday = 1  # lock to Matchday 1
+        if m.player_a_id in veteran_partner or m.player_b_id in veteran_partner:
+            return (f"ABORT: Player {m.player_a_id} or {m.player_b_id} appears in more than "
+                     f"one completed match — can't build a clean Matchday 1 grid."), 400
+        veteran_partner[m.player_a_id] = m.player_b_id
+        veteran_partner[m.player_b_id] = m.player_a_id
+        veteran_pairs.append((m.player_a_id, m.player_b_id))
+
+    veterans = set(veteran_partner.keys())
+    if len(veterans) != 6 or len(veteran_pairs) != 3:
+        return (f"ABORT: Expected 6 veterans in 3 completed pairs, found "
+                 f"{len(veterans)} players in {len(veteran_pairs)} pairs."), 400
+
+    # 2. Identify the Rookies (active, in-league, not a veteran)
+    active_ids = [u.id for u in User.query.filter_by(status='active', in_league=True).all()]
+    rookies = [uid for uid in active_ids if uid not in veterans]
+
+    if len(active_ids) != 8 or len(rookies) != 2:
+        return (f"ABORT: Expected 8 active players (6 veterans + 2 rookies), found "
+                 f"{len(active_ids)} active players and {len(rookies)} rookies."), 400
+
+    # 3. Wipe all pending fixtures to prevent duplicates
     Match.query.filter_by(status='pending').delete()
 
-    # 3. Get all active players
-    active_users = User.query.filter_by(status='active', in_league=True).all()
-    user_ids = [u.id for u in active_users]
+    # 4. Seed the Circle Method grid.
+    #    generate_round_robin_schedule pairs position i with position (7-i) in Round 0,
+    #    so seeding those 4 slots with the real MD1 pairings makes Round 0 == history.
+    #    Everything from Round 1 onward rotates automatically off this seed.
+    grid_seed = [None] * 8
+    for idx, (a, b) in enumerate(veteran_pairs):
+        grid_seed[idx] = a
+        grid_seed[7 - idx] = b
+    grid_seed[3] = rookies[0]
+    grid_seed[4] = rookies[1]
 
-    # 4. Find strictly missing matchups
-    missing_matches = []
-    for i in range(len(user_ids)):
-        for j in range(i + 1, len(user_ids)):
-            pair = tuple(sorted([user_ids[i], user_ids[j]]))
-            if pair not in played_pairs:
-                missing_matches.append(pair)
+    full_schedule = generate_round_robin_schedule(grid_seed)  # 14 rounds x 4 matches = 56 fixtures
 
-    # 5. Distribute matches starting at Matchday 1!
-    current_matchday = 1
     now = datetime.now()
     end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=0)
 
-    while missing_matches:
-        players_booked_this_round = set()
-        leftover_matches = []
-        
-        # If we are on Matchday 1, artificially "book" the veterans so they don't get double-scheduled
-        if current_matchday == 1:
-            players_booked_this_round.update(veterans)
+    # 5. Matchday 1: veterans already have their result on record — only the Rookies
+    #    need a fresh fixture for the pair the seed placed at positions 3 & 4.
+    for home, away in full_schedule[0]:
+        if {home, away} == set(rookies):
+            db.session.add(Match(
+                player_a_id=home,
+                player_b_id=away,
+                status='pending',
+                matchday=1,
+                deadline=end_of_today + timedelta(days=1 * 2)
+            ))
+            break
 
-        for player_a, player_b in missing_matches:
-            if player_a not in players_booked_this_round and player_b not in players_booked_this_round:
-                new_match = Match(
-                    player_a_id=player_a,
-                    player_b_id=player_b,
-                    status='pending',
-                    matchday=current_matchday,
-                    deadline=end_of_today + timedelta(days=current_matchday * 2)
-                )
-                db.session.add(new_match)
-                players_booked_this_round.add(player_a)
-                players_booked_this_round.add(player_b)
-            else:
-                leftover_matches.append((player_a, player_b))
-
-        missing_matches = leftover_matches
-        current_matchday += 1
+    # 6. Matchday 2 onward: every fixture from the rest of the Circle Method grid, both legs.
+    for matchday, round_matches in enumerate(full_schedule[1:], start=2):
+        for home, away in round_matches:
+            db.session.add(Match(
+                player_a_id=home,
+                player_b_id=away,
+                status='pending',
+                matchday=matchday,
+                deadline=end_of_today + timedelta(days=matchday * 2)
+            ))
 
     db.session.commit()
-    return "SUCCESS: Veterans locked to Matchday 1. Rookies get their Matchday 1. Everyone seamlessly moves to Matchday 2!"
+    total_matchdays = len(full_schedule)
+    return (f"SUCCESS: Circle Method grid rebuilt for 8 players. Veterans stay locked on "
+            f"Matchday 1, Rookies caught up, full double round-robin scheduled through "
+            f"Matchday {total_matchdays}.")
     
 @app.route('/panic-hq/eliminate/<int:user_id>', methods=['POST'])
 @login_required
