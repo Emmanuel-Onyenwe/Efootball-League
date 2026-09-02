@@ -593,47 +593,63 @@ def unlock_all_names():
     
     return f"SUCCESS: Player '{old_name}' has been successfully renamed to '{new_name}'!"
 
-@app.route('/panic-hq/clean-schedule')
+@app.route('/panic-hq/hard-reset-schedule')
 @login_required
-def clean_schedule():
+def hard_reset_schedule():
     if current_user.role != 'admin':
         return "Access Denied: Admins only!"
-        
-    # 1. Lock all finished, submitted, or voided matches strictly to Matchday 1
+
+    # 1. Identify played matches and lock them safely in the past
     played_matches = Match.query.filter(Match.status != 'pending').all()
+    played_pairs = [(m.player_a_id, m.player_b_id) for m in played_matches]
     for m in played_matches:
         m.matchday = 1
-        
-    # 2. Gather all remaining unplayed matches
-    pending_matches = Match.query.filter_by(status='pending').order_by(Match.id).all()
-    
-    # 3. Intelligently sort them starting from Matchday 1
-    current_matchday = 1
-    while pending_matches:
-        players_in_this_round = set()
-        
-        # If filling Matchday 1, block out everyone who already played a Matchday 1 game
-        if current_matchday == 1:
-            for pm in played_matches:
-                players_in_this_round.add(pm.player_a_id)
-                players_in_this_round.add(pm.player_b_id)
-                
+
+    # 2. NUKE all pending matches (this destroys the 86 duplicates)
+    Match.query.filter_by(status='pending').delete()
+
+    # 3. Get all 8 active players
+    active_users = User.query.filter_by(status='active', in_league=True).all()
+    user_ids = [u.id for u in active_users]
+
+    # 4. Figure out exactly which matches are missing (Home and Away)
+    missing_matches = []
+    for home_id in user_ids:
+        for away_id in user_ids:
+            if home_id != away_id and (home_id, away_id) not in played_pairs:
+                missing_matches.append((home_id, away_id))
+
+    # 5. Distribute them cleanly starting at Matchday 2 with staggered deadlines
+    current_matchday = 2
+    now = datetime.now()
+    end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=0)
+
+    while missing_matches:
+        players_booked_this_round = set()
         leftover_matches = []
-        for m in pending_matches:
-            # If neither player is booked for this matchday, assign them
-            if m.player_a_id not in players_in_this_round and m.player_b_id not in players_in_this_round:
-                m.matchday = current_matchday
-                players_in_this_round.add(m.player_a_id)
-                players_in_this_round.add(m.player_b_id)
+
+        for home_id, away_id in missing_matches:
+            if home_id not in players_booked_this_round and away_id not in players_booked_this_round:
+                # Neither player is booked yet, so slot them into this Matchday
+                new_match = Match(
+                    player_a_id=home_id,
+                    player_b_id=away_id,
+                    status='pending',
+                    matchday=current_matchday,
+                    deadline=end_of_today + timedelta(days=current_matchday * 2)
+                )
+                db.session.add(new_match)
+                players_booked_this_round.add(home_id)
+                players_booked_this_round.add(away_id)
             else:
-                # Otherwise, push to the next round to prevent double-booking
-                leftover_matches.append(m)
-        
-        pending_matches = leftover_matches
+                # Someone is busy, push this matchup to the next round
+                leftover_matches.append((home_id, away_id))
+
+        missing_matches = leftover_matches
         current_matchday += 1
-        
+
     db.session.commit()
-    return "SUCCESS: Schedule intelligently cleaned! New guys get their Matchday 1, veterans move to Matchday 2."
+    return "SUCCESS: Ghost matches purged! Perfect schedule rebuilt starting at Matchday 2."
     
 @app.route('/panic-hq/eliminate/<int:user_id>', methods=['POST'])
 @login_required
