@@ -290,6 +290,7 @@ def index():
         key=lambda m: (m.updated_at or datetime.min, m.id), 
         reverse=True
     )
+    return render_template('index.html', standings=standings, fixtures=fixtures, completed_matches=completed_matches, ticker_fixtures=ticker_fixtures)
     
 @app.route('/submit', methods=['GET', 'POST'])
 @login_required
