@@ -599,57 +599,65 @@ def hard_reset_schedule():
     if current_user.role != 'admin':
         return "Access Denied: Admins only!"
 
-    # 1. Identify played matches and lock them safely in the past
+    # 1. Lock played matches to Matchday 1 and identify the veterans
     played_matches = Match.query.filter(Match.status != 'pending').all()
-    played_pairs = [(m.player_a_id, m.player_b_id) for m in played_matches]
+    played_pairs = []
+    veterans = set()
+    
     for m in played_matches:
         m.matchday = 1
+        played_pairs.append(tuple(sorted([m.player_a_id, m.player_b_id])))
+        veterans.add(m.player_a_id)
+        veterans.add(m.player_b_id)
 
-    # 2. NUKE all pending matches (this destroys the 86 duplicates)
+    # 2. NUKE all pending duplicate matches
     Match.query.filter_by(status='pending').delete()
 
-    # 3. Get all 8 active players
+    # 3. Get all active players
     active_users = User.query.filter_by(status='active', in_league=True).all()
     user_ids = [u.id for u in active_users]
 
-    # 4. Figure out exactly which matches are missing (Home and Away)
+    # 4. Find strictly missing matchups
     missing_matches = []
-    for home_id in user_ids:
-        for away_id in user_ids:
-            if home_id != away_id and (home_id, away_id) not in played_pairs:
-                missing_matches.append((home_id, away_id))
+    for i in range(len(user_ids)):
+        for j in range(i + 1, len(user_ids)):
+            pair = tuple(sorted([user_ids[i], user_ids[j]]))
+            if pair not in played_pairs:
+                missing_matches.append(pair)
 
-    # 5. Distribute them cleanly starting at Matchday 2 with staggered deadlines
-    current_matchday = 2
+    # 5. Distribute matches starting at Matchday 1!
+    current_matchday = 1
     now = datetime.now()
     end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=0)
 
     while missing_matches:
         players_booked_this_round = set()
         leftover_matches = []
+        
+        # If we are on Matchday 1, artificially "book" the veterans so they don't get double-scheduled
+        if current_matchday == 1:
+            players_booked_this_round.update(veterans)
 
-        for home_id, away_id in missing_matches:
-            if home_id not in players_booked_this_round and away_id not in players_booked_this_round:
-                # Neither player is booked yet, so slot them into this Matchday
+        for player_a, player_b in missing_matches:
+            if player_a not in players_booked_this_round and player_b not in players_booked_this_round:
                 new_match = Match(
-                    player_a_id=home_id,
-                    player_b_id=away_id,
+                    player_a_id=player_a,
+                    player_b_id=player_b,
                     status='pending',
                     matchday=current_matchday,
                     deadline=end_of_today + timedelta(days=current_matchday * 2)
                 )
                 db.session.add(new_match)
-                players_booked_this_round.add(home_id)
-                players_booked_this_round.add(away_id)
+                players_booked_this_round.add(player_a)
+                players_booked_this_round.add(player_b)
             else:
-                # Someone is busy, push this matchup to the next round
-                leftover_matches.append((home_id, away_id))
+                leftover_matches.append((player_a, player_b))
 
         missing_matches = leftover_matches
         current_matchday += 1
 
     db.session.commit()
-    return "SUCCESS: Ghost matches purged! Perfect schedule rebuilt starting at Matchday 2."
+    return "SUCCESS: Veterans locked to Matchday 1. Rookies get their Matchday 1. Everyone seamlessly moves to Matchday 2!"
     
 @app.route('/panic-hq/eliminate/<int:user_id>', methods=['POST'])
 @login_required
