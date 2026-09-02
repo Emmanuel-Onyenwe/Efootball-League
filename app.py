@@ -82,20 +82,9 @@ class Match(db.Model):
     
     player_a = db.relationship('User', foreign_keys=[player_a_id])
     player_b = db.relationship('User', foreign_keys=[player_b_id])
+    updated_at = db.Column(db.DateTime, nullable=True)
 
-class Match(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    player_a_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    player_b_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    score_a = db.Column(db.Integer, default=0)
-    score_b = db.Column(db.Integer, default=0)
-    screenshot_path = db.Column(db.String(500), nullable=True) 
-    deadline = db.Column(db.DateTime, nullable=True)
-    status = db.Column(db.String(20), default='pending') 
-    matchday = db.Column(db.Integer, default=0)
-    reminder_sent = db.Column(db.Boolean, default=False)
-    updated_at = db.Column(db.DateTime, nullable=True) # <-- ADD THIS LINE
-    
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
