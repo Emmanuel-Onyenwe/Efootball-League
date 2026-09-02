@@ -592,6 +592,48 @@ def unlock_all_names():
     db.session.commit()
     
     return f"SUCCESS: Player '{old_name}' has been successfully renamed to '{new_name}'!"
+
+@app.route('/panic-hq/clean-schedule')
+@login_required
+def clean_schedule():
+    if current_user.role != 'admin':
+        return "Access Denied: Admins only!"
+        
+    # 1. Lock all finished, submitted, or voided matches strictly to Matchday 1
+    played_matches = Match.query.filter(Match.status != 'pending').all()
+    for m in played_matches:
+        m.matchday = 1
+        
+    # 2. Gather all remaining unplayed matches
+    pending_matches = Match.query.filter_by(status='pending').order_by(Match.id).all()
+    
+    # 3. Intelligently sort them starting from Matchday 1
+    current_matchday = 1
+    while pending_matches:
+        players_in_this_round = set()
+        
+        # If filling Matchday 1, block out everyone who already played a Matchday 1 game
+        if current_matchday == 1:
+            for pm in played_matches:
+                players_in_this_round.add(pm.player_a_id)
+                players_in_this_round.add(pm.player_b_id)
+                
+        leftover_matches = []
+        for m in pending_matches:
+            # If neither player is booked for this matchday, assign them
+            if m.player_a_id not in players_in_this_round and m.player_b_id not in players_in_this_round:
+                m.matchday = current_matchday
+                players_in_this_round.add(m.player_a_id)
+                players_in_this_round.add(m.player_b_id)
+            else:
+                # Otherwise, push to the next round to prevent double-booking
+                leftover_matches.append(m)
+        
+        pending_matches = leftover_matches
+        current_matchday += 1
+        
+    db.session.commit()
+    return "SUCCESS: Schedule intelligently cleaned! New guys get their Matchday 1, veterans move to Matchday 2."
     
 @app.route('/panic-hq/eliminate/<int:user_id>', methods=['POST'])
 @login_required
