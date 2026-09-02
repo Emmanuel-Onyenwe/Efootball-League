@@ -409,24 +409,20 @@ def sync_matchdays():
 
     updated = 0
     created = 0
-    
-    now = datetime.now()
-    end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=0)
 
     for pair, matchdays in pair_matchdays.items():
         existing = matches_by_pair.get(pair, [])
         for leg_index, matchday in enumerate(matchdays):
             
-            matchday_deadline = end_of_today + timedelta(days=(matchday - 1))
+            # THE FIX: This now strictly enforces your August 31st Monday/Wednesday calendar
+            matchday_deadline = get_deadline_for_matchday(matchday)
             
             if leg_index < len(existing):
-                # Forces existing matches into their new rightful place in the 8-player grid
                 m = existing[leg_index]
                 m.matchday = matchday
                 m.deadline = matchday_deadline 
                 updated += 1
             else:
-                # Creates the missing cross-matches for the new players
                 home_id, away_id = next(
                     (h, a) for (h, a) in schedule[matchday - 1] if tuple(sorted([h, a])) == pair
                 )
@@ -437,7 +433,6 @@ def sync_matchdays():
                 created += 1
 
     db.session.commit()
-    # New flash message so you know the upgrade worked
     flash(f"UPGRADE SUCCESS: Grid rebuilt! {created} missing cross-matches added, {updated} matchdays shuffled.", "success")
     return redirect(url_for('admin'))
 
@@ -484,12 +479,12 @@ def reset_league():
         u.goals_for = 0
         u.goals_against = 0
         u.strikes = 0
-        if u.role != 'admin':
-            u.in_league = False  
+        # u.in_league = False has been permanently removed so players stay active!
             
     db.session.commit()
     flash("League has been completely wiped and reset for a fresh season!", "success")
     return redirect(url_for('admin'))
+
 
 @app.route('/panic-hq/add_strike/<int:user_id>', methods=['POST'])
 @login_required
