@@ -83,6 +83,19 @@ class Match(db.Model):
     player_a = db.relationship('User', foreign_keys=[player_a_id])
     player_b = db.relationship('User', foreign_keys=[player_b_id])
 
+class Match(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    player_a_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    player_b_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    score_a = db.Column(db.Integer, default=0)
+    score_b = db.Column(db.Integer, default=0)
+    screenshot_path = db.Column(db.String(500), nullable=True) 
+    deadline = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(20), default='pending') 
+    matchday = db.Column(db.Integer, default=0)
+    reminder_sent = db.Column(db.Boolean, default=False)
+    updated_at = db.Column(db.DateTime, nullable=True) # <-- ADD THIS LINE
+    
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -282,9 +295,13 @@ def index():
     else:
         fixtures = final_sorted_fixtures 
 
-    completed_matches = Match.query.filter(Match.status.in_(['approved', 'voided'])).order_by(Match.id.desc()).all()
-    return render_template('index.html', standings=standings, fixtures=fixtures, completed_matches=completed_matches, ticker_fixtures=ticker_fixtures)
-
+    completed_matches_query = Match.query.filter(Match.status.in_(['approved', 'voided'])).all()
+    completed_matches = sorted(
+        completed_matches_query, 
+        key=lambda m: (m.updated_at or datetime.min, m.id), 
+        reverse=True
+    )
+    
 @app.route('/submit', methods=['GET', 'POST'])
 @login_required
 def submit():
@@ -446,6 +463,7 @@ def approve_match(match_id):
     if current_user.role == 'admin':
         match = Match.query.get_or_404(match_id)
         match.status = 'approved'
+        match.updated_at = datetime.now() # <-- ADD THIS LINE
         db.session.commit()
         flash("Match result approved and standings updated!", "success")
     return redirect(url_for('admin'))
@@ -780,7 +798,13 @@ with app.app_context():
         db.session.commit()
     except Exception:
         db.session.rollback()
-
+        
+    try:
+        db.session.execute(text('ALTER TABLE "match" ADD COLUMN updated_at TIMESTAMP'))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+     
 @app.route('/panic-hq/purge')
 @login_required
 def purge_everything():
