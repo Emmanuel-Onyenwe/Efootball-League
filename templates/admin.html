@@ -137,7 +137,15 @@
           <div>
             <strong>{{ match.player_a.name }} ({{ match.score_a }}) vs ({{ match.score_b }}) {{ match.player_b.name }}</strong>
             <br>
-            <a href="{{ match.screenshot_path }}" target="_blank" style="color: var(--cyan); font-size: 0.85rem;">View Screenshot</a>
+    {% if match.screenshot_path %}
+      <div class="evidence-gallery" style="margin-top: 10px;">
+       {% for img_url in match.screenshot_path.split(',') %}
+         <a href="{{ img_url.strip() }}" target="_blank" style="display: inline-block; margin-right: 10px; padding: 5px 10px; background: #2a2a35; border-radius: 5px; color: #00ffff; text-decoration: none; font-size: 0.9em;">
+             Evidence {{ loop.index }} 📸
+         </a>
+       {% endfor %}
+      </div>
+    {% endif 
           </div>
           <div style="display: flex; gap: 10px;">
             <form action="{{ url_for('approve_match', match_id=match.id) }}" method="POST" style="display:inline;">
