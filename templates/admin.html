@@ -82,7 +82,6 @@
     <h2>Active Roster</h2>
     <p>Manage current players and admin privileges.</p>
     
-    <!-- Added the scrollable wrapper here -->
     <div style="max-height: 350px; overflow-y: auto; padding-right: 8px;">
       {% if active_players %}
         {% for user in active_players %}
@@ -101,13 +100,11 @@
                 </form>
               {% endif %}
               
-              <!-- Hide Eliminate button for the logged-in user AND the Head Admin (ID: 1) -->
               {% if user.id != current_user.id and user.id != 1 %}
               <form action="{{ url_for('eliminate_player', user_id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Remove this player from the league?');">
                 <button type="submit" class="btn btn-red" style="padding: 6px 12px; font-size: 0.75rem;">Eliminate</button>
               </form>
               
-              <!-- STRIKE BUTTONS -->
               <form action="{{ url_for('add_strike', user_id=user.id) }}" method="POST" style="display:inline;">
                 <button type="submit" class="btn" style="background: #FF9800; color: black; border: none; padding: 6px 12px; font-size: 0.75rem; border-radius: 6px; font-family: var(--font-heading); font-weight: bold; text-transform: uppercase; cursor: pointer;" onclick="return confirm('Are you sure you want to give {{ user.name }} a strike?');">⚠️ Strike ({{ user.strikes }})</button>
               </form>
@@ -137,15 +134,17 @@
           <div>
             <strong>{{ match.player_a.name }} ({{ match.score_a }}) vs ({{ match.score_b }}) {{ match.player_b.name }}</strong>
             <br>
-    {% if match.screenshot_path %}
-      <div class="evidence-gallery" style="margin-top: 10px;">
-       {% for img_url in match.screenshot_path.split(',') %}
-         <a href="{{ img_url.strip() }}" target="_blank" style="display: inline-block; margin-right: 10px; padding: 5px 10px; background: #2a2a35; border-radius: 5px; color: #00ffff; text-decoration: none; font-size: 0.9em;">
-             Evidence {{ loop.index }} 📸
-         </a>
-       {% endfor %}
-      </div>
-    {% endif 
+            {% if match.screenshot_path %}
+              <div class="evidence-gallery" style="margin-top: 10px;">
+               {% for img_url in match.screenshot_path.split(',') %}
+                 {% if img_url.strip() %}
+                   <a href="{{ img_url.strip() }}" target="_blank" style="display: inline-block; margin-right: 10px; padding: 5px 10px; background: #2a2a35; border-radius: 5px; color: #00ffff; text-decoration: none; font-size: 0.9em;">
+                       Evidence {{ loop.index }} 📸
+                   </a>
+                 {% endif %}
+               {% endfor %}
+              </div>
+            {% endif %}
           </div>
           <div style="display: flex; gap: 10px;">
             <form action="{{ url_for('approve_match', match_id=match.id) }}" method="POST" style="display:inline;">
@@ -167,12 +166,10 @@
     <h2>Master Fixture List</h2>
     <p>Search any Gamertag to track their pending matches.</p>
     
-    <!-- Instant Search Bar -->
     <div style="margin-bottom: 15px;">
       <input type="text" id="adminFixtureSearch" onkeyup="filterAdminFixtures()" placeholder="🔍 Search Gamertag..." style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; outline: none;">
     </div>
     
-    <!-- Scrollable Fixture List -->
     <div style="max-height: 400px; overflow-y: auto; padding-right: 8px;">
       {% if all_pending_fixtures %}
         {% for match in all_pending_fixtures %}
@@ -181,23 +178,18 @@
           {% if match.matchday %}
           <div style="font-size: 0.65rem; color: var(--text-low); text-transform: uppercase; letter-spacing: 0.05em;">Matchday {{ match.matchday }}</div>
           {% endif %}
-          <!-- Player Names -->
           <div style="display: flex; justify-content: space-between; width: 100%;">
             <span style="font-weight: bold; color: var(--text-hi);">{{ match.player_a.name }}</span>
             <span style="color: var(--text-low); font-size: 0.8rem;">VS</span>
             <span style="font-weight: bold; color: var(--text-hi);">{{ match.player_b.name }}</span>
           </div>
           
-          <!-- HEAD ADMIN ONLY: Override Controls -->
           {% if current_user.id == 1 %}
           <form action="{{ url_for('admin_override') }}" method="POST" style="display: flex; justify-content: center; gap: 8px; width: 100%; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px;">
             <input type="hidden" name="match_id" value="{{ match.id }}">
             <button type="submit" name="action" value="walkover_home" class="btn" style="background: #00E5FF; color: black; font-size: 0.65rem; padding: 5px 8px;" onclick="return confirm('Give {{ match.player_a.name }} a 3-0 win?');">3-0 Home</button>
-            
             <button type="submit" name="action" value="void" class="btn btn-red" style="font-size: 0.65rem; padding: 5px 8px;" onclick="return confirm('DANGER: VOID this match? Neither player gets points.');">VOID</button>
-
             <button type="submit" name="action" value="unvoid" style="background: var(--violet); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; cursor: pointer; text-transform: uppercase;">UNVOID</button>
-            
             <button type="submit" name="action" value="walkover_away" class="btn" style="background: #00E5FF; color: black; font-size: 0.65rem; padding: 5px 8px;" onclick="return confirm('Give {{ match.player_b.name }} a 3-0 win?');">3-0 Away</button>
           </form>
           {% endif %}
@@ -219,15 +211,12 @@
       <form action="{{ url_for('generate_fixtures') }}" method="POST">
         <button type="submit" class="btn btn-brand">Generate Fixtures</button>
       </form>
-
       <form action="{{ url_for('sync_matchdays') }}" method="POST">
         <button type="submit" class="btn" style="background: #00E5FF; color: black;" title="Safely re-numbers every match's Matchday to a proper round-robin schedule. Never deletes or duplicates matches.">Sync Matchdays</button>
       </form>
-
       <form action="{{ url_for('reset_strikes') }}" method="POST" onsubmit="return confirm('Clear ALL players strikes back to 0?');">
         <button type="submit" class="btn" style="background: #FF9800; color: black;">Reset All Strikes</button>
       </form>
-
       <form action="{{ url_for('reset_league') }}" method="POST" onsubmit="
         const userInput = prompt('DANGER: This will wipe all fixtures and reset player stats to zero!\n\nType RESET in all caps to confirm:');
         if (userInput !== 'RESET') {
@@ -241,7 +230,6 @@
     </div>
   </div>
 
-      <!-- Search Logic -->
   <script>
     function filterAdminFixtures() {
       let filter = document.getElementById('adminFixtureSearch').value.toLowerCase();
@@ -249,7 +237,6 @@
       let visibleCount = 0;
       
       cards.forEach(card => {
-        // FIX: Specifically target the div that has the player names, ignoring the dynamic badges
         let namesRow = card.querySelector('div[style*="justify-content: space-between"]');
         let text = namesRow ? namesRow.textContent.toLowerCase() : card.textContent.toLowerCase();
         
@@ -257,20 +244,18 @@
           card.style.display = 'flex';
           visibleCount++;
           
-          // Create or update the dynamic badge
           let badge = card.querySelector('.match-order-badge');
           if (!badge) {
               badge = document.createElement('div');
               badge.className = 'match-order-badge';
               badge.style.cssText = 'background: rgba(0, 229, 255, 0.15); color: #00E5FF; font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-bottom: 5px; text-align: center; text-transform: uppercase; border: 1px solid rgba(0, 229, 255, 0.3);';
-              card.prepend(badge); // Adds the badge to the very top safely
+              card.prepend(badge);
           }
           
           badge.innerText = visibleCount === 1 ? "🔥 Current / Next Match" : "Match Sequence: " + visibleCount;
           badge.style.display = 'block';
           
         } else if (filter === '') {
-          // Reset when search is empty
           card.style.display = 'flex';
           let badge = card.querySelector('.match-order-badge');
           if (badge) badge.style.display = 'none';
@@ -280,6 +265,7 @@
       });
     }
   </script>
-
 </body>
 </html>
+                                                                                                                                                                                                                                                    </html>
+                                                                                                                                                                                                                                                    
