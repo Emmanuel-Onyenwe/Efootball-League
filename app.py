@@ -361,15 +361,18 @@ def promote_player(user_id):
 
 # --- MATHEMATICAL CALENDAR GENERATOR ---
 def get_deadline_for_matchday(matchday):
-    # Anchor date: Season officially started on Monday, August 31, 2026
-    start_date = datetime(2026, 8, 31, 23, 59, 59)
+    # Anchor date: Season officially starts today (Wednesday, September 2, 2026)
+    start_date = datetime(2026, 9, 2, 23, 59, 59)
     zero_index = matchday - 1
     weeks_added = zero_index // 2
-    is_wednesday = (zero_index % 2 == 1)
     
-    # Add 7 days for every full week passed, and 2 extra days for Wednesday matchdays
-    days_added = (weeks_added * 7) + (2 if is_wednesday else 0)
+    # Every second matchday is now a Monday (+5 days from the Wednesday anchor)
+    is_monday = (zero_index % 2 == 1)
+    
+    # Add 7 days for every full week passed, and 5 extra days for Monday matchdays
+    days_added = (weeks_added * 7) + (5 if is_monday else 0)
     return start_date + timedelta(days=days_added)
+
 
 @app.route('/panic-hq/generate_fixtures', methods=['POST'])
 @login_required
