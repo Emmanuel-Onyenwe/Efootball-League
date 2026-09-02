@@ -299,14 +299,25 @@ def submit():
         match_id = request.form.get('match_id')
         score_a = request.form.get('score_a')
         score_b = request.form.get('score_b')
-        screenshot = request.files.get('screenshot')
+        
+        # Grabs the list of all files uploaded
+        uploaded_files = request.files.getlist('screenshots')
+        # Fallback just in case the HTML wasn't updated perfectly
+        if not uploaded_files or uploaded_files[0].filename == '':
+            uploaded_files = request.files.getlist('screenshot')
 
         match = Match.query.get(match_id)
-        if match and screenshot:
-            upload_result = cloudinary.uploader.upload(screenshot)
+        if match and uploaded_files and uploaded_files[0].filename != '':
+            image_urls = []
+            for file in uploaded_files:
+                if file.filename != '':
+                    upload_result = cloudinary.uploader.upload(file)
+                    image_urls.append(upload_result['secure_url'])
+            
             match.score_a = int(score_a)
             match.score_b = int(score_b)
-            match.screenshot_path = upload_result['secure_url']
+            # Saves multiple links separated by commas
+            match.screenshot_path = ",".join(image_urls)
             match.status = 'submitted'
             db.session.commit()
             flash("Result submitted and pending admin approval!", "success")
