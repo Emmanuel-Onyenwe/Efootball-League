@@ -412,7 +412,7 @@
     <div class="card">
       <div class="card-header">
         <h1>Report Match Result</h1>
-        <p>Log your final score and attach a screenshot as proof of the result.</p>
+        <p>Log your final score and attach screenshots as proof of the result.</p>
       </div>
 
       <form method="POST" action="{{ url_for('submit') }}" enctype="multipart/form-data" id="result-form">
@@ -443,14 +443,14 @@
         </div>
 
         <div class="field-group">
-          <label for="screenshot">Result screenshot</label>
-          <label class="dropzone" id="dropzone" for="screenshot">
+          <label for="screenshots">Result screenshot(s)</label>
+          <label class="dropzone" id="dropzone" for="screenshots">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
               <polyline points="17 8 12 3 7 8"/>
               <line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
-            <span class="dz-title" id="dz-title">Click or drag a screenshot here</span>
+            <span class="dz-title" id="dz-title">Click or drag screenshots here</span>
             <span class="dz-sub" id="dz-sub">PNG, JPG, GIF or WEBP</span>
             <img class="preview-thumb" id="preview-thumb" alt="Screenshot preview">
           </label>
@@ -466,18 +466,23 @@
   </main>
 
   <script>
-    // Screenshot preview + drag-and-drop support.
-    var fileInput = document.getElementById('screenshot');
+    var fileInput = document.getElementById('screenshots');
     var dropzone = document.getElementById('dropzone');
     var dzTitle = document.getElementById('dz-title');
     var dzSub = document.getElementById('dz-sub');
     var previewThumb = document.getElementById('preview-thumb');
 
-    function handleFile(file) {
-      if (!file) return;
-      dzTitle.textContent = file.name;
-      dzSub.textContent = 'Click to change file';
+    function handleFiles(files) {
+      if (!files || files.length === 0) return;
+      
+      if (files.length === 1) {
+        dzTitle.textContent = files[0].name;
+      } else {
+        dzTitle.textContent = files.length + ' images selected';
+      }
+      dzSub.textContent = 'Click to change files';
 
+      var file = files[0];
       if (file.type && file.type.indexOf('image/') === 0) {
         var reader = new FileReader();
         reader.onload = function (e) {
@@ -489,7 +494,7 @@
     }
 
     fileInput.addEventListener('change', function () {
-      handleFile(fileInput.files[0]);
+      handleFiles(fileInput.files);
     });
 
     ['dragenter', 'dragover'].forEach(function (evt) {
@@ -507,12 +512,10 @@
     });
 
     dropzone.addEventListener('drop', function (e) {
-      var file = e.dataTransfer.files[0];
-      if (file) {
-        var dt = new DataTransfer();
-        dt.items.add(file);
-        fileInput.files = dt.files;
-        handleFile(file);
+      var files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        fileInput.files = files;
+        handleFiles(files);
       }
     });
   </script>
