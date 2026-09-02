@@ -377,60 +377,70 @@ def generate_fixtures():
     # Redirect directly to the smart-sync function to avoid old algorithm issues
     return sync_matchdays()
 
-@app.route('/panic-hq/sync-matchdays', methods=['POST', 'GET'])
+@app.route('/panic-hq/sync-matchdays', methods=['POST'])
 @login_required
 def sync_matchdays():
     if current_user.role != 'admin':
+        flash("Access Denied: Admins only.", "error")
+        return redirect(url_for('index'))
+
+    # Gets all 8 active players
+    users = User.query.filter_by(status='active', in_league=True).order_by(User.id).all()
+    user_ids = [u.id for u in users]
+
+    if len(user_ids) % 2 != 0:
+        flash("Can't sync: the Circle Method needs an EVEN number of active players.", "error")
         return redirect(url_for('admin'))
 
-    users = User.query.filter_by(status='active', in_league=True).all()
-    added_count = 0
-    
-    # 1. SMART GENERATOR: Scan every possible matchup and create only the missing ones
-    for p1, p2 in itertools.combinations(users, 2):
-        # Check Home Leg
-        if not Match.query.filter_by(player_a_id=p1.id, player_b_id=p2.id).first():
-            db.session.add(Match(player_a_id=p1.id, player_b_id=p2.id, status='pending', matchday=1))
-            added_count += 1
-        # Check Away Leg
-        if not Match.query.filter_by(player_a_id=p2.id, player_b_id=p1.id).first():
-            db.session.add(Match(player_a_id=p2.id, player_b_id=p1.id, status='pending', matchday=1))
-            added_count += 1
-            
-    db.session.commit()
+    # Generates the true 8-player matrix
+    schedule = generate_round_robin_schedule(user_ids)
 
-    # 2. SMART CALENDAR: Find gaps and assign matchdays without double-booking
-    booked_matchdays = {u.id: set() for u in users}
-    
-    # Track matchdays for matches that are already submitted or completed
-    for m in Match.query.filter(Match.status != 'pending').all():
-        if m.matchday:
-            if m.player_a_id in booked_matchdays: booked_matchdays[m.player_a_id].add(m.matchday)
-            if m.player_b_id in booked_matchdays: booked_matchdays[m.player_b_id].add(m.matchday)
+    pair_matchdays = {} 
+    for matchday_index, round_matches in enumerate(schedule, start=1):
+        for home_id, away_id in round_matches:
+            pair = tuple(sorted([home_id, away_id]))
+            pair_matchdays.setdefault(pair, []).append(matchday_index)
 
-    updated_count = 0
-    pending_matches = Match.query.filter_by(status='pending').order_by(Match.id).all()
+    all_matches = Match.query.order_by(Match.id).all()
+    matches_by_pair = {}
+    for m in all_matches:
+        pair = tuple(sorted([m.player_a_id, m.player_b_id]))
+        matches_by_pair.setdefault(pair, []).append(m)
+
+    updated = 0
+    created = 0
     
-    for m in pending_matches:
-        if m.player_a_id not in booked_matchdays: booked_matchdays[m.player_a_id] = set()
-        if m.player_b_id not in booked_matchdays: booked_matchdays[m.player_b_id] = set()
-        
-        md = 1
-        # Loop until we find a matchday where BOTH players are free to play
-        while md in booked_matchdays[m.player_a_id] or md in booked_matchdays[m.player_b_id]:
-            md += 1
+    now = datetime.now()
+    end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=0)
+
+    for pair, matchdays in pair_matchdays.items():
+        existing = matches_by_pair.get(pair, [])
+        for leg_index, matchday in enumerate(matchdays):
             
-        m.matchday = md
-        m.deadline = get_deadline_for_matchday(md)
-        
-        booked_matchdays[m.player_a_id].add(md)
-        booked_matchdays[m.player_b_id].add(md)
-        updated_count += 1
-        
+            matchday_deadline = end_of_today + timedelta(days=(matchday - 1))
+            
+            if leg_index < len(existing):
+                # Forces existing matches into their new rightful place in the 8-player grid
+                m = existing[leg_index]
+                m.matchday = matchday
+                m.deadline = matchday_deadline 
+                updated += 1
+            else:
+                # Creates the missing cross-matches for the new players
+                home_id, away_id = next(
+                    (h, a) for (h, a) in schedule[matchday - 1] if tuple(sorted([h, a])) == pair
+                )
+                db.session.add(Match(
+                    player_a_id=home_id, player_b_id=away_id,
+                    deadline=matchday_deadline, status='pending', matchday=matchday
+                ))
+                created += 1
+
     db.session.commit()
-    
-    flash(f"League Synced! {added_count} missing matches created. All Matchdays and Timers mathematically aligned.", "success")
+    # New flash message so you know the upgrade worked
+    flash(f"UPGRADE SUCCESS: Grid rebuilt! {created} missing cross-matches added, {updated} matchdays shuffled.", "success")
     return redirect(url_for('admin'))
+
     
 @app.route('/panic-hq/approve/<int:match_id>', methods=['POST'])
 @login_required
