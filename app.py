@@ -555,6 +555,7 @@ def reset_strikes():
     return redirect(url_for('admin'))
 
 @app.route('/panic-hq/admin_override', methods=['POST'])
+@app.route('/panic-hq/admin_override', methods=['POST'])
 @login_required
 def admin_override():
     if current_user.id != 1:
@@ -586,6 +587,9 @@ def admin_override():
         match.score_b = 3
         match.status = 'approved'
         flash(f"Walkover awarded: {match.player_b.name} wins 3-0.", "success")
+        
+    # THE FIX: Stamp the exact time the Head Admin took this action
+    match.updated_at = datetime.now()
         
     db.session.commit()
     update_standings()
