@@ -249,20 +249,33 @@ def reset_password(token):
 def update_standings():
     users = User.query.filter_by(status='active', in_league=True).all()
     for user in users:
-        matches_as_a = Match.query.filter_by(player_a_id=user.id, status='approved').all()
-        matches_as_b = Match.query.filter_by(player_b_id=user.id, status='approved').all()
+        # Fetch both approved AND voided matches so they count towards games played
+        matches_as_a = Match.query.filter(Match.player_a_id == user.id, Match.status.in_(['approved', 'voided'])).all()
+        matches_as_b = Match.query.filter(Match.player_b_id == user.id, Match.status.in_(['approved', 'voided'])).all()
+        
         user.played = len(matches_as_a) + len(matches_as_b)
         user.won = user.drawn = user.lost = user.goals_for = user.goals_against = user.points = 0
+        
         for m in matches_as_a:
-            user.goals_for += m.score_a; user.goals_against += m.score_b
-            if m.score_a > m.score_b: user.won += 1; user.points += 3
-            elif m.score_a == m.score_b: user.drawn += 1; user.points += 1
-            else: user.lost += 1
+            if m.status == 'approved':
+                user.goals_for += m.score_a; user.goals_against += m.score_b
+                if m.score_a > m.score_b: user.won += 1; user.points += 3
+                elif m.score_a == m.score_b: user.drawn += 1; user.points += 1
+                else: user.lost += 1
+            elif m.status == 'voided':
+                # Penalizes the player with a loss and 0 points to drag down their PPG
+                user.lost += 1
+                
         for m in matches_as_b:
-            user.goals_for += m.score_b; user.goals_against += m.score_a
-            if m.score_b > m.score_a: user.won += 1; user.points += 3
-            elif m.score_b == m.score_a: user.drawn += 1; user.points += 1
-            else: user.lost += 1
+            if m.status == 'approved':
+                user.goals_for += m.score_b; user.goals_against += m.score_a
+                if m.score_b > m.score_a: user.won += 1; user.points += 3
+                elif m.score_b == m.score_a: user.drawn += 1; user.points += 1
+                else: user.lost += 1
+            elif m.status == 'voided':
+                # Penalizes the player with a loss and 0 points to drag down their PPG
+                user.lost += 1
+                
     db.session.commit()
 
 # --- PUBLIC ROUTES ---
