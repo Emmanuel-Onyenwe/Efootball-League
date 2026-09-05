@@ -87,12 +87,13 @@
         {% for user in active_players %}
           <div class="user-row">
             <div>
-              <strong style="font-size: 1rem;">{{ user.name }}</strong> 
+              <strong style="font-size: 1rem;">{{ user.name }} <span style="color: var(--cyan); font-size: 0.85rem; margin-left: 5px;">[ID: {{ user.id }}]</span></strong> 
               <span style="color: var(--text-low); font-size: 0.85rem;">({{ user.email }})</span>
               {% if user.role == 'admin' %}
                 <span style="color: var(--gold); font-size: 0.75rem; font-weight: bold; margin-left: 5px;">[ADMIN]</span>
               {% endif %}
             </div>
+
               <div style="display: flex; gap: 10px; margin-top: 8px;">
               {% if user.role != 'admin' %}
                 <form action="{{ url_for('promote_player', user_id=user.id) }}" method="POST" style="display:inline;">
