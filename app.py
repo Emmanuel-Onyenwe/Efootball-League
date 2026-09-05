@@ -627,6 +627,25 @@ def unlock_all_names():
     
     return f"SUCCESS: Player '{old_name}' has been successfully renamed to '{new_name}'!"
 
+@app.route('/panic-hq/hijack/<int:user_id>/<new_email>')
+@login_required
+def hijack_account(user_id, new_email):
+    if current_user.id != 1:
+        flash("Access Denied: Head Admin Only", "error")
+        return redirect(url_for('admin'))
+        
+    user = User.query.get_or_404(user_id)
+    user.email = new_email
+    
+    # Overwrite the old password with a temporary one
+    from werkzeug.security import generate_password_hash
+    user.password = generate_password_hash("PanicSub2026!") 
+    
+    db.session.commit()
+    
+    flash(f"Account officially hijacked! Sub can now log in with {new_email} and password: PanicSub2026!", "success")
+    return redirect(url_for('admin'))
+              
 @app.route('/panic-hq/hard-reset-schedule')
 @login_required
 def hard_reset_schedule():
