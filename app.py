@@ -198,7 +198,6 @@ def hijack_account(user_id, new_email):
     user = User.query.get_or_404(user_id)
     user.email = new_email
     
-    # THE FIX: Save to 'password_hash' to match your login route
     from werkzeug.security import generate_password_hash
     user.password_hash = generate_password_hash("PanicSub2026!") 
     
@@ -206,6 +205,7 @@ def hijack_account(user_id, new_email):
     
     flash(f"Account successfully hijacked! Sub can now log in with {new_email} and password: PanicSub2026!", "success")
     return redirect(url_for('admin'))
+
 
 @app.route('/logout')
 @login_required
