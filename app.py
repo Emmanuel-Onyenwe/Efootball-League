@@ -188,24 +188,25 @@ def verify_email(token):
         flash("Invalid verification link.", "error")
     return redirect(url_for('index', show='login'))
 
-@app.route('/panic-hq/hijack/<int:user_id>/<new_email>')
-@login_required
-def hijack_account(user_id, new_email):
-    if current_user.id != 1:
-        flash("Access Denied: Head Admin Only", "error")
-        return redirect(url_for('admin'))
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        user = User.query.filter_by(email=email).first() 
         
-    user = User.query.get_or_404(user_id)
-    user.email = new_email
-    
-    from werkzeug.security import generate_password_hash
-    user.password_hash = generate_password_hash("PanicSub2026!") 
-    
-    db.session.commit()
-    
-    flash(f"Account successfully hijacked! Sub can now log in with {new_email} and password: PanicSub2026!", "success")
-    return redirect(url_for('admin'))
-
+        if user and check_password_hash(user.password_hash, password):
+            if not user.in_league:
+                flash("Your account is still waiting for Admin approval.", "error")
+                return redirect(url_for('index', show='login'))
+                
+            login_user(user)
+            flash(f"Welcome back, {user.name}! 🎮", "welcome")
+            return redirect(url_for('index'))
+        else:
+            flash("Invalid email or password.", "error")
+            return redirect(url_for('index', show='login'))
+    return redirect(url_for('index', show='login'))
 
 @app.route('/logout')
 @login_required
