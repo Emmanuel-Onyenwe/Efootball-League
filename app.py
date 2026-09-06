@@ -554,7 +554,6 @@ def reset_strikes():
     return redirect(url_for('admin'))
 
 @app.route('/panic-hq/admin_override', methods=['POST'])
-@app.route('/panic-hq/admin_override', methods=['POST'])
 @login_required
 def admin_override():
     if current_user.id != 1:
