@@ -413,13 +413,20 @@ def get_deadline_for_matchday(matchday):
     # Anchor date: Season officially starts today (Wednesday, September 2, 2026)
     start_date = datetime(2026, 9, 2, 23, 59, 59)
     zero_index = matchday - 1
-    weeks_added = zero_index // 2
     
-    # Every second matchday is now a Monday (+5 days from the Wednesday anchor)
-    is_monday = (zero_index % 2 == 1)
+    # We now play 3 games a week
+    weeks_added = zero_index // 3
+    remainder = zero_index % 3
     
-    # Add 7 days for every full week passed, and 5 extra days for Monday matchdays
-    days_added = (weeks_added * 7) + (5 if is_monday else 0)
+    # 0 = Wednesday (+0 days), 1 = Friday (+2 days), 2 = Monday (+5 days)
+    if remainder == 0:
+        offset = 0
+    elif remainder == 1:
+        offset = 2
+    else:
+        offset = 5
+        
+    days_added = (weeks_added * 7) + offset
     return start_date + timedelta(days=days_added)
 
 
