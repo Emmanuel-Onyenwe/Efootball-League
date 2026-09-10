@@ -377,7 +377,16 @@ def admin():
     active_players = User.query.filter_by(status='active', in_league=True).order_by(User.name).all()
     pending_players = User.query.filter_by(in_league=False).order_by(User.id).all()
     pending_matches = Match.query.filter_by(status='submitted').all()
-    all_pending_fixtures = get_pending_fixtures_sorted()
+    
+    # Fetch every match in the database
+    all_matches = Match.query.all()
+    
+    # Sort them: Pending/Submitted go to the top (0), Approved/Voided sink to the bottom (1)
+    # Both sections are then sorted by matchday, then by ID
+    all_pending_fixtures = sorted(
+        all_matches, 
+        key=lambda m: (0 if m.status in ['pending', 'submitted'] else 1, m.matchday, m.id)
+    )
 
     return render_template('admin.html', active_players=active_players, pending_players=pending_players, pending_matches=pending_matches, all_pending_fixtures=all_pending_fixtures)
 
