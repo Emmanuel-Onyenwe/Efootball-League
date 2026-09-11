@@ -919,7 +919,8 @@ def cron_deadline_reminders():
         return "Cron Executed: 0 fixtures processed for reminders.", 200
 
     import threading
-    
+    import time  # <-- Import the time module
+
     def process_in_background(app_context, m_data_list):
         with app_context:
             reminders_sent = 0
@@ -932,9 +933,13 @@ def cron_deadline_reminders():
                 <p>Please coordinate with your opponent, play the match, and submit the result on the dashboard immediately to avoid a penalty strike.</p>
                 """
                 
-                # Send using the reliable synchronous function
+                # Send to Player A, then pause for 2 seconds
                 send_email(data['player_a_email'], subject, html_msg)
+                time.sleep(2)
+                
+                # Send to Player B, then pause for 2 seconds
                 send_email(data['player_b_email'], subject, html_msg)
+                time.sleep(2)
                 
                 # Update database
                 match = Match.query.get(data['id'])
@@ -944,9 +949,3 @@ def cron_deadline_reminders():
                 
             if reminders_sent > 0:
                 db.session.commit()
-
-    # Start the background worker
-    thread = threading.Thread(target=process_in_background, args=(app.app_context(), match_data))
-    thread.start()
-
-    return f"Cron Triggered: Processing {len(match_data)} fixtures in the background.", 200
