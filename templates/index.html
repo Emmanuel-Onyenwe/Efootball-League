@@ -330,51 +330,6 @@
     
     <div class="panel-header">
       <h2>Recent Results</h2>
-    </div>
-
-    <div style="padding: 16px 24px;">
-      <div style="max-height: 280px; overflow-y: auto; padding-right: 8px; display: flex; flex-direction: column; gap: 10px;">
-
-      {% if completed_matches %}
-        {% for match in completed_matches %}
-        <div style="background: rgba(255,255,255,0.05); padding: 12px 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); gap: 8px;">
-          
-          <div style="flex: 1; text-align: right; font-weight: 600; color: var(--text-hi); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-            {{ match.player_a.name }} <span style="font-size: 1rem; vertical-align: middle; margin-left: 3px;">{{ match.player_a.emblem }}</span>
-          </div>
-          
-          <div style="font-size: 1.25rem; font-weight: 900; color: #00E5FF; text-shadow: 0 0 5px rgba(0,229,255,0.3); white-space: nowrap; text-align: center; min-width: 65px; background: rgba(0,0,0,0.25); padding: 4px 10px; border-radius: 6px;">
-            {% if match.status == 'voided' %}
-              <span style="color: var(--red); font-size: 1rem;">VOID</span>
-            {% else %}
-              {{ match.score_a }} - {{ match.score_b }}
-            {% endif %}
-          </div>
-          
-          <div style="flex: 1; text-align: left; font-weight: 600; color: var(--text-hi); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-            <span style="font-size: 1rem; vertical-align: middle; margin-right: 3px;">{{ match.player_b.emblem }}</span> {{ match.player_b.name }}
-          </div>
-          
-        </div>
-        {% endfor %}
-      {% else %}
-        <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 8px; text-align: center; border: 1px dashed rgba(255,255,255,0.1);">
-           <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem; margin: 0;">No matches have been completed yet.<br>The pitch is waiting!</p>
-        </div>
-      {% endif %} 
-      </div>
-    </div> 
-  </div>
-
-    <section class="panel" style="grid-column: 1 / -1; margin-top: 10px;">
-      <div class="panel-header">
-        <h2>League Briefing & Rules</h2>
-        <p>Everything you need to know about how the Panic Keh eFootball League operates. Tap any section to read the details.</p>
-<!-- COMPLETED MATCHES BOARD -->
-  <div class="panel" style="margin-bottom: 20px; grid-column: 1 / -1;">
-    
-    <div class="panel-header">
-      <h2>Recent Results</h2>
       <p>Match results categorized by matchday cycle.</p>
     </div>
 
