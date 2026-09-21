@@ -317,14 +317,37 @@ def index():
     else:
         fixtures = final_sorted_fixtures 
 
-    completed_matches_query = Match.query.filter(Match.status.in_(['approved', 'voided'])).all()
-    completed_matches = sorted(
-        completed_matches_query, 
-        key=lambda m: (m.updated_at or datetime.min, m.id), 
-        reverse=True
+        # 1. Fetch completed or voided matches
+    completed_matches_raw = Match.query.filter(Match.status.in_(['approved', 'voided'])).all()
+
+    # 2. Group matches under their respective matchdays
+    grouped_completed = {}
+    for m in completed_matches_raw:
+        md = m.matchday if m.matchday else 1
+        grouped_completed.setdefault(md, []).append(m)
+
+    # 3. Sort matchdays descending (highest/latest matchday at the top, Matchday 1 at the bottom)
+    # Inside each matchday, sort by completion time
+    completed_by_matchday = []
+    for md in sorted(grouped_completed.keys(), reverse=True):
+        matches_in_md = sorted(
+            grouped_completed[md],
+            key=lambda m: (m.updated_at or datetime.min, m.id),
+            reverse=True
+        )
+        completed_by_matchday.append({
+            'matchday': md,
+            'matches': matches_in_md
+        })
+
+    return render_template(
+        'index.html', 
+        standings=standings, 
+        fixtures=fixtures, 
+        completed_by_matchday=completed_by_matchday, 
+        ticker_fixtures=ticker_fixtures
     )
-    return render_template('index.html', standings=standings, fixtures=fixtures, completed_matches=completed_matches, ticker_fixtures=ticker_fixtures)
-    
+
 @app.route('/submit', methods=['GET', 'POST'])
 @login_required
 def submit():
