@@ -256,7 +256,7 @@
   {% endif %}
       <div class="panel-header">
         <h2>League Table</h2>
-        <p>Ranked by Points Per Game, then Goal Difference.</p>
+        <p>Ranked by Points, then Goal Difference.</p>
       </div>
       <div class="table-wrap">
         <table>
@@ -282,7 +282,6 @@
               <td style="font-weight: 600;">{{ user.goals_for }}</td>
               <td>{{ user.gd }}</td>
               <td class="stat-pts">{{ user.points }}</td>
-              <td class="stat-ppg">{{ "%.2f"|format(user.ppg) }}</td>
             </tr>
             {% else %}
             <tr><td colspan="10" style="padding: 30px; color: var(--text-low);">No players have joined the league yet.</td></tr>
@@ -384,8 +383,7 @@
               <li><strong style="color: white;">W, D, L:</strong> Matches Won (3 pts), Drawn (1 pt), and Lost (0 pts).</li>
               <li><strong style="color: white;">GF (Goals For):</strong> Total number of goals scored by a player.</li>
               <li><strong style="color: white;">GD (Goal Difference):</strong> Total goals scored minus total goals conceded. Used as the first tiebreaker.</li>
-              <li><strong style="color: white;">Pts (Points):</strong> Total league points earned.</li>
-              <li><strong style="color: white;">PPG (Points Per Game):</strong> Your Total Points divided by your Matches Played. <em>This is the ultimate equalizer! If you play fewer games because an opponent was eliminated, PPG ensures your rank is perfectly balanced and fair.</em></li>
+              <li><strong style="color: white;">Pts (Points):</strong> Total league points earned.</l>
             </ul>
           </div>
         </details>
