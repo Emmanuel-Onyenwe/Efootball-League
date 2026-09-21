@@ -309,9 +309,6 @@ def index():
 
     # Sorts primarily by Total Points, then by Goal Difference
     standings = sorted(users, key=lambda u: (u.points, u.gd), reverse=True)
-
-
-    standings = sorted(users, key=lambda u: (u.ppg, u.gd), reverse=True)
     final_sorted_fixtures = get_pending_fixtures_sorted()
     ticker_fixtures = final_sorted_fixtures
 
