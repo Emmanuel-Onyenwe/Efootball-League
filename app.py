@@ -566,6 +566,7 @@ def reset_league():
         
         # 3. Automatically unlock everyone's name change for the new season
         u.name_changed = False
+        u.status = 'active'
         
         # 4. Move everyone except Admins/Co-Admins back to the waiting room
         if u.role != 'admin':
