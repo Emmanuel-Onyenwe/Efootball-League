@@ -305,7 +305,7 @@ def index():
     users = User.query.filter_by(status='active', in_league=True).all()
     
     for u in users:
-    u.gd = u.goals_for - u.goals_against
+        u.gd = u.goals_for - u.goals_against
 
     # Sorts primarily by Total Points, then by Goal Difference
     standings = sorted(users, key=lambda u: (u.points, u.gd), reverse=True)
