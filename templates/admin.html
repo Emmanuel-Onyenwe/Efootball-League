@@ -66,7 +66,7 @@
           <form action="{{ url_for('approve_player', user_id=user.id) }}" method="POST" style="margin:0;">
             <button type="submit" class="btn btn-green">Admit</button>
           </form>
-          <form action="{{ url_for('reject_player', user_id=user.id) }}" method="POST" style="margin:0;" onsubmit="return confirm('Reject and permanently delete this registration?');">
+          <form action="{{ url_for('reject_player', user_id=user.id) }}" method="POST" style="margin:0;" onsubmit="return confirm('Reject this player and hide them from the waiting room?');">
             <button type="submit" class="btn btn-red">Reject</button>
           </form>
         </div>
@@ -123,7 +123,46 @@
       {% endif %}
     </div>
   </div>
+  
+  <!-- ALL USERS DIRECTORY (DELETE MANAGEMENT) -->
+  <div class="panel">
+    <h2>All Users Directory</h2>
+    <p>Complete list of all registered accounts. Use this section to permanently delete users.</p>
+    
+    <div style="max-height: 350px; overflow-y: auto; padding-right: 8px;">
+      {% if all_users %}
+        {% for user in all_users %}
+          <div class="user-row">
+            <div>
+              <strong style="font-size: 1rem;">{{ user.name }} <span style="color: var(--cyan); font-size: 0.85rem; margin-left: 5px;">[ID: {{ user.id }}]</span></strong> 
+              <span style="color: var(--text-low); font-size: 0.85rem;">({{ user.email }})</span>
+              {% if user.role == 'admin' %}
+                <span style="color: var(--gold); font-size: 0.75rem; font-weight: bold; margin-left: 5px;">[ADMIN]</span>
+              {% endif %}
+              
+              <!-- Display their current status so you know where they are -->
+              <span style="color: var(--text-mid); font-size: 0.75rem; margin-left: 5px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.2); padding: 2px 4px; border-radius: 4px;">
+                {{ user.status }} {% if user.in_league %}(Active){% endif %}
+              </span>
+            </div>
 
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+              {% if user.id != current_user.id and user.id != 1 %}
+              <form action="{{ url_for('delete_player', user_id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('DANGER: Permanently delete {{ user.name }} from the database? This cannot be undone.');">
+                <button type="submit" class="btn btn-red" style="padding: 6px 12px; font-size: 0.75rem;">Delete</button>
+              </form>
+              {% else %}
+                 <span style="color: var(--text-low); font-size: 0.75rem; font-style: italic;">Protected</span>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p style="color: var(--text-low); font-style: italic;">No users found in the database.</p>
+      {% endif %}
+    </div>
+  </div>
+  
   <!-- PENDING MATCH APPROVALS -->
   <div class="panel">
     <h2>Pending Match Approvals</h2>
