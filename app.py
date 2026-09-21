@@ -538,10 +538,12 @@ def reset_league():
     if current_user.role != 'admin':
         abort(403)
     
+    # 1. Wipe all match history
     Match.query.delete()
     
     users = User.query.all()
     for u in users:
+        # 2. Reset all stats to zero
         u.played = 0
         u.won = 0
         u.drawn = 0
@@ -551,10 +553,16 @@ def reset_league():
         u.goals_for = 0
         u.goals_against = 0
         u.strikes = 0
-        # u.in_league = False has been permanently removed so players stay active!
+        
+        # 3. Automatically unlock everyone's name change for the new season
+        u.name_changed = False
+        
+        # 4. Move everyone except Admins/Co-Admins back to the waiting room
+        if u.role != 'admin':
+            u.in_league = False
             
     db.session.commit()
-    flash("League has been completely wiped and reset for a fresh season!", "success")
+    flash("Season reset! Players are back in the waiting room and can change their club names.", "success")
     return redirect(url_for('admin'))
 
 
