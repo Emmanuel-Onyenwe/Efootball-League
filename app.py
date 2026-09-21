@@ -305,8 +305,11 @@ def index():
     users = User.query.filter_by(status='active', in_league=True).all()
     
     for u in users:
-        u.gd = u.goals_for - u.goals_against
-        u.ppg = round(u.points / u.played, 2) if u.played > 0 else 0.0
+    u.gd = u.goals_for - u.goals_against
+
+    # Sorts primarily by Total Points, then by Goal Difference
+    standings = sorted(users, key=lambda u: (u.points, u.gd), reverse=True)
+
 
     standings = sorted(users, key=lambda u: (u.ppg, u.gd), reverse=True)
     final_sorted_fixtures = get_pending_fixtures_sorted()
