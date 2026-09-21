@@ -395,17 +395,27 @@ def admin():
 def approve_player(user_id):
     if current_user.role == 'admin':
         user = User.query.get_or_404(user_id)
+        
+        # 1. Update league status AND force active status to prevent ghosts
         user.in_league = True
+        user.status = 'active' 
         db.session.commit()
         
-        try:
-            msg = f"<h3>You are in! 🎮</h3><p>Your registration for the Panic Keh League has been officially approved. You can now log in to the dashboard to check your stats and fixtures.</p>"
-            send_email(user.email, "Welcome to the League!", msg)
-        except Exception as e:
-            print(f"Approval email failed: {e}")
+        # 2. Push email to a background thread so the page loads instantly
+        import threading
+        def send_approval_email(app_context, target_email):
+            with app_context:
+                try:
+                    msg = f"<h3>You are in! 🎮</h3><p>Your registration for the Panic Keh League has been officially approved. You can now log in to the dashboard to check your stats and fixtures.</p>"
+                    send_email(target_email, "Welcome to the League!", msg)
+                except Exception as e:
+                    print(f"Approval email failed: {e}")
+                    
+        threading.Thread(target=send_approval_email, args=(app.app_context(), user.email)).start()
             
         flash(f"{user.name} added to the league roster!", "success")
     return redirect(url_for('admin'))
+
 
 @app.route('/panic-hq/promote/<int:user_id>', methods=['POST'])
 @login_required
