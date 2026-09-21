@@ -196,17 +196,19 @@ def login():
         user = User.query.filter_by(email=email).first() 
         
         if user and check_password_hash(user.password_hash, password):
+            # 1. If they were dormant or rejected, logging in makes them 'active' in the waiting room again
+            if user.status in ['dormant', 'rejected']:
+                user.status = 'active'
+                db.session.commit()
+                
+            # 2. Block them from entering the main dashboard if they aren't approved yet
             if not user.in_league:
-                flash("Your account is still waiting for Admin approval.", "error")
+                flash("Check-in successful! You are now in the waiting room for Admin approval.", "error")
                 return redirect(url_for('index', show='login'))
                 
             login_user(user)
             flash(f"Welcome back, {user.name}! 🎮", "welcome")
             return redirect(url_for('index'))
-        else:
-            flash("Invalid email or password.", "error")
-            return redirect(url_for('index', show='login'))
-    return redirect(url_for('index', show='login'))
 
 @app.route('/logout')
 @login_required
@@ -375,7 +377,8 @@ def admin():
         return redirect(url_for('index'))
     
     active_players = User.query.filter_by(status='active', in_league=True).order_by(User.name).all()
-    pending_players = User.query.filter_by(in_league=False).order_by(User.id).all()
+    # Change this line
+    pending_players = User.query.filter_by(in_league=False, status='active').order_by(User.id).all()
     pending_matches = Match.query.filter_by(status='submitted').all()
     
     # Fetch every match in the database
@@ -568,9 +571,10 @@ def reset_league():
         u.name_changed = False
         u.status = 'active'
         
-        # 4. Move everyone except Admins/Co-Admins back to the waiting room
+        # Inside your reset loop:
         if u.role != 'admin':
             u.in_league = False
+            u.status = 'dormant' # This hides them from the waiting room until they log in
             
     db.session.commit()
     flash("Season reset! Players are back in the waiting room and can change their club names.", "success")
@@ -788,15 +792,20 @@ def eliminate_player(user_id):
             return redirect(url_for('admin'))
             
         user = User.query.get_or_404(user_id)
-        user.status = 'eliminated'
+        
+        # Move them to the waiting room instead of deleting them
+        user.in_league = False
+        user.status = 'active' 
+        
         unplayed_matches = Match.query.filter(
             (Match.status == 'pending') & 
             ((Match.player_a_id == user.id) | (Match.player_b_id == user.id))
         ).all()
         for m in unplayed_matches:
             db.session.delete(m)
+            
         db.session.commit()
-        flash(f"{user.name} eliminated! {len(unplayed_matches)} future matches were safely removed.", "success")
+        flash(f"{user.name} removed from the active roster and sent back to the waiting room.", "success")
     return redirect(url_for('admin'))
 
 @app.route('/edit_profile', methods=['POST'])
@@ -835,19 +844,21 @@ def reject_player(user_id):
     if current_user.role == 'admin':
         user = User.query.get_or_404(user_id)
         
-        target_email = user.email
-        gamertag = user.name
-        
+        # Just hide them from the waiting room, don't delete the account
+        user.status = 'rejected'
+        db.session.commit()
+            
+        flash(f"{user.name} was rejected and removed from the waiting room.", "success")
+    return redirect(url_for('admin'))
+
+@app.route('/panic-hq/delete_player/<int:user_id>', methods=['POST'])
+@login_required
+def delete_player(user_id):
+    if current_user.role == 'admin':
+        user = User.query.get_or_404(user_id)
         db.session.delete(user)
         db.session.commit()
-        
-        try:
-            msg = f"<h3>Registration Update</h3><p>Unfortunately, your registration for the Panic Keh League under the Gamertag <b>{gamertag}</b> was declined.</p>"
-            send_email(target_email, "Panic Keh Registration Update", msg)
-        except Exception as e:
-            print(f"Rejection email failed: {e}")
-            
-        flash(f"Registration for {gamertag} was rejected and deleted.", "success")
+        flash(f"Registration for permanently deleted.", "success")
     return redirect(url_for('admin'))
 
 # --- AUTO-PATCH DATABASE ON STARTUP ---
