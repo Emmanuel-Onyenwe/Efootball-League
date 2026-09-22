@@ -29,14 +29,12 @@
   nav.top-nav a { position: relative; color: var(--text-mid); text-decoration: none; padding-bottom: 6px; transition: 0.3s; }
   nav.top-nav a:hover, nav.top-nav a.active { color: var(--text-hi); }
   
-  /* The Animated Underline */
   nav.top-nav a::after {
     content: ''; position: absolute; left: 0; bottom: 0; width: 0%; height: 3px;
     background: var(--grad-brand); transition: width 0.3s ease-in-out; border-radius: 2px;
   }
   nav.top-nav a:hover::after, nav.top-nav a.active::after { width: 100%; }
 
-  /* UPDATED TICKER CSS */
   .ticker-wrap { background: #060911; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 0; overflow: hidden; display: flex; align-items: center; position: relative; }
   .ticker-label { font-family: var(--font-heading); font-weight: 700; color: var(--cyan); padding: 0 16px; font-size: 0.8rem; text-transform: uppercase; white-space: nowrap; z-index: 2; background: #060911; box-shadow: 10px 0 10px #060911; }
   
@@ -72,18 +70,16 @@
   .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--bg-panel-alt); font-size: 0.75rem; font-weight: 600; color: var(--text-mid); }
   .rank-1 .rank-badge { background: rgba(255,201,60,0.15); color: var(--gold); }
   
-  .player-cell { text-align: left; display: flex; align-items: center; gap: 10px; }
+  .player-cell { text-align: left; display: flex; align-items: center; gap: 12px; padding: 8px 16px; }
   
   .stat-pts { font-family: var(--font-display); font-weight: 700; color: var(--gold); }
   
   .fixture-list { padding: 16px 24px; display: flex; flex-direction: column; gap: 12px; }
   .fixture-card { background: var(--bg-panel-alt); padding: 12px 16px; border-radius: 8px; border-left: 3px solid var(--violet); }
-  .fixture-teams { display: flex; justify-content: space-between; font-weight: 600; font-size: 0.9rem; }
-  .fixture-vs { color: var(--text-low); font-size: 0.75rem; font-family: var(--font-display); }
+  .fixture-vs { color: var(--text-low); font-size: 0.75rem; font-family: var(--font-display); text-align: center; padding: 0 8px; }
   
   .site-footer { text-align: center; padding: 24px; font-size: 0.8rem; color: var(--text-low); border-top: 1px solid rgba(255,255,255,0.05); margin-top: auto; }
   
-  /* Modal & Blur Styles */
   .blur-bg { filter: blur(8px); pointer-events: none; transition: filter 0.3s ease; }
   .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(10, 14, 26, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(5px); }
   .modal-overlay.active { opacity: 1; pointer-events: all; }
@@ -92,87 +88,85 @@
   .modal-input { width: 100%; padding: 12px; margin: 10px 0 20px; background: #1B2340; border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 5px; box-sizing: border-box; }
   .modal-btn { width: 100%; padding: 12px; background: var(--grad-brand); border: none; color: black; font-weight: bold; border-radius: 5px; cursor: pointer; }
 
-  /* Desktop/Mobile Smart Switch for Fixtures */
-  .side-panel {
-    display: flex;
-    flex-direction: column;
-  }
-  .fixture-scroll-box {
-    overflow-y: auto;
-    padding-right: 5px;
-    max-height: 650px; 
-  }
-  @media (max-width: 960px) {
-    .fixture-scroll-box {
-      max-height: 240px; 
-    }
-  }
+  .side-panel { display: flex; flex-direction: column; }
+  .fixture-scroll-box { overflow-y: auto; padding-right: 5px; max-height: 650px; }
+  @media (max-width: 960px) { .fixture-scroll-box { max-height: 240px; } }
 
-  /* CUSTOM TEAM CRESTS */
+  /* UPDATED CUSTOM TEAM CRESTS WITH GLOSSY EMBOSS EFFECT */
   .custom-crest { 
     display: inline-flex; align-items: center; justify-content: center; 
-    width: 32px; height: 32px; border-radius: 50%; 
-    font-family: var(--font-display); font-size: 0.70rem; font-weight: 800; letter-spacing: 0.05em; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); 
+    width: 34px; height: 34px; border-radius: 50%; 
+    font-family: var(--font-display); font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em; 
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.4), 0 2px 5px rgba(0,0,0,0.6); 
+    border: 1px solid rgba(255,255,255,0.2); 
     flex-shrink: 0; color: white; text-shadow: 0px 1px 2px rgba(0,0,0,0.8); 
   }
   .custom-crest.dark-text { 
-    color: #111; text-shadow: none; 
+    color: #111; text-shadow: 0px 1px 1px rgba(255,255,255,0.4); 
   }
 </style>
 </head>
 <body>
 
-<!-- TEAM CREST GENERATOR -->
+<!-- SUPERCHARGED 25-TEAM CREST GENERATOR -->
 {% macro render_crest(club_name) %}
-  {% set name = club_name | upper | replace('É', 'E') | trim %}
+  {% set name = club_name | upper | trim %}
   
-  {% if name in ['REAL MADRID', 'RMA'] %}
+  {% if 'REAL MADRID' in name or 'RMA' in name %}
     {% set abbr, grad, txt = 'RMA', 'linear-gradient(135deg, #FFFFFF 50%, #FEBE10 100%)', 'dark-text' %}
-  {% elif name in ['BARCELONA', 'BARCA'] %}
+  {% elif 'BARCELONA' in name or 'BARCA' in name %}
     {% set abbr, grad, txt = 'FCB', 'linear-gradient(135deg, #004D98 50%, #A50044 50%)', '' %}
-  {% elif name in ['ATLETICO MADRID', 'ATL MADRID'] %}
+  {% elif 'ATLETICO' in name %}
     {% set abbr, grad, txt = 'ATM', 'linear-gradient(135deg, #CB3524 33%, #FFFFFF 33%, #FFFFFF 66%, #272E61 66%)', 'dark-text' %}
-  {% elif name in ['MANCHESTER CITY', 'MAN CITY'] %}
+  {% elif 'SEVILLA' in name %}
+    {% set abbr, grad, txt = 'SEV', 'linear-gradient(135deg, #FFFFFF 50%, #F43333 50%)', 'dark-text' %}
+  {% elif 'VILLARREAL' in name %}
+    {% set abbr, grad, txt = 'VIL', 'linear-gradient(135deg, #FCEE21 60%, #004170 100%)', 'dark-text' %}
+  
+  {% elif 'MANCHESTER CITY' in name or 'MAN CITY' in name %}
     {% set abbr, grad, txt = 'MCI', 'linear-gradient(135deg, #6CABDD 60%, #FFFFFF 100%)', 'dark-text' %}
-  {% elif name in ['MANCHESTER UNITED', 'MAN UNITED'] %}
+  {% elif 'MANCHESTER UNITED' in name or 'MAN UNITED' in name %}
     {% set abbr, grad, txt = 'MUN', 'linear-gradient(135deg, #DA291C 60%, #000000 100%)', '' %}
-  {% elif name == 'LIVERPOOL' %}
+  {% elif 'LIVERPOOL' in name %}
     {% set abbr, grad, txt = 'LIV', 'linear-gradient(135deg, #C8102E 75%, #00B2A9 100%)', '' %}
-  {% elif name == 'ARSENAL' %}
+  {% elif 'ARSENAL' in name %}
     {% set abbr, grad, txt = 'ARS', 'linear-gradient(135deg, #EF0107 60%, #FFFFFF 100%)', 'dark-text' %}
-  {% elif name == 'CHELSEA' %}
+  {% elif 'CHELSEA' in name %}
     {% set abbr, grad, txt = 'CHE', 'linear-gradient(135deg, #034694 70%, #FFFFFF 100%)', '' %}
-  {% elif name in ['BAYERN MUNICH', 'BAYERN'] %}
+  
+  {% elif 'BAYERN' in name %}
     {% set abbr, grad, txt = 'BAY', 'linear-gradient(135deg, #DC052D 50%, #0066B2 50%)', '' %}
-  {% elif name in ['BORUSSIA DORTMUND', 'DORTMUND'] %}
+  {% elif 'DORTMUND' in name %}
     {% set abbr, grad, txt = 'BVB', 'linear-gradient(135deg, #FDE100 60%, #000000 100%)', 'dark-text' %}
-  {% elif name in ['PSG', 'PARIS SAINT GERMAIN'] %}
-    {% set abbr, grad, txt = 'PSG', 'linear-gradient(135deg, #004170 40%, #DA291C 60%)', '' %}
-  {% elif name in ['JUVENTUS', 'JUVE'] %}
-    {% set abbr, grad, txt = 'JUV', 'linear-gradient(135deg, #000000 50%, #FFFFFF 50%)', '' %}
-  {% elif name in ['INTER MILAN', 'INTER'] %}
-    {% set abbr, grad, txt = 'INT', 'linear-gradient(135deg, #00185B 50%, #006CB5 50%)', '' %}
-  {% elif name in ['AC MILAN', 'MILAN'] %}
-    {% set abbr, grad, txt = 'ACM', 'linear-gradient(135deg, #FB090B 50%, #000000 50%)', '' %}
-  {% elif name == 'NAPOLI' %}
-    {% set abbr, grad, txt = 'NAP', 'linear-gradient(135deg, #12A0D7 70%, #FFFFFF 100%)', 'dark-text' %}
-  {% elif name == 'ROMA' %}
-    {% set abbr, grad, txt = 'ROM', 'linear-gradient(135deg, #8E1F2F 60%, #F0B823 100%)', '' %}
-  {% elif name in ['BAYER LEVERKUSEN', 'LEVERKUSEN'] %}
+  {% elif 'LEVERKUSEN' in name %}
     {% set abbr, grad, txt = 'B04', 'linear-gradient(135deg, #E32221 50%, #000000 50%)', '' %}
-  {% elif 'TOTTENHAM' in name %}
-    {% set abbr, grad, txt = 'TOT', 'linear-gradient(135deg, #FFFFFF 60%, #132257 100%)', 'dark-text' %}
-  {% elif 'NEWCASTLE' in name %}
-    {% set abbr, grad, txt = 'NEW', 'linear-gradient(135deg, #000000 50%, #FFFFFF 50%)', '' %}
-  {% elif name == 'ASTON VILLA' %}
-    {% set abbr, grad, txt = 'AVL', 'linear-gradient(135deg, #670E36 60%, #95BFE5 100%)', '' %}
-  {% elif name == 'BENFICA' %}
-    {% set abbr, grad, txt = 'SLB', 'linear-gradient(135deg, #FF0000 60%, #FFFFFF 100%)', '' %}
-  {% elif name == 'AJAX' %}
-    {% set abbr, grad, txt = 'AJA', 'linear-gradient(135deg, #FFFFFF 30%, #D2122E 50%, #FFFFFF 70%)', 'dark-text' %}
-  {% elif name == 'GALATASARAY' %}
-    {% set abbr, grad, txt = 'GAL', 'linear-gradient(135deg, #A90432 50%, #FDB912 50%)', '' %}
+  {% elif 'LEIPZIG' in name %}
+    {% set abbr, grad, txt = 'RBL', 'linear-gradient(135deg, #FFFFFF 50%, #DD013F 50%)', 'dark-text' %}
+  {% elif 'FRANKFURT' in name %}
+    {% set abbr, grad, txt = 'SGE', 'linear-gradient(135deg, #000000 50%, #E1000F 50%)', '' %}
+  
+  {% elif 'JUVENTUS' in name or 'JUVE' in name %}
+    {% set abbr, grad, txt = 'JUV', 'linear-gradient(135deg, #000000 50%, #FFFFFF 50%)', '' %}
+  {% elif 'INTER' in name %}
+    {% set abbr, grad, txt = 'INT', 'linear-gradient(135deg, #00185B 50%, #006CB5 50%)', '' %}
+  {% elif 'MILAN' in name and 'INTER' not in name %}
+    {% set abbr, grad, txt = 'ACM', 'linear-gradient(135deg, #FB090B 50%, #000000 50%)', '' %}
+  {% elif 'NAPOLI' in name %}
+    {% set abbr, grad, txt = 'NAP', 'linear-gradient(135deg, #12A0D7 70%, #FFFFFF 100%)', 'dark-text' %}
+  {% elif 'ROMA' in name %}
+    {% set abbr, grad, txt = 'ROM', 'linear-gradient(135deg, #8E1F2F 60%, #F0B823 100%)', '' %}
+  
+  {% elif 'PSG' in name or 'PARIS' in name %}
+    {% set abbr, grad, txt = 'PSG', 'linear-gradient(135deg, #004170 40%, #DA291C 60%)', '' %}
+  {% elif 'MONACO' in name %}
+    {% set abbr, grad, txt = 'ASM', 'linear-gradient(135deg, #E32221 50%, #FFFFFF 50%)', '' %}
+  {% elif 'LILLE' in name %}
+    {% set abbr, grad, txt = 'LIL', 'linear-gradient(135deg, #E2001A 60%, #202A44 100%)', '' %}
+  {% elif 'MARSEILLE' in name %}
+    {% set abbr, grad, txt = 'OM', 'linear-gradient(135deg, #FFFFFF 60%, #2FAEE0 100%)', 'dark-text' %}
+  {% elif 'LYONNAIS' in name or 'LYON' in name %}
+    {% set abbr, grad, txt = 'OL', 'linear-gradient(135deg, #FFFFFF 33%, #DA291C 33%, #DA291C 66%, #10225C 66%)', 'dark-text' %}
+  
   {% else %}
     {% set abbr, grad, txt = name[:3], 'linear-gradient(135deg, #333333, #111111)', '' %}
   {% endif %}
@@ -182,7 +176,6 @@
   </div>
 {% endmacro %}
 
-  <!-- WELCOME TOAST NOTIFICATION -->
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for category, msg in messages %}
@@ -245,7 +238,7 @@
     <div class="marquee-container">
       <div class="marquee-content">
         {% if ticker_fixtures %}
-          {% for match in ticker_fixtures[:15] %} • <strong style="color: var(--cyan);">{{ match.player_a.name }}</strong> vs <strong style="color: var(--cyan);">{{ match.player_b.name }}</strong> &nbsp;&nbsp;&nbsp; {% endfor %}
+          {% for match in ticker_fixtures[:15] %} • <strong style="color: var(--cyan);">{{ match.player_a.emblem }}</strong> vs <strong style="color: var(--cyan);">{{ match.player_b.emblem }}</strong> &nbsp;&nbsp;&nbsp; {% endfor %}
         {% else %}
           No upcoming fixtures scheduled.
         {% endif %}
@@ -255,27 +248,64 @@
 
   <main class="layout-grid">
     <section class="panel">
-      <!-- EDIT PROFILE ACCORDION -->
   {% if current_user.is_authenticated and current_user.in_league %}
   <div class="panel" style="margin-bottom: 20px; padding: 15px;">
     <details>
       <summary style="cursor: pointer; font-weight: 700; color: #00E5FF; font-size: 1.1rem; list-style: none;">
-        ⚙️ Edit Profile (Gamertag & Emblem)
+        ⚙️ Edit Profile (Gamertag & Team)
       </summary>
       <form action="{{ url_for('edit_profile') }}" method="POST" style="margin-top: 15px;">
         
         <div style="margin-bottom: 15px;">
-          <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">New Gamertag (One-time change only!)</label>
+          <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">Update Gamertag</label>
           <input type="text" name="gamertag" value="{{ current_user.name }}" 
-                 style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;" 
-                 {% if current_user.name_changed %}disabled{% endif %}>
-          {% if current_user.name_changed %}
-            <small style="color: #FF5252; display: block; margin-top: 5px;">You have already used your one-time name change.</small>
-          {% endif %}
+                 style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">Official Team (25 Top Clubs)</label>
+          <select name="team" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+            <option value="{{ current_user.emblem }}" selected>Current: {{ current_user.emblem }}</option>
+            <optgroup label="🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League">
+                <option value="ARSENAL FC">Arsenal FC</option>
+                <option value="CHELSEA FC">Chelsea FC</option>
+                <option value="LIVERPOOL FC">Liverpool FC</option>
+                <option value="MANCHESTER CITY FC">Manchester City FC</option>
+                <option value="MANCHESTER UNITED FC">Manchester United FC</option>
+            </optgroup>
+            <optgroup label="🇪🇸 La Liga">
+                <option value="ATLETICO MADRID">Atlético Madrid</option>
+                <option value="FC BARCELONA">FC Barcelona</option>
+                <option value="REAL MADRID CF">Real Madrid CF</option>
+                <option value="SEVILLA FC">Sevilla FC</option>
+                <option value="VILLARREAL CF">Villarreal CF</option>
+            </optgroup>
+            <optgroup label="🇮🇹 Serie A">
+                <option value="AC MILAN">AC Milan</option>
+                <option value="AS ROMA">AS Roma</option>
+                <option value="INTER MILAN">Inter Milan</option>
+                <option value="JUVENTUS FC">Juventus FC</option>
+                <option value="SSC NAPOLI">SSC Napoli</option>
+            </optgroup>
+            <optgroup label="🇩🇪 Bundesliga">
+                <option value="BAYER 04 LEVERKUSEN">Bayer 04 Leverkusen</option>
+                <option value="BORUSSIA DORTMUND">Borussia Dortmund</option>
+                <option value="EINTRACHT FRANKFURT">Eintracht Frankfurt</option>
+                <option value="FC BAYERN MUNICH">FC Bayern Munich</option>
+                <option value="RB LEIPZIG">RB Leipzig</option>
+            </optgroup>
+            <optgroup label="🇫🇷 Ligue 1">
+                <option value="AS MONACO">AS Monaco</option>
+                <option value="LOSC LILLE">LOSC Lille</option>
+                <option value="OLYMPIQUE DE MARSEILLE">Olympique de Marseille</option>
+                <option value="OLYMPIQUE LYONNAIS">Olympique Lyonnais</option>
+                <option value="PARIS SAINT-GERMAIN">Paris Saint-Germain</option>
+            </optgroup>
+          </select>
         </div>
 
         <button type="submit" class="btn btn-brand" style="width: 100%; padding: 12px; font-size: 1rem; border-radius: 8px; background: #00E5FF; color: #161D38; font-weight: bold; border: none; cursor: pointer;">
-          Save Changes
+          Save Profile
         </button>
       </form>
     </details>
@@ -290,7 +320,7 @@
           <thead>
             <tr>
               <th width="40">#</th>
-              <th class="left">PLAYER</th>
+              <th class="left">CLUB / MANAGER</th>
               <th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GD</th><th>PTS</th>
             </tr>
           </thead>
@@ -298,10 +328,15 @@
             {% for user in standings %}
             <tr class="{% if loop.index == 1 %}rank-1{% endif %}">
               <td><div class="rank-badge">{{ loop.index }}</div></td>
+              
               <td class="player-cell">
-                {{ render_crest(user.name) }}
-                <strong>{{ user.name }}</strong>
+                {{ render_crest(user.emblem) }}
+                <div style="display: flex; flex-direction: column; justify-content: center;">
+                  <strong style="line-height: 1.2; text-transform: uppercase;">{{ user.emblem }}</strong>
+                  <span style="font-size: 0.70rem; color: var(--text-mid); font-weight: 500;">{{ user.name }}</span>
+                </div>
               </td>
+
               <td>{{ user.played }}</td>
               <td>{{ user.won }}</td>
               <td>{{ user.drawn }}</td>
@@ -324,21 +359,35 @@
         <p>{{ fixtures|length }} pending matches</p>
       </div>
       
-      <!-- FIXTURE LIST WITH COUNTDOWN TIMER -->
       <div class="fixture-list fixture-scroll-box">
         {% for match in fixtures %}
         <div class="fixture-card">
           {% if match.matchday %}
-          <div style="text-align: center; font-size: 0.65rem; color: var(--text-low); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Matchday {{ match.matchday }}</div>
+          <div style="text-align: center; font-size: 0.65rem; color: var(--text-low); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Matchday {{ match.matchday }}</div>
           {% endif %}
           
-          <div class="fixture-teams" style="display: grid; grid-template-columns: 1fr 40px 1fr; align-items: center; gap: 5px;">
-            <span style="text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem;">{{ match.player_a.name }}</span>
-            <span class="fixture-vs" style="text-align: center;">VS</span>
-            <span style="text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem;">{{ match.player_b.name }}</span>
+          <div class="fixture-teams" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+            <!-- Home Team (Left) -->
+            <div style="flex: 1; display: flex; align-items: center; gap: 8px; text-align: left;">
+              {{ render_crest(match.player_a.emblem) }}
+              <div>
+                <div style="font-size: 0.80rem; font-weight: 700; text-transform: uppercase;">{{ match.player_a.emblem }}</div>
+                <div style="font-size: 0.65rem; color: var(--text-mid); font-weight: normal;">{{ match.player_a.name }}</div>
+              </div>
+            </div>
+            
+            <div class="fixture-vs" style="width: 30px; text-align: center;">VS</div>
+            
+            <!-- Away Team (Right) -->
+            <div style="flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 8px; text-align: right;">
+              <div>
+                <div style="font-size: 0.80rem; font-weight: 700; text-transform: uppercase;">{{ match.player_b.emblem }}</div>
+                <div style="font-size: 0.65rem; color: var(--text-mid); font-weight: normal;">{{ match.player_b.name }}</div>
+              </div>
+              {{ render_crest(match.player_b.emblem) }}
+            </div>
           </div>
           
-           <!-- TIMER ADDED HERE -->
           {% if match.deadline %}
           <div class="match-countdown" data-deadline="{{ match.deadline.isoformat() }}Z" style="text-align: center; font-size: 0.75rem; color: var(--gold); margin-top: 8px; font-family: var(--font-display);">
             Calculating time...
@@ -352,9 +401,7 @@
       </div>
     </aside>
 
-<!-- COMPLETED MATCHES BOARD -->
   <div class="panel" style="margin-bottom: 20px; grid-column: 1 / -1;">
-    
     <div class="panel-header">
       <h2>Recent Results</h2>
       <p>Match results categorized by matchday cycle.</p>
@@ -366,7 +413,6 @@
       {% if completed_by_matchday %}
         {% for group in completed_by_matchday %}
           
-          <!-- Matchday Group Header -->
           <div style="margin: 15px 0 5px 0; display: flex; align-items: center; gap: 12px;">
             <span style="font-family: var(--font-heading); font-size: 0.90rem; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.08em; background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.3); padding: 4px 12px; border-radius: 6px;">
               Matchday {{ group.matchday }}
@@ -378,10 +424,17 @@
           <div style="background: rgba(255,255,255,0.05); padding: 12px 10px; border-radius: 8px; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.05); gap: 8px;">
             
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-              <div style="flex: 1; text-align: right; font-weight: 600; color: var(--text-hi); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                {{ match.player_a.name }} <span style="margin-left: 6px; display: inline-block; vertical-align: middle;">{{ render_crest(match.player_a.name) }}</span>
+              
+              <!-- PLAYER A (LEFT ALIGNED) -->
+              <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
+                {{ render_crest(match.player_a.emblem) }}
+                <div style="text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div style="font-weight: 700; color: var(--text-hi); font-size: 0.85rem; line-height: 1.2;">{{ match.player_a.emblem }}</div>
+                  <div style="font-size: 0.70rem; color: var(--text-mid);">{{ match.player_a.name }}</div>
+                </div>
               </div>
               
+              <!-- SCORE -->
               <div style="text-align: center; min-width: 80px;">
                 {% if match.status == 'voided' %}
                   <span style="background: var(--red); color: white; font-size: 0.75rem; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; font-weight: bold; display: inline-block;">
@@ -398,12 +451,16 @@
                 {% endif %}
               </div>
               
-              <div style="flex: 1; text-align: left; font-weight: 600; color: var(--text-hi); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                <span style="margin-right: 6px; display: inline-block; vertical-align: middle;">{{ render_crest(match.player_b.name) }}</span> {{ match.player_b.name }}
+              <!-- PLAYER B (RIGHT ALIGNED) -->
+              <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 8px;">
+                <div style="text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div style="font-weight: 700; color: var(--text-hi); font-size: 0.85rem; line-height: 1.2;">{{ match.player_b.emblem }}</div>
+                  <div style="font-size: 0.70rem; color: var(--text-mid);">{{ match.player_b.name }}</div>
+                </div>
+                {{ render_crest(match.player_b.emblem) }}
               </div>
             </div>
 
-            <!-- Evidence Links (Only shows if screenshots exist) -->
             {% if match.screenshot_path %}
               <div style="display: flex; justify-content: center; gap: 8px;">
                 {% for img_url in match.screenshot_path.split(',') %}
@@ -435,7 +492,6 @@
         <p>Everything you need to know about how the Panic Keh eFootball League operates. Tap any section to read the details.</p>
       </div>
       <div style="padding: 20px; display: flex; flex-direction: column; gap: 15px;">
-        
         <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
           <summary style="color: var(--cyan); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
             Table Glossary
@@ -450,7 +506,6 @@
             </ul>
           </div>
         </details>
-
         <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
           <summary style="color: var(--magenta); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
             Match Submissions & Deadlines
@@ -465,7 +520,6 @@
             </p>
           </div>
         </details>
-
         <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
           <summary style="color: var(--gold); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
             Network Disconnects
@@ -478,7 +532,6 @@
             </p>
           </div>
         </details>
-
         <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border-left: 3px solid var(--red); border-top: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);">
           <summary style="color: var(--red); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
             Penalties & Eliminations
@@ -492,10 +545,8 @@
             </p>
           </div>
         </details>
-
       </div>
     </section>
-
   </main>
 
   <footer class="site-footer">
@@ -530,7 +581,45 @@
       <div id="registerForm" style="display: none;">
         <h2 style="font-family: var(--font-display); margin-bottom: 20px; text-align: center;">REGISTER</h2>
         <form method="POST" action="{{ url_for('register') }}">
-          <input type="text" name="gamertag" class="modal-input" placeholder="Gamertag" style="margin-bottom: 10px;" required>
+          <input type="text" name="gamertag" class="modal-input" placeholder="Gamertag (Username)" style="margin-bottom: 10px;" required>
+          <select name="team" class="modal-input" style="margin-bottom: 10px;" required>
+            <option value="" disabled selected>Select Your Official Club</option>
+            <optgroup label="🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League">
+                <option value="ARSENAL FC">Arsenal FC</option>
+                <option value="CHELSEA FC">Chelsea FC</option>
+                <option value="LIVERPOOL FC">Liverpool FC</option>
+                <option value="MANCHESTER CITY FC">Manchester City FC</option>
+                <option value="MANCHESTER UNITED FC">Manchester United FC</option>
+            </optgroup>
+            <optgroup label="🇪🇸 La Liga">
+                <option value="ATLETICO MADRID">Atlético Madrid</option>
+                <option value="FC BARCELONA">FC Barcelona</option>
+                <option value="REAL MADRID CF">Real Madrid CF</option>
+                <option value="SEVILLA FC">Sevilla FC</option>
+                <option value="VILLARREAL CF">Villarreal CF</option>
+            </optgroup>
+            <optgroup label="🇮🇹 Serie A">
+                <option value="AC MILAN">AC Milan</option>
+                <option value="AS ROMA">AS Roma</option>
+                <option value="INTER MILAN">Inter Milan</option>
+                <option value="JUVENTUS FC">Juventus FC</option>
+                <option value="SSC NAPOLI">SSC Napoli</option>
+            </optgroup>
+            <optgroup label="🇩🇪 Bundesliga">
+                <option value="BAYER 04 LEVERKUSEN">Bayer 04 Leverkusen</option>
+                <option value="BORUSSIA DORTMUND">Borussia Dortmund</option>
+                <option value="EINTRACHT FRANKFURT">Eintracht Frankfurt</option>
+                <option value="FC BAYERN MUNICH">FC Bayern Munich</option>
+                <option value="RB LEIPZIG">RB Leipzig</option>
+            </optgroup>
+            <optgroup label="🇫🇷 Ligue 1">
+                <option value="AS MONACO">AS Monaco</option>
+                <option value="LOSC LILLE">LOSC Lille</option>
+                <option value="OLYMPIQUE DE MARSEILLE">Olympique de Marseille</option>
+                <option value="OLYMPIQUE LYONNAIS">Olympique Lyonnais</option>
+                <option value="PARIS SAINT-GERMAIN">Paris Saint-Germain</option>
+            </optgroup>
+          </select>
           <input type="email" name="email" class="modal-input" placeholder="Email Address" style="margin-bottom: 10px;" required>
           <input type="password" name="password" class="modal-input" placeholder="Password" required>
           <button type="submit" class="modal-btn">JOIN LEAGUE</button>
@@ -579,7 +668,6 @@
     }
   </script>
 
-  <!-- JAVASCRIPT FOR COUNTDOWN TIMER -->
   <script>
     function updateTimers() {
       const timers = document.querySelectorAll('.match-countdown');
