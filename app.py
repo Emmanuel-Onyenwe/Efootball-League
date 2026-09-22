@@ -54,7 +54,7 @@ class User(db.Model, UserMixin):
     role = db.Column(db.String(20), default='player') 
     in_league = db.Column(db.Boolean, default=False) 
     is_verified = db.Column(db.Boolean, default=False)
-    emblem = db.Column(db.String(50), default='🛡️') # Repurposed to hold Official Team Name
+    emblem = db.Column(db.String(50), default='🛡️')
     name_changed = db.Column(db.Boolean, default=False)
     
     # Stats
@@ -88,7 +88,6 @@ class Match(db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# --- FULLY SYNCHRONOUS EMAIL SENDER (WSGI SAFE) ---
 def send_email(to, subject, template):
     msg = Message(subject, recipients=[to], html=template)
     try:
@@ -97,7 +96,6 @@ def send_email(to, subject, template):
     except Exception as e:
         print(f"FAILED: Email could not be sent to {to}. Error: {e}")
 
-# --- ROUND-ROBIN SCHEDULING (Circle / Berger method) ---
 def generate_round_robin_schedule(player_ids):
     players = list(player_ids)
     n = len(players)
@@ -129,16 +127,15 @@ def generate_round_robin_schedule(player_ids):
 def get_pending_fixtures_sorted():
     return Match.query.filter_by(status='pending').order_by(Match.matchday, Match.id).all()
 
-# --- AUTHENTICATION ROUTES ---
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        gamertag = request.form.get('gamertag', '').strip()
+        # Enforce Title Case for Gamertag, ALL CAPS for Team
+        gamertag = request.form.get('gamertag', '').strip().title()
         team = request.form.get('team', '').strip().upper()
         email = request.form.get('email')
         password = request.form.get('password')
         
-        # Duplicate Checks
         if User.query.filter_by(email=email).first() or User.query.filter_by(name=gamertag).first():
             flash("Registration Failed: Email or Gamertag already taken.", "error")
             return redirect(url_for('index', show='register'))
@@ -264,7 +261,6 @@ def reset_password(token):
         return redirect(url_for('login'))
     return render_template('reset.html') 
 
-# --- CORE LOGIC (Standings) ---
 def update_standings():
     users = User.query.filter_by(status='active', in_league=True).all()
     for user in users:
@@ -294,7 +290,6 @@ def update_standings():
                 
     db.session.commit()
 
-# --- PUBLIC ROUTES ---
 @app.route('/')
 def index():
     update_standings()
@@ -303,7 +298,6 @@ def index():
     for u in users:
         u.gd = u.goals_for - u.goals_against
 
-    # Sorts primarily by Total Points (Descending), Goal Difference (Descending), then Alphabetically (A-Z)
     standings = sorted(users, key=lambda u: (-u.points, -u.gd, u.emblem))
     final_sorted_fixtures = get_pending_fixtures_sorted()
     ticker_fixtures = final_sorted_fixtures
@@ -379,7 +373,6 @@ def uploaded_file(filename):
         return redirect(filename)
     return "File not found", 404
 
-# --- ADMIN DASHBOARD ---
 @app.route('/panic-hq')
 @login_required
 def admin():
@@ -439,7 +432,6 @@ def promote_player(user_id):
         flash(f"{user.name} is now a Co-Admin!", "success")
     return redirect(url_for('admin'))
 
-# --- MATHEMATICAL CALENDAR GENERATOR ---
 def get_deadline_for_matchday(matchday):
     if matchday == 1:
         return datetime(2026, 9, 2, 23, 59, 59)
@@ -656,7 +648,6 @@ def unlock_all_names():
     
     return "SUCCESS: All players have had their name-change locks removed! They can now edit their profiles."
 
-# MANUAL ADMIN OVERRIDE TO FIX EXISTING PLAYER TEAMS WITHOUT THEM LOGGING IN
 @app.route('/panic-hq/admin-set-team/<int:user_id>/<string:new_team>')
 @login_required
 def admin_set_team(user_id, new_team):
@@ -781,7 +772,8 @@ def eliminate_player(user_id):
 @app.route('/edit_profile', methods=['POST'])
 @login_required
 def edit_profile():
-    new_name = request.form.get('gamertag', '').strip()
+    # Enforce Title Case for Gamertag, ALL CAPS for Team
+    new_name = request.form.get('gamertag', '').strip().title()
     new_team = request.form.get('team', '').strip().upper()
     
     if new_team and new_team != current_user.emblem:
@@ -849,6 +841,13 @@ with app.app_context():
         
     try:
         db.session.execute(text('ALTER TABLE "match" ADD COLUMN updated_at TIMESTAMP'))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        
+    try:
+        # Patch to expand emblem column to handle full club names
+        db.session.execute(text('ALTER TABLE "user" ALTER COLUMN emblem TYPE VARCHAR(50)'))
         db.session.commit()
     except Exception:
         db.session.rollback()
