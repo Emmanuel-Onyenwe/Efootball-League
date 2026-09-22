@@ -41,7 +41,8 @@
   .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; }
   .marquee-content {
     display: inline-block; padding-left: 100%;
-    animation: marquee 70s linear infinite; color: var(--text-mid); font-size: 0.85rem;
+    /* Adjusted speed to 45s for faster mobile crawl */
+    animation: marquee 45s linear infinite; color: var(--text-mid); font-size: 0.85rem;
   }
   @keyframes marquee {
     0%   { transform: translate(0, 0); }
@@ -92,13 +93,6 @@
   .fixture-scroll-box { overflow-y: auto; padding-right: 5px; max-height: 650px; }
   @media (max-width: 960px) { .fixture-scroll-box { max-height: 240px; } }
 
-  /* FORCE DARK MODE ON DROPDOWN LISTS */
-  select option, select optgroup {
-    background-color: var(--bg-panel);
-    color: var(--text-hi);
-    font-weight: 600;
-  }
-  
   .custom-crest { 
     display: inline-flex; align-items: center; justify-content: center; 
     width: 34px; height: 34px; border-radius: 50%; 
@@ -110,67 +104,75 @@
   .custom-crest.dark-text { 
     color: #111; text-shadow: 0px 1px 1px rgba(255,255,255,0.4); 
   }
+
+  /* FORCE DARK MODE ON DROPDOWN LISTS */
+  select option, select optgroup {
+    background-color: var(--bg-panel);
+    color: var(--text-hi);
+    font-weight: 600;
+  }
 </style>
 </head>
 <body>
 
+<!-- NEW DISTINCT CREST GENERATOR -->
 {% macro render_crest(club_name) %}
-  {% set name = club_name | upper | trim %}
+  {% set name = club_name | upper | replace('É', 'E') | trim %}
   
-  {% if 'REAL MADRID' in name or 'RMA' in name %}
-    {% set abbr, grad, txt = 'RMA', 'linear-gradient(135deg, #FFFFFF 50%, #FEBE10 100%)', 'dark-text' %}
-  {% elif 'BARCELONA' in name or 'BARCA' in name %}
-    {% set abbr, grad, txt = 'FCB', 'linear-gradient(135deg, #004D98 50%, #A50044 50%)', '' %}
+  {% if 'REAL MADRID' in name %}
+    {% set abbr, grad, txt = 'RMA', 'linear-gradient(135deg, #FFFFFF 60%, #FEBE10 100%)', 'dark-text' %}
+  {% elif 'BARCELONA' in name %}
+    {% set abbr, grad, txt = 'FCB', 'repeating-linear-gradient(90deg, #004D98 0%, #004D98 33%, #A50044 33%, #A50044 66%)', '' %}
   {% elif 'ATLETICO' in name %}
-    {% set abbr, grad, txt = 'ATM', 'linear-gradient(135deg, #CB3524 33%, #FFFFFF 33%, #FFFFFF 66%, #272E61 66%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'ATM', 'repeating-linear-gradient(90deg, #CB3524 0%, #CB3524 25%, #FFFFFF 25%, #FFFFFF 50%)', 'dark-text' %}
   {% elif 'SEVILLA' in name %}
     {% set abbr, grad, txt = 'SEV', 'linear-gradient(135deg, #FFFFFF 50%, #F43333 50%)', 'dark-text' %}
   {% elif 'VILLARREAL' in name %}
-    {% set abbr, grad, txt = 'VIL', 'linear-gradient(135deg, #FCEE21 60%, #004170 100%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'VIL', 'radial-gradient(circle, #FCEE21 60%, #004170 100%)', 'dark-text' %}
   
-  {% elif 'MANCHESTER CITY' in name or 'MAN CITY' in name %}
-    {% set abbr, grad, txt = 'MCI', 'linear-gradient(135deg, #6CABDD 60%, #FFFFFF 100%)', 'dark-text' %}
-  {% elif 'MANCHESTER UNITED' in name or 'MAN UNITED' in name %}
+  {% elif 'MANCHESTER CITY' in name %}
+    {% set abbr, grad, txt = 'MCI', 'radial-gradient(circle, #6CABDD 40%, #FFFFFF 100%)', 'dark-text' %}
+  {% elif 'MANCHESTER UNITED' in name %}
     {% set abbr, grad, txt = 'MUN', 'linear-gradient(135deg, #DA291C 60%, #000000 100%)', '' %}
   {% elif 'LIVERPOOL' in name %}
-    {% set abbr, grad, txt = 'LIV', 'linear-gradient(135deg, #C8102E 75%, #00B2A9 100%)', '' %}
+    {% set abbr, grad, txt = 'LIV', 'radial-gradient(circle, #C8102E 70%, #00B2A9 100%)', '' %}
   {% elif 'ARSENAL' in name %}
     {% set abbr, grad, txt = 'ARS', 'linear-gradient(135deg, #EF0107 60%, #FFFFFF 100%)', 'dark-text' %}
   {% elif 'CHELSEA' in name %}
-    {% set abbr, grad, txt = 'CHE', 'linear-gradient(135deg, #034694 70%, #FFFFFF 100%)', '' %}
+    {% set abbr, grad, txt = 'CHE', 'radial-gradient(circle, #034694 70%, #FFFFFF 100%)', '' %}
   
   {% elif 'BAYERN' in name %}
-    {% set abbr, grad, txt = 'BAY', 'linear-gradient(135deg, #DC052D 50%, #0066B2 50%)', '' %}
+    {% set abbr, grad, txt = 'BAY', 'radial-gradient(circle, #DC052D 60%, #0066B2 100%)', '' %}
   {% elif 'DORTMUND' in name %}
-    {% set abbr, grad, txt = 'BVB', 'linear-gradient(135deg, #FDE100 60%, #000000 100%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'BVB', 'radial-gradient(circle, #FDE100 65%, #000000 100%)', 'dark-text' %}
   {% elif 'LEVERKUSEN' in name %}
     {% set abbr, grad, txt = 'B04', 'linear-gradient(135deg, #E32221 50%, #000000 50%)', '' %}
   {% elif 'LEIPZIG' in name %}
     {% set abbr, grad, txt = 'RBL', 'linear-gradient(135deg, #FFFFFF 50%, #DD013F 50%)', 'dark-text' %}
   {% elif 'FRANKFURT' in name %}
-    {% set abbr, grad, txt = 'SGE', 'linear-gradient(135deg, #000000 50%, #E1000F 50%)', '' %}
+    {% set abbr, grad, txt = 'SGE', 'linear-gradient(135deg, #000000 33%, #E1000F 33%, #E1000F 66%, #FFFFFF 66%)', 'dark-text' %}
   
-  {% elif 'JUVENTUS' in name or 'JUVE' in name %}
-    {% set abbr, grad, txt = 'JUV', 'linear-gradient(135deg, #000000 50%, #FFFFFF 50%)', '' %}
+  {% elif 'JUVENTUS' in name %}
+    {% set abbr, grad, txt = 'JUV', 'linear-gradient(90deg, #000000 50%, #FFFFFF 50%)', '' %}
   {% elif 'INTER' in name %}
-    {% set abbr, grad, txt = 'INT', 'linear-gradient(135deg, #00185B 50%, #006CB5 50%)', '' %}
-  {% elif 'MILAN' in name and 'INTER' not in name %}
-    {% set abbr, grad, txt = 'ACM', 'linear-gradient(135deg, #FB090B 50%, #000000 50%)', '' %}
+    {% set abbr, grad, txt = 'INT', 'repeating-linear-gradient(90deg, #00185B 0%, #00185B 33%, #006CB5 33%, #006CB5 66%)', '' %}
+  {% elif 'MILAN' in name %}
+    {% set abbr, grad, txt = 'ACM', 'repeating-linear-gradient(90deg, #FB090B 0%, #FB090B 25%, #000000 25%, #000000 50%)', '' %}
   {% elif 'NAPOLI' in name %}
-    {% set abbr, grad, txt = 'NAP', 'linear-gradient(135deg, #12A0D7 70%, #FFFFFF 100%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'NAP', 'radial-gradient(circle, #12A0D7 60%, #FFFFFF 100%)', 'dark-text' %}
   {% elif 'ROMA' in name %}
     {% set abbr, grad, txt = 'ROM', 'linear-gradient(135deg, #8E1F2F 60%, #F0B823 100%)', '' %}
   
-  {% elif 'PSG' in name or 'PARIS' in name %}
-    {% set abbr, grad, txt = 'PSG', 'linear-gradient(135deg, #004170 40%, #DA291C 60%)', '' %}
+  {% elif 'PARIS' in name or 'PSG' in name %}
+    {% set abbr, grad, txt = 'PSG', 'linear-gradient(90deg, #004170 30%, #DA291C 30%, #DA291C 70%, #004170 70%)', '' %}
   {% elif 'MONACO' in name %}
     {% set abbr, grad, txt = 'ASM', 'linear-gradient(135deg, #E32221 50%, #FFFFFF 50%)', '' %}
   {% elif 'LILLE' in name %}
     {% set abbr, grad, txt = 'LIL', 'linear-gradient(135deg, #E2001A 60%, #202A44 100%)', '' %}
   {% elif 'MARSEILLE' in name %}
-    {% set abbr, grad, txt = 'OM', 'linear-gradient(135deg, #FFFFFF 60%, #2FAEE0 100%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'OM', 'radial-gradient(circle, #FFFFFF 60%, #2FAEE0 100%)', 'dark-text' %}
   {% elif 'LYONNAIS' in name or 'LYON' in name %}
-    {% set abbr, grad, txt = 'OL', 'linear-gradient(135deg, #FFFFFF 33%, #DA291C 33%, #DA291C 66%, #10225C 66%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'OL', 'linear-gradient(90deg, #FFFFFF 33%, #DA291C 33%, #DA291C 66%, #10225C 66%)', 'dark-text' %}
   
   {% else %}
     {% set abbr, grad, txt = name[:3], 'linear-gradient(135deg, #333333, #111111)', '' %}
@@ -181,21 +183,38 @@
   </div>
 {% endmacro %}
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, msg in messages %}
-        {% if category == 'welcome' %}
-          <div id="welcome-toast" style="position: fixed; bottom: -80px; left: 50%; transform: translateX(-50%); background: #161D38; color: #00E5FF; padding: 12px 28px; border-radius: 50px; border: 1px solid rgba(0, 229, 255, 0.4); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); z-index: 10000; font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.95rem; white-space: nowrap; transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
-            {{ msg }}
-          </div>
-          <script>
-            setTimeout(() => { document.getElementById('welcome-toast').style.bottom = '30px'; }, 150);
-            setTimeout(() => { document.getElementById('welcome-toast').style.bottom = '-80px'; }, 2650);
-          </script>
-        {% endif %}
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
+<!-- SMART DROPDOWN ENGINE -->
+{% set taken_teams_list = taken_teams | default([]) %}
+{% macro team_option(val, label) %}
+  {% set is_taken = val in taken_teams_list %}
+  {% set is_mine = current_user.is_authenticated and current_user.emblem == val %}
+  <option value="{{ val }}" {% if is_taken and not is_mine %}disabled style="color: #64709A;"{% endif %}>
+    {{ label }} {% if is_taken and not is_mine %} 🚫 (Taken){% endif %}
+  </option>
+{% endmacro %}
+
+<!-- UNIVERSAL TOAST NOTIFICATIONS -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div id="toast-container" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 10px;">
+    {% for category, msg in messages %}
+      {% set bg = '#00E5FF' if category == 'welcome' else ('#33E6A0' if category == 'success' else '#FF4D6D') %}
+      {% set txt = '#10162C' if category in ['welcome', 'success'] else '#FFFFFF' %}
+      <div class="smart-toast" style="background: {{ bg }}; color: {{ txt }}; padding: 12px 28px; border-radius: 50px; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 0.95rem; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.5); opacity: 0; transform: translateY(-20px); transition: all 0.4s ease;">
+        {{ msg }}
+      </div>
+    {% endfor %}
+    </div>
+    <script>
+      setTimeout(() => {
+        document.querySelectorAll('.smart-toast').forEach(t => { t.style.opacity = '1'; t.style.transform = 'translateY(0)'; });
+      }, 100);
+      setTimeout(() => {
+        document.querySelectorAll('.smart-toast').forEach(t => { t.style.opacity = '0'; t.style.transform = 'translateY(-20px)'; });
+      }, 4000);
+    </script>
+  {% endif %}
+{% endwith %}
 
   <header class="top-bar">
     <div class="brand">
@@ -253,7 +272,6 @@
 
   <main class="layout-grid">
     <section class="panel">
-      
   <!-- EDIT PROFILE ACCORDION -->
   {% if current_user.is_authenticated and current_user.in_league %}
   <div class="panel" style="margin-bottom: 20px; padding: 15px;">
@@ -262,7 +280,7 @@
         ⚙️ Edit Profile (Gamertag & Team)
       </summary>
       
-      <!-- NEW: Checks if the league has started -->
+      <!-- Checks if the league has started -->
       {% if fixtures or completed_by_matchday %}
         <div style="margin-top: 15px; padding: 16px; background: rgba(255, 77, 109, 0.1); border: 1px solid rgba(255, 77, 109, 0.3); border-radius: 8px; text-align: center;">
           <p style="color: var(--text-hi); font-size: 0.95rem; margin: 0;">
@@ -284,39 +302,39 @@
             <select name="team" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
               <option value="{{ current_user.emblem }}" selected>Current: {{ current_user.emblem }}</option>
               <optgroup label="🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League">
-                  <option value="ARSENAL FC">ARSENAL FC</option>
-                  <option value="CHELSEA FC">CHELSEA FC</option>
-                  <option value="LIVERPOOL FC">LIVERPOOL FC</option>
-                  <option value="MANCHESTER CITY FC">MANCHESTER CITY FC</option>
-                  <option value="MANCHESTER UNITED FC">MANCHESTER UNITED FC</option>
+                  {{ team_option('ARSENAL FC', 'ARSENAL FC') }}
+                  {{ team_option('CHELSEA FC', 'CHELSEA FC') }}
+                  {{ team_option('LIVERPOOL FC', 'LIVERPOOL FC') }}
+                  {{ team_option('MANCHESTER CITY FC', 'MANCHESTER CITY FC') }}
+                  {{ team_option('MANCHESTER UNITED FC', 'MANCHESTER UNITED FC') }}
               </optgroup>
               <optgroup label="🇪🇸 La Liga">
-                  <option value="ATLETICO MADRID">ATLÉTICO MADRID</option>
-                  <option value="FC BARCELONA">FC BARCELONA</option>
-                  <option value="REAL MADRID CF">REAL MADRID CF</option>
-                  <option value="SEVILLA FC">SEVILLA FC</option>
-                  <option value="VILLARREAL CF">VILLARREAL CF</option>
+                  {{ team_option('ATLETICO MADRID', 'ATLÉTICO MADRID') }}
+                  {{ team_option('FC BARCELONA', 'FC BARCELONA') }}
+                  {{ team_option('REAL MADRID CF', 'REAL MADRID CF') }}
+                  {{ team_option('SEVILLA FC', 'SEVILLA FC') }}
+                  {{ team_option('VILLARREAL CF', 'VILLARREAL CF') }}
               </optgroup>
               <optgroup label="🇮🇹 Serie A">
-                  <option value="AC MILAN">AC MILAN</option>
-                  <option value="AS ROMA">AS ROMA</option>
-                  <option value="INTER MILAN">INTER MILAN</option>
-                  <option value="JUVENTUS FC">JUVENTUS FC</option>
-                  <option value="SSC NAPOLI">SSC NAPOLI</option>
+                  {{ team_option('AC MILAN', 'AC MILAN') }}
+                  {{ team_option('AS ROMA', 'AS ROMA') }}
+                  {{ team_option('INTER MILAN', 'INTER MILAN') }}
+                  {{ team_option('JUVENTUS FC', 'JUVENTUS FC') }}
+                  {{ team_option('SSC NAPOLI', 'SSC NAPOLI') }}
               </optgroup>
               <optgroup label="🇩🇪 Bundesliga">
-                  <option value="BAYER 04 LEVERKUSEN">BAYER 04 LEVERKUSEN</option>
-                  <option value="BORUSSIA DORTMUND">BORUSSIA DORTMUND</option>
-                  <option value="EINTRACHT FRANKFURT">EINTRACHT FRANKFURT</option>
-                  <option value="FC BAYERN MUNICH">FC BAYERN MUNICH</option>
-                  <option value="RB LEIPZIG">RB LEIPZIG</option>
+                  {{ team_option('BAYER 04 LEVERKUSEN', 'BAYER 04 LEVERKUSEN') }}
+                  {{ team_option('BORUSSIA DORTMUND', 'BORUSSIA DORTMUND') }}
+                  {{ team_option('EINTRACHT FRANKFURT', 'EINTRACHT FRANKFURT') }}
+                  {{ team_option('FC BAYERN MUNICH', 'FC BAYERN MUNICH') }}
+                  {{ team_option('RB LEIPZIG', 'RB LEIPZIG') }}
               </optgroup>
               <optgroup label="🇫🇷 Ligue 1">
-                  <option value="AS MONACO">AS MONACO</option>
-                  <option value="LOSC LILLE">LOSC LILLE</option>
-                  <option value="OLYMPIQUE DE MARSEILLE">OLYMPIQUE DE MARSEILLE</option>
-                  <option value="OLYMPIQUE LYONNAIS">OLYMPIQUE LYONNAIS</option>
-                  <option value="PARIS SAINT-GERMAIN">PARIS SAINT-GERMAIN</option>
+                  {{ team_option('AS MONACO', 'AS MONACO') }}
+                  {{ team_option('LOSC LILLE', 'LOSC LILLE') }}
+                  {{ team_option('OLYMPIQUE DE MARSEILLE', 'OLYMPIQUE DE MARSEILLE') }}
+                  {{ team_option('OLYMPIQUE LYONNAIS', 'OLYMPIQUE LYONNAIS') }}
+                  {{ team_option('PARIS SAINT-GERMAIN', 'PARIS SAINT-GERMAIN') }}
               </optgroup>
             </select>
           </div>
@@ -329,6 +347,7 @@
     </details>
   </div>
   {% endif %}
+
       <div class="panel-header">
         <h2>League Table</h2>
         <p>Ranked by Points, then Goal Difference.</p>
@@ -350,9 +369,7 @@
               <td class="player-cell">
                 {{ render_crest(user.emblem) }}
                 <div style="display: flex; flex-direction: column; justify-content: center;">
-                  <!-- Locked the club name to 0.80rem and tightened line height -->
                   <strong style="line-height: 1.1; text-transform: uppercase; font-size: 0.80rem;">{{ user.emblem }}</strong>
-                  <!-- Dropped the gamertag to 0.65rem to match the new proportion -->
                   <span style="font-size: 0.65rem; color: var(--text-mid); font-weight: 500; margin-top: 1px;">{{ user.name }}</span>
                 </div>
               </td>
@@ -577,14 +594,6 @@
     <div class="modal-card">
       <button class="close-btn" onclick="closeModal()">&times;</button>
       
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          {% for category, msg in messages %}
-            <div style="padding: 10px; background: var(--red); color: white; border-radius: 5px; margin-bottom: 15px; font-size: 0.85rem; text-align: center;">{{ msg }}</div>
-          {% endfor %}
-        {% endif %}
-      {% endwith %}
-
       <div id="loginForm">
         <h2 style="font-family: var(--font-display); margin-bottom: 20px; text-align: center;">LOGIN</h2>
         <form method="POST" action="{{ url_for('login') }}">
@@ -594,131 +603,4 @@
         </form>
         <p style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: var(--text-mid);">
           New here? <a href="#" onclick="switchModal('register')" style="color: var(--cyan);">Register</a><br><br>
-          <a href="{{ url_for('forgot_password') }}" style="color: var(--text-low);">Forgot Password?</a>
-        </p>
-      </div>
-
-      <div id="registerForm" style="display: none;">
-        <h2 style="font-family: var(--font-display); margin-bottom: 20px; text-align: center;">REGISTER</h2>
-        <form method="POST" action="{{ url_for('register') }}">
-          <input type="text" name="gamertag" class="modal-input" placeholder="Gamertag (Username)" style="margin-bottom: 10px;" required>
-          <select name="team" class="modal-input" style="margin-bottom: 10px;" required>
-            <option value="" disabled selected>Select Your Official Club</option>
-            <optgroup label="🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League">
-                <option value="ARSENAL FC">ARSENAL FC</option>
-                <option value="CHELSEA FC">CHELSEA FC</option>
-                <option value="LIVERPOOL FC">LIVERPOOL FC</option>
-                <option value="MANCHESTER CITY FC">MANCHESTER CITY FC</option>
-                <option value="MANCHESTER UNITED FC">MANCHESTER UNITED FC</option>
-            </optgroup>
-            <optgroup label="🇪🇸 La Liga">
-                <option value="ATLETICO MADRID">ATLÉTICO MADRID</option>
-                <option value="FC BARCELONA">FC BARCELONA</option>
-                <option value="REAL MADRID CF">REAL MADRID CF</option>
-                <option value="SEVILLA FC">SEVILLA FC</option>
-                <option value="VILLARREAL CF">VILLARREAL CF</option>
-            </optgroup>
-            <optgroup label="🇮🇹 Serie A">
-                <option value="AC MILAN">AC MILAN</option>
-                <option value="AS ROMA">AS ROMA</option>
-                <option value="INTER MILAN">INTER MILAN</option>
-                <option value="JUVENTUS FC">JUVENTUS FC</option>
-                <option value="SSC NAPOLI">SSC NAPOLI</option>
-            </optgroup>
-            <optgroup label="🇩🇪 Bundesliga">
-                <option value="BAYER 04 LEVERKUSEN">BAYER 04 LEVERKUSEN</option>
-                <option value="BORUSSIA DORTMUND">BORUSSIA DORTMUND</option>
-                <option value="EINTRACHT FRANKFURT">EINTRACHT FRANKFURT</option>
-                <option value="FC BAYERN MUNICH">FC BAYERN MUNICH</option>
-                <option value="RB LEIPZIG">RB LEIPZIG</option>
-            </optgroup>
-            <optgroup label="🇫🇷 Ligue 1">
-                <option value="AS MONACO">AS MONACO</option>
-                <option value="LOSC LILLE">LOSC LILLE</option>
-                <option value="OLYMPIQUE DE MARSEILLE">OLYMPIQUE DE MARSEILLE</option>
-                <option value="OLYMPIQUE LYONNAIS">OLYMPIQUE LYONNAIS</option>
-                <option value="PARIS SAINT-GERMAIN">PARIS SAINT-GERMAIN</option>
-            </optgroup>
-          </select>
-          <input type="email" name="email" class="modal-input" placeholder="Email Address" style="margin-bottom: 10px;" required>
-          <input type="password" name="password" class="modal-input" placeholder="Password" required>
-          <button type="submit" class="modal-btn">JOIN LEAGUE</button>
-        </form>
-        <p style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: var(--text-mid);">
-          Already playing? <a href="#" onclick="switchModal('login')" style="color: var(--cyan);">Log In</a>
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const modal = document.getElementById('authModal');
-    const mainContent = document.querySelector('main');
-    const header = document.querySelector('header');
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-
-    function openModal(type) {
-      modal.classList.add('active');
-      mainContent.classList.add('blur-bg');
-      header.classList.add('blur-bg');
-      switchModal(type);
-    }
-
-    function closeModal() {
-      modal.classList.remove('active');
-      mainContent.classList.remove('blur-bg');
-      header.classList.remove('blur-bg');
-    }
-
-    function switchModal(type) {
-      if (type === 'register') {
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'block';
-      } else {
-        registerForm.style.display = 'none';
-        loginForm.style.display = 'block';
-      }
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const showParam = urlParams.get('show');
-    if (showParam === 'login' || showParam === 'register') {
-      openModal(showParam);
-    }
-  </script>
-
-  <script>
-    function updateTimers() {
-      const timers = document.querySelectorAll('.match-countdown');
-      const now = new Date().getTime();
-
-      timers.forEach(timer => {
-        const deadlineAttr = timer.getAttribute('data-deadline');
-        if (!deadlineAttr) return;
-
-        const deadline = new Date(deadlineAttr).getTime();
-        const distance = deadline - now;
-        
-        if (distance < 0) {
-            timer.innerHTML = `<div style="color: var(--red); font-size: 0.75rem; font-weight: bold; margin-bottom: 2px;">DEADLINE PASSED</div>`;
-            return;
-        }
-
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        
-        timer.innerHTML = `
-          <div style="color: var(--text-mid); font-size: 0.65rem; margin-bottom: 2px;">MATCH DEADLINE</div>
-          ⏳ <b>${days}d ${hours}h ${minutes}m</b> remaining
-        `;
-      });
-    }
-    
-    updateTimers();
-    setInterval(updateTimers, 60000); 
-  </script>
-
-</body>
-</html>
+          <a href="{{ url_for('forgot_password') }}" style="
