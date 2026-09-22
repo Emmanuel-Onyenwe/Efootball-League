@@ -368,7 +368,11 @@ def submit():
         (Match.status == 'pending') & 
         ((Match.player_a_id == current_user.id) | (Match.player_b_id == current_user.id))
     ).all()
-    return render_template('submit.html', fixtures=fixtures)
+    
+    # NEW: Fetch the 15 most recently completed matches to feed the ticker
+    recent_matches = Match.query.filter_by(status='approved').order_by(Match.updated_at.desc()).limit(15).all()
+    
+    return render_template('submit.html', fixtures=fixtures, recent_matches=recent_matches)
 
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
