@@ -138,6 +138,12 @@
   nav.top-nav a.active { color: var(--text-hi); }
   nav.top-nav a.active::after { transform: scaleX(1); }
 
+  @media (max-width: 768px) {
+    .top-bar { flex-direction: column; gap: 16px; text-align: center; padding: 20px 15px; }
+    .brand { justify-content: center; }
+    nav.top-nav { flex-wrap: wrap; justify-content: center; gap: 15px; font-size: 0.85rem; }
+  }
+
   /* ---------- Layout ---------- */
   main.wrap {
     position: relative;
@@ -145,31 +151,6 @@
     max-width: 560px;
     margin: 0 auto;
     padding: 48px 20px 64px;
-  }
-
-  .flash-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 18px;
-  }
-
-  .flash {
-    font-family: var(--font-body);
-    font-size: 0.9rem;
-    padding: 12px 16px;
-    border-radius: var(--radius-sm);
-    background: var(--bg-panel-alt);
-    border-left: 3px solid var(--text-low);
-    animation: flash-in 0.3s ease;
-  }
-
-  .flash-success { border-left-color: var(--green); color: var(--green); }
-  .flash-error { border-left-color: var(--red); color: var(--red); }
-
-  @keyframes flash-in {
-    from { opacity: 0; transform: translateY(-6px); }
-    to { opacity: 1; transform: translateY(0); }
   }
 
   .card {
@@ -231,6 +212,13 @@
     outline: none;
     border-color: var(--cyan);
     box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.15);
+  }
+
+  /* FORCE DARK MODE ON DROPDOWN LISTS */
+  select option, select optgroup {
+    background-color: var(--bg-panel);
+    color: var(--text-hi);
+    font-weight: 600;
   }
 
   /* ---------- Scoreboard ---------- */
@@ -366,6 +354,25 @@
 </head>
 <body>
 
+  <!-- THEMED TOAST NOTIFICATIONS (Bottom Pop-up) -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div id="toast-container" style="position: fixed; bottom: -150px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 10px; transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+      {% for category, msg in messages %}
+        {% set border_color = 'rgba(255, 77, 109, 0.5)' if category == 'error' else 'rgba(0, 229, 255, 0.4)' %}
+        {% set text_color = '#FF4D6D' if category == 'error' else '#00E5FF' %}
+        <div style="background: #161D38; color: {{ text_color }}; padding: 12px 28px; border-radius: 50px; border: 1px solid {{ border_color }}; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5); font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.95rem; text-align: center; white-space: nowrap;">
+          {{ msg }}
+        </div>
+      {% endfor %}
+      </div>
+      <script>
+        setTimeout(() => { document.getElementById('toast-container').style.bottom = '30px'; }, 150);
+        setTimeout(() => { document.getElementById('toast-container').style.bottom = '-150px'; }, 4000);
+      </script>
+    {% endif %}
+  {% endwith %}
+
   <header class="top-bar">
     <div class="brand">
       <svg class="crest" viewBox="0 0 100 108" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -391,23 +398,22 @@
       <div class="wordmark">PANIC KEH<small>Season Table</small></div>
     </div>
 
+    <!-- FULLY SYNCED NAVIGATION MENU -->
     <nav class="top-nav">
       <a href="{{ url_for('index') }}" class="{{ 'active' if request.path == url_for('index') else '' }}">Standings</a>
       <a href="{{ url_for('submit') }}" class="{{ 'active' if request.path == url_for('submit') else '' }}">Submit Result</a>
+      
+      {% if current_user.is_authenticated and current_user.role == 'admin' %}
+        <a href="{{ url_for('admin') }}" class="{{ 'active' if request.path == '/panic-hq' else '' }}" style="color: var(--gold);">Admin Panel</a>
+      {% endif %}
+      
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('logout') }}" style="color: var(--red);">Logout</a>
+      {% endif %}
     </nav>
   </header>
 
   <main class="wrap">
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-      <div class="flash-stack">
-        {% for category, msg in messages %}
-        <div class="flash flash-{{ category }}">{{ msg }}</div>
-        {% endfor %}
-      </div>
-      {% endif %}
-    {% endwith %}
 
     <div class="card">
       <div class="card-header">
