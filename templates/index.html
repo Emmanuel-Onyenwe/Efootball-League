@@ -73,10 +73,8 @@
   .rank-1 .rank-badge { background: rgba(255,201,60,0.15); color: var(--gold); }
   
   .player-cell { text-align: left; display: flex; align-items: center; gap: 10px; }
-  .emblem { font-size: 1.2rem; }
   
   .stat-pts { font-family: var(--font-display); font-weight: 700; color: var(--gold); }
-  .stat-ppg { color: var(--cyan); font-weight: bold; }
   
   .fixture-list { padding: 16px 24px; display: flex; flex-direction: column; gap: 12px; }
   .fixture-card { background: var(--bg-panel-alt); padding: 12px 16px; border-radius: 8px; border-left: 3px solid var(--violet); }
@@ -108,6 +106,251 @@
     .fixture-scroll-box {
       max-height: 240px; 
     }
+  }
+
+  /* CUSTOM TEAM CRESTS */
+  .custom-crest { 
+    display: inline-flex; align-items: center; justify-content: center; 
+    width: 32px; height: 32px; border-radius: 50%; 
+    font-family: var(--font-display); font-size: 0.70rem; font-weight: 800; letter-spacing: 0.05em; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); 
+    flex-shrink: 0; color: white; text-shadow: 0px 1px 2px rgba(0,0,0,0.8); 
+  }
+  .custom-crest.dark-text { 
+    color: #111; text-shadow: none; 
+  }
+</style>
+</head>
+<body>
+
+<!-- TEAM CREST GENERATOR -->
+{% macro render_crest(club_name) %}
+  {% set name = club_name | upper | replace('É', 'E') | trim %}
+  
+  {% if name in ['REAL MADRID', 'RMA'] %}
+    {% set abbr, grad, txt = 'RMA', 'linear-gradient(135deg, #FFFFFF 50%, #FEBE10 100%)', 'dark-text' %}
+  {% elif name in ['BARCELONA', 'BARCA'] %}
+    {% set abbr, grad, txt = 'FCB', 'linear-gradient(135deg, #004D98 50%, #A50044 50%)', '' %}
+  {% elif name in ['ATLETICO MADRID', 'ATL MADRID'] %}
+    {% set abbr, grad, txt = 'ATM', 'linear-gradient(135deg, #CB3524 33%, #FFFFFF 33%, #FFFFFF 66%, #272E61 66%)', 'dark-text' %}
+  {% elif name in ['MANCHESTER CITY', 'MAN CITY'] %}
+    {% set abbr, grad, txt = 'MCI', 'linear-gradient(135deg, #6CABDD 60%, #FFFFFF 100%)', 'dark-text' %}
+  {% elif name in ['MANCHESTER UNITED', 'MAN UNITED'] %}
+    {% set abbr, grad, txt = 'MUN', 'linear-gradient(135deg, #DA291C 60%, #000000 100%)', '' %}
+  {% elif name == 'LIVERPOOL' %}
+    {% set abbr, grad, txt = 'LIV', 'linear-gradient(135deg, #C8102E 75%, #00B2A9 100%)', '' %}
+  {% elif name == 'ARSENAL' %}
+    {% set abbr, grad, txt = 'ARS', 'linear-gradient(135deg, #EF0107 60%, #FFFFFF 100%)', 'dark-text' %}
+  {% elif name == 'CHELSEA' %}
+    {% set abbr, grad, txt = 'CHE', 'linear-gradient(135deg, #034694 70%, #FFFFFF 100%)', '' %}
+  {% elif name in ['BAYERN MUNICH', 'BAYERN'] %}
+    {% set abbr, grad, txt = 'BAY', 'linear-gradient(135deg, #DC052D 50%, #0066B2 50%)', '' %}
+  {% elif name in ['BORUSSIA DORTMUND', 'DORTMUND'] %}
+    {% set abbr, grad, txt = 'BVB', 'linear-gradient(135deg, #FDE100 60%, #000000 100%)', 'dark-text' %}
+  {% elif name in ['PSG', 'PARIS SAINT GERMAIN'] %}
+    {% set abbr, grad, txt = 'PSG', 'linear-gradient(135deg, #004170 40%, #DA291C 60%)', '' %}
+  {% elif name in ['JUVENTUS', 'JUVE'] %}
+    {% set abbr, grad, txt = 'JUV', 'linear-gradient(135deg, #000000 50%, #FFFFFF 50%)', '' %}
+  {% elif name in ['INTER MILAN', 'INTER'] %}
+    {% set abbr, grad, txt = 'INT', 'linear-gradient(135deg, #00185B 50%, #006CB5 50%)', '' %}
+  {% elif name in ['AC MILAN', 'MILAN'] %}
+    {% set abbr, grad, txt = 'ACM', 'linear-gradient(135deg, #FB090B 50%, #000000 50%)', '' %}
+  {% elif name == 'NAPOLI' %}
+    {% set abbr, grad, txt = 'NAP', 'linear-gradient(135deg, #12A0D7 70%, #FFFFFF 100%)', 'dark-text' %}
+  {% elif name == 'ROMA' %}
+    {% set abbr, grad, txt = 'ROM', 'linear-gradient(135deg, #8E1F2F 60%, #F0B823 100%)', '' %}
+  {% elif name in ['BAYER LEVERKUSEN', 'LEVERKUSEN'] %}
+    {% set abbr, grad, txt = 'B04', 'linear-gradient(135deg, #E32221 50%, #000000 50%)', '' %}
+  {% elif 'TOTTENHAM' in name %}
+    {% set abbr, grad, txt = 'TOT', 'linear-gradient(135deg, #FFFFFF 60%, #132257 100%)', 'dark-text' %}
+  {% elif 'NEWCASTLE' in name %}
+    {% set abbr, grad, txt = 'NEW', 'linear-gradient(135deg, #000000 50%, #FFFFFF 50%)', '' %}
+  {% elif name == 'ASTON VILLA' %}
+    {% set abbr, grad, txt = 'AVL', 'linear-gradient(135deg, #670E36 60%, #95BFE5 100%)', '' %}
+  {% elif name == 'BENFICA' %}
+    {% set abbr, grad, txt = 'SLB', 'linear-gradient(135deg, #FF0000 60%, #FFFFFF 100%)', '' %}
+  {% elif name == 'AJAX' %}
+    {% set abbr, grad, txt = 'AJA', 'linear-gradient(135deg, #FFFFFF 30%, #D2122E 50%, #FFFFFF 70%)', 'dark-text' %}
+  {% elif name == 'GALATASARAY' %}
+    {% set abbr, grad, txt = 'GAL', 'linear-gradient(135deg, #A90432 50%, #FDB912 50%)', '' %}
+  {% else %}
+    {% set abbr, grad, txt = name[:3], 'linear-gradient(135deg, #333333, #111111)', '' %}
+  {% endif %}
+  
+  <div class="custom-crest {{ txt }}" style="background: {{ grad }};">
+    {{ abbr }}
+  </div>
+{% endmacro %}
+
+  <!-- WELCOME TOAST NOTIFICATION -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        {% if category == 'welcome' %}
+          <div id="welcome-toast" style="position: fixed; bottom: -80px; left: 50%; transform: translateX(-50%); background: #161D38; color: #00E5FF; padding: 12px 28px; border-radius: 50px; border: 1px solid rgba(0, 229, 255, 0.4); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); z-index: 10000; font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.95rem; white-space: nowrap; transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+            {{ msg }}
+          </div>
+          <script>
+            setTimeout(() => { document.getElementById('welcome-toast').style.bottom = '30px'; }, 150);
+            setTimeout(() => { document.getElementById('welcome-toast').style.bottom = '-80px'; }, 2650);
+          </script>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <header class="top-bar">
+    <div class="brand">
+      <svg class="crest" viewBox="0 0 100 108" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="crestEdge2" x1="0" y1="0" x2="100" y2="108" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#00E5FF"/>
+            <stop offset="55%" stop-color="#7C5CFF"/>
+            <stop offset="100%" stop-color="#FF2E9A"/>
+          </linearGradient>
+        </defs>
+        <polygon points="50,3 92,22 92,64 50,105 8,64 8,22" fill="#10162C" stroke="url(#crestEdge2)" stroke-width="4"/>
+        <circle cx="50" cy="46" r="22" fill="#0A0E1A" stroke="url(#crestEdge2)" stroke-width="2.5"/>
+        <polygon points="50,32 60,39 56,50 44,50 40,39" fill="url(#crestEdge2)"/>
+        <line x1="50" y1="32" x2="50" y2="24" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="60" y1="39" x2="67" y2="34" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="56" y1="50" x2="59" y2="58" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="44" y1="50" x2="41" y2="58" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="40" y1="39" x2="33" y2="34" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="42" y="78" width="4" height="10" fill="url(#crestEdge2)"/>
+        <rect x="48" y="72" width="4" height="16" fill="url(#crestEdge2)"/>
+        <rect x="54" y="82" width="4" height="6" fill="url(#crestEdge2)"/>
+      </svg>
+      <div class="wordmark">PANIC KEH<small>Season Table</small></div>
+    </div>
+        <nav class="top-nav">
+      <a href="{{ url_for('index') }}" class="{{ 'active' if request.path == url_for('index') else '' }}" style="color: var(--text-hi);">Standings</a>
+      
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('submit') }}" class="{{ 'active' if request.path == url_for('submit') else '' }}" style="color: var(--text-hi);">Submit Result</a>
+        
+        {% if current_user.role == 'admin' %}
+          <a href="{{ url_for('admin') }}" class="{{ 'active' if request.path == '/panic-hq' else '' }}" style="color: var(--gold);">Admin Panel</a>
+        {% endif %}
+        
+        <a href="{{ url_for('logout') }}" style="color: var(--red);">Logout</a>
+      {% else %}
+        <a href="#" onclick="openModal('login')" style="color: var(--cyan);">Login / Register</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <div class="ticker-wrap">
+    <div class="ticker-label">Panic Keh</div>
+    <div class="marquee-container">
+      <div class="marquee-content">
+        {% if ticker_fixtures %}
+          {% for match in ticker_fixtures[:15] %} • <strong style="color: var(--cyan);">{{ match.player_a.name }}</strong> vs <strong style="color: var(--cyan);">{{ match.player_b.name }}</strong> &nbsp;&nbsp;&nbsp; {% endfor %}
+        {% else %}
+          No upcoming fixtures scheduled.
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <main class="layout-grid">
+    <section class="panel">
+      <!-- EDIT PROFILE ACCORDION -->
+  {% if current_user.is_authenticated and current_user.in_league %}
+  <div class="panel" style="margin-bottom: 20px; padding: 15px;">
+    <details>
+      <summary style="cursor: pointer; font-weight: 700; color: #00E5FF; font-size: 1.1rem; list-style: none;">
+        ⚙️ Edit Profile (Gamertag & Emblem)
+      </summary>
+      <form action="{{ url_for('edit_profile') }}" method="POST" style="margin-top: 15px;">
+        
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">New Gamertag (One-time change only!)</label>
+          <input type="text" name="gamertag" value="{{ current_user.name }}" 
+                 style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;" 
+                 {% if current_user.name_changed %}disabled{% endif %}>
+          {% if current_user.name_changed %}
+            <small style="color: #FF5252; display: block; margin-top: 5px;">You have already used your one-time name change.</small>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-brand" style="width: 100%; padding: 12px; font-size: 1rem; border-radius: 8px; background: #00E5FF; color: #161D38; font-weight: bold; border: none; cursor: pointer;">
+          Save Changes
+        </button>
+      </form>
+    </details>
+  </div>
+  {% endif %}
+      <div class="panel-header">
+        <h2>League Table</h2>
+        <p>Ranked by Points, then Goal Difference.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th width="40">#</th>
+              <th class="left">PLAYER</th>
+              <th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GD</th><th>PTS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in standings %}
+            <tr class="{% if loop.index == 1 %}rank-1{% endif %}">
+              <td><div class="rank-badge">{{ loop.index }}</div></td>
+              <td class="player-cell">
+                {{ render_crest(user.name) }}
+                <strong>{{ user.name }}</strong>
+              </td>
+              <td>{{ user.played }}</td>
+              <td>{{ user.won }}</td>
+              <td>{{ user.drawn }}</td>
+              <td>{{ user.lost }}</td>
+              <td style="font-weight: 600;">{{ user.goals_for }}</td>
+              <td>{{ user.gd }}</td>
+              <td class="stat-pts">{{ user.points }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="10" style="padding: 30px; color: var(--text-low);">No players have joined the league yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside class="panel side-panel">
+      <div class="panel-header">
+        <h2>Upcoming Fixtures</h2>
+        <p>{{ fixtures|length }} pending matches</p>
+      </div>
+      
+      <!-- FIXTURE LIST WITH COUNTDOWN TIMER -->
+      <div class="fixture-list fixture-scroll-box">
+        {% for match in fixtures %}
+        <div class="fixture-card">
+          {% if match.matchday %}
+          <div style="text-align: center; font-size: 0.65rem; color: var(--text-low); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Matchday {{ match.matchday }}</div>
+          {% endif %}
+          
+          <div class="fixture-teams" style="display: grid; grid-template-columns: 1fr 40px 1fr; align-items: center; gap: 5px;">
+            <span style="text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem;">{{ match.player_a.name }}</span>
+            <span class="fixture-vs" style="text-align: center;">VS</span>
+            <span style="text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem;">{{ match.player_b.name }}</span>
+          </div>
+          
+          <!-- TIMER ADDED HERE -->
+          {% if match.deadline %}
+          <div class="match-countdown" data-deadline="{{ match.deadline.isoformat() }}Z" style="text-align: center; font-size: 0.75rem; color: var(--gold); margin-top: 8px; font-family: var(--font-display);">
+            Calculating time...
+          </div>
+          {% endif %}
+          
+        </div>
+        {% else %}
+        <p style="color: var(--text-low); text-align: center; font-size: 0.9rem; padding: 20px 0;">No upcoming fixtures.</p>
+        {% endfor %}
+      </div>
+    </aside>    }
   }
 
 </style>
