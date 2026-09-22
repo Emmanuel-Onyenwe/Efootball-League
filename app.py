@@ -138,7 +138,7 @@ def get_pending_fixtures_sorted():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        gamertag = request.form.get('gamertag')
+        gamertag = request.form.get('gamertag', '').strip().upper()
         email = request.form.get('email')
         password = request.form.get('password')
         emblem = request.form.get('emblem', '🛡️')
@@ -838,7 +838,7 @@ def eliminate_player(user_id):
 @app.route('/edit_profile', methods=['POST'])
 @login_required
 def edit_profile():
-    new_name = request.form.get('gamertag', '').strip()
+    new_name = request.form.get('gamertag', '').strip().upper()
     new_emblem = request.form.get('emblem')
     
     taken_emblems = [u.emblem for u in User.query.all() if u.id != current_user.id]
@@ -940,7 +940,24 @@ def purge_everything():
         db.session.rollback()
         return f"Purge failed: {e}", 500
         
-
+@app.route('/panic-hq/force-caps')
+@login_required
+def force_caps():
+    if current_user.role != 'admin':
+        return "Access Denied: Admins only!"
+        
+    users = User.query.all()
+    updated_count = 0
+    for u in users:
+        # Check if it's not already uppercase to avoid unnecessary database hits
+        if u.name != u.name.upper():
+            u.name = u.name.upper()
+            updated_count += 1
+            
+    db.session.commit()
+    flash(f"SUCCESS: {updated_count} Gamertags were forcefully converted to UPPERCASE!", "success")
+    return redirect(url_for('admin'))
+    
 @app.route('/api/cron/deadline-reminders')
 def cron_deadline_reminders():
     """
