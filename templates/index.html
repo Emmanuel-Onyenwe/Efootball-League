@@ -92,6 +92,13 @@
   .fixture-scroll-box { overflow-y: auto; padding-right: 5px; max-height: 650px; }
   @media (max-width: 960px) { .fixture-scroll-box { max-height: 240px; } }
 
+  /* FORCE DARK MODE ON DROPDOWN LISTS */
+  select option, select optgroup {
+    background-color: var(--bg-panel);
+    color: var(--text-hi);
+    font-weight: 600;
+  }
+  
   .custom-crest { 
     display: inline-flex; align-items: center; justify-content: center; 
     width: 34px; height: 34px; border-radius: 50%; 
