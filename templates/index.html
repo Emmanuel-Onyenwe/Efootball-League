@@ -41,8 +41,7 @@
   .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; }
   .marquee-content {
     display: inline-block; padding-left: 100%;
-    /* Adjusted speed to 45s for faster mobile crawl */
-    animation: marquee 70s linear infinite; color: var(--text-mid); font-size: 0.85rem;
+    animation: marquee 45s linear infinite; color: var(--text-mid); font-size: 0.85rem;
   }
   @keyframes marquee {
     0%   { transform: translate(0, 0); }
@@ -122,7 +121,7 @@
   {% if 'REAL MADRID' in name %}
     {% set abbr, grad, txt = 'RMA', 'linear-gradient(135deg, #FFFFFF 60%, #FEBE10 100%)', 'dark-text' %}
   {% elif 'BARCELONA' in name %}
-    {% set abbr, grad, txt = 'FCB', 'repeating-linear-gradient(90deg, #004D98 0%, #004D98 33%, #A50044 33%, #A50044 66%)', '' %}
+    {% set abbr, grad, txt = 'FCB', 'repeating-linear-gradient(90deg, #004D98 0%, #004D98 25%, #A50044 25%, #A50044 50%)', '' %}
   {% elif 'ATLETICO' in name %}
     {% set abbr, grad, txt = 'ATM', 'repeating-linear-gradient(90deg, #CB3524 0%, #CB3524 25%, #FFFFFF 25%, #FFFFFF 50%)', 'dark-text' %}
   {% elif 'SEVILLA' in name %}
@@ -153,9 +152,9 @@
     {% set abbr, grad, txt = 'SGE', 'linear-gradient(135deg, #000000 33%, #E1000F 33%, #E1000F 66%, #FFFFFF 66%)', 'dark-text' %}
   
   {% elif 'JUVENTUS' in name %}
-    {% set abbr, grad, txt = 'JUV', 'linear-gradient(90deg, #000000 50%, #FFFFFF 50%)', '' %}
+    {% set abbr, grad, txt = 'JUV', 'repeating-linear-gradient(90deg, #000000 0%, #000000 25%, #FFFFFF 25%, #FFFFFF 50%)', '' %}
   {% elif 'INTER' in name %}
-    {% set abbr, grad, txt = 'INT', 'repeating-linear-gradient(90deg, #00185B 0%, #00185B 33%, #006CB5 33%, #006CB5 66%)', '' %}
+    {% set abbr, grad, txt = 'INT', 'repeating-linear-gradient(90deg, #00185B 0%, #00185B 25%, #006CB5 25%, #006CB5 50%)', '' %}
   {% elif 'MILAN' in name %}
     {% set abbr, grad, txt = 'ACM', 'repeating-linear-gradient(90deg, #FB090B 0%, #FB090B 25%, #000000 25%, #000000 50%)', '' %}
   {% elif 'NAPOLI' in name %}
@@ -164,7 +163,7 @@
     {% set abbr, grad, txt = 'ROM', 'linear-gradient(135deg, #8E1F2F 60%, #F0B823 100%)', '' %}
   
   {% elif 'PARIS' in name or 'PSG' in name %}
-    {% set abbr, grad, txt = 'PSG', 'linear-gradient(90deg, #004170 30%, #DA291C 30%, #DA291C 70%, #004170 70%)', '' %}
+    {% set abbr, grad, txt = 'PSG', 'linear-gradient(90deg, #004170 38%, #FFFFFF 38%, #FFFFFF 41%, #DA291C 41%, #DA291C 59%, #FFFFFF 59%, #FFFFFF 62%, #004170 62%)', '' %}
   {% elif 'MONACO' in name %}
     {% set abbr, grad, txt = 'ASM', 'linear-gradient(135deg, #E32221 50%, #FFFFFF 50%)', '' %}
   {% elif 'LILLE' in name %}
@@ -211,7 +210,6 @@
     </script>
   {% endif %}
 {% endwith %}
-
 
   <header class="top-bar">
     <div class="brand">
@@ -286,7 +284,7 @@
           </p>
         </div>
       {% else %}
-        <form action="{{ url_for('edit_profile') }}" method="POST" style="margin-top: 15px;">
+        <form action="{{ url_for('edit_profile') }}" method="POST" enctype="multipart/form-data" style="margin-top: 15px;">
           
           <div style="margin-bottom: 15px;">
             <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">Update Gamertag</label>
@@ -366,7 +364,12 @@
               <td class="player-cell">
                 {{ render_crest(user.emblem) }}
                 <div style="display: flex; flex-direction: column; justify-content: center;">
-                  <strong style="line-height: 1.1; text-transform: uppercase; font-size: 0.80rem;">{{ user.emblem }}</strong>
+                  <strong style="line-height: 1.1; text-transform: uppercase; font-size: 0.80rem; display: flex; align-items: center; gap: 5px;">
+                    {{ user.emblem }}
+                    {% if user.squad_img %}
+                      <span onclick="showSquad('{{ user.squad_img }}')" style="cursor: pointer; font-size: 1rem;" title="View Squad">👁️</span>
+                    {% endif %}
+                  </strong>
                   <span style="font-size: 0.65rem; color: var(--text-mid); font-weight: 500; margin-top: 1px;">{{ user.name }}</span>
                 </div>
               </td>
@@ -518,7 +521,22 @@
       {% endif %} 
       </div>
     </div> 
-  </div>
+    
+    <!-- MY SQUAD SECTION -->
+    {% if current_user.is_authenticated and current_user.in_league %}
+    <section class="panel" style="grid-column: 1 / -1; margin-bottom: 10px;">
+      <div class="panel-header">
+        <h2>My Squad (Formation)</h2>
+        <p>Upload a screenshot of your active lineup. This will wipe at the end of the season.</p>
+      </div>
+      <div style="padding: 20px;">
+        <form action="{{ url_for('edit_profile') }}" method="POST" enctype="multipart/form-data" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+          <input type="file" name="squad_img" accept="image/*" style="flex: 1; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;" required>
+          <button type="submit" class="btn btn-brand" style="padding: 12px 24px; font-size: 1rem; border-radius: 8px; background: #00E5FF; color: #161D38; font-weight: bold; border: none; cursor: pointer;">Upload Squad</button>
+        </form>
+      </div>
+    </section>
+    {% endif %}
 
     <section class="panel" style="grid-column: 1 / -1; margin-top: 10px;">
       <div class="panel-header">
@@ -656,6 +674,25 @@
       </div>
     </div>
   </div>
+  
+  <!-- SQUAD REVEAL MODAL -->
+  <div id="squadModal" class="modal-overlay" onclick="closeSquad()">
+    <div class="modal-card" style="padding: 10px; max-width: 500px; background: #0A0E1A;" onclick="event.stopPropagation()">
+      <button class="close-btn" onclick="closeSquad()" style="top: -15px; right: -10px; background: var(--violet); width: 32px; height: 32px; border-radius: 50%; font-size: 1.5rem; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">&times;</button>
+      <img id="squadImage" src="" style="width: 100%; border-radius: 8px; border: 2px solid var(--cyan);">
+    </div>
+  </div>
+
+  <script>
+    function showSquad(url) {
+      document.getElementById('squadImage').src = url;
+      document.getElementById('squadModal').classList.add('active');
+    }
+    function closeSquad() {
+      document.getElementById('squadModal').classList.remove('active');
+      setTimeout(() => { document.getElementById('squadImage').src = ''; }, 300);
+    }
+  </script>
 
   <script>
     const modal = document.getElementById('authModal');
