@@ -325,13 +325,18 @@ def index():
             'matches': matches_in_md
         })
 
+        # Grab all claimed teams to disable them in the dropdown
+    taken_teams = [u.emblem for u in User.query.all() if u.emblem]
+
     return render_template(
         'index.html', 
         standings=standings, 
         fixtures=fixtures, 
         completed_by_matchday=completed_by_matchday, 
-        ticker_fixtures=ticker_fixtures
+        ticker_fixtures=ticker_fixtures,
+        taken_teams=taken_teams
     )
+
 
 @app.route('/submit', methods=['GET', 'POST'])
 @login_required
