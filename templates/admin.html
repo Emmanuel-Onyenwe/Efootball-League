@@ -6,7 +6,7 @@
 <title>Panic HQ · Admin Control Room</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg-primary: #0A0E1A; --bg-panel: #10162C; --bg-panel-alt: #161D38;
@@ -17,258 +17,382 @@
     --font-display: 'Orbitron', sans-serif; --font-heading: 'Rajdhani', sans-serif; --font-body: 'Inter', sans-serif;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg-primary); color: var(--text-hi); font-family: var(--font-body); padding: 20px; max-width: 1000px; margin: 0 auto; }
   
-  .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid var(--magenta); padding-bottom: 15px; flex-wrap: wrap; gap: 15px; }
-  .admin-title { font-family: var(--font-display); font-size: 1.5rem; background: var(--grad-brand); -webkit-background-clip: text; color: transparent; }
-  .back-link { font-family: var(--font-heading); color: var(--cyan); text-decoration: none; font-weight: 600; font-size: 0.95rem; }
+  /* IMMERSIVE BACKGROUND */
+  body { 
+    background: 
+      radial-gradient(circle at 12% -10%, rgba(124,92,255,0.20), transparent 42%),
+      radial-gradient(circle at 88% 0%, rgba(255,46,154,0.14), transparent 40%),
+      var(--bg-primary);
+    color: var(--text-hi); 
+    font-family: var(--font-body); 
+    min-height: 100vh; 
+    display: flex; 
+    flex-direction: column; 
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(180deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 3px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  /* ---------- Top bar ---------- */
+  .top-bar { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; background: rgba(16, 22, 44, 0.72); backdrop-filter: blur(10px); border-bottom: 2px solid var(--magenta); }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .crest { width: 36px; height: auto; }
+  .wordmark { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; background: var(--grad-brand); -webkit-background-clip: text; color: transparent; }
+  .wordmark small { display: block; font-family: var(--font-heading); font-size: 0.62rem; color: var(--text-low); letter-spacing: 0.22em;}
   
-  .panel { background: var(--bg-panel); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); padding: 24px; margin-bottom: 24px; }
-  .panel h2 { font-family: var(--font-heading); font-size: 1.2rem; text-transform: uppercase; margin-bottom: 8px; color: var(--text-hi); }
+  nav.top-nav { display: flex; gap: 28px; font-family: var(--font-heading); font-weight: 600; text-transform: uppercase; font-size: 0.92rem;}
+  nav.top-nav a { position: relative; color: var(--text-mid); text-decoration: none; padding-bottom: 6px; transition: 0.3s; }
+  nav.top-nav a:hover, nav.top-nav a.active { color: var(--text-hi); }
+  
+  nav.top-nav a::after {
+    content: ''; position: absolute; left: 0; bottom: 0; width: 0%; height: 3px;
+    background: var(--grad-brand); transition: width 0.3s ease-in-out; border-radius: 2px;
+  }
+  nav.top-nav a:hover::after, nav.top-nav a.active::after { width: 100%; }
+
+  @media (max-width: 768px) {
+    .top-bar { flex-direction: column; gap: 16px; text-align: center; padding: 20px 15px; }
+    .brand { justify-content: center; }
+    nav.top-nav { flex-wrap: wrap; justify-content: center; gap: 15px; font-size: 0.85rem; }
+  }
+
+  /* ---------- Layout & Panels ---------- */
+  main.admin-wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 40px 20px; width: 100%; }
+  
+  .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; flex-wrap: wrap; gap: 15px; }
+  .admin-title { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; background: var(--grad-brand); -webkit-background-clip: text; color: transparent; text-transform: uppercase; letter-spacing: 0.05em; }
+  
+  .panel { background: var(--bg-panel); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); padding: 24px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .panel h2 { font-family: var(--font-heading); font-weight: 700; font-size: 1.2rem; text-transform: uppercase; margin-bottom: 6px; color: var(--text-hi); letter-spacing: 0.05em; }
   .panel p { font-size: 0.85rem; color: var(--text-low); margin-bottom: 20px; }
   
-  .user-row { background: var(--bg-panel-alt); padding: 14px 18px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 12px; }
-  .btn { padding: 10px 18px; border-radius: 6px; font-weight: bold; font-family: var(--font-heading); text-transform: uppercase; border: none; cursor: pointer; font-size: 0.85rem; text-decoration: none; display: inline-block; }
-  .btn-green { background: var(--green); color: black; }
-  .btn-red { background: var(--red); color: white; }
-  .btn-brand { background: var(--grad-brand); color: black; }
+  .user-row { background: var(--bg-panel-alt); padding: 16px 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 12px; transition: background 0.2s ease; }
+  .user-row:hover { background: rgba(255,255,255,0.04); }
   
-  .flash-msg { padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 0.9rem; background: rgba(0, 229, 255, 0.1); border: 1px solid var(--cyan); color: var(--cyan); }
+  /* ---------- Buttons ---------- */
+  .btn { font-family: var(--font-heading); font-weight: 700; text-transform: uppercase; border-radius: 6px; padding: 8px 16px; cursor: pointer; transition: all 0.2s ease; border: none; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.3); }
+  .btn:active { transform: translateY(0); }
+  
+  .btn-green { background: var(--green); color: #0A0E1A; }
+  .btn-red { background: var(--red); color: white; }
+  .btn-brand { background: var(--grad-brand); color: #0A0E1A; }
+
+  /* ---------- Scrollbars & Inputs ---------- */
+  .scroll-box { max-height: 380px; overflow-y: auto; padding-right: 8px; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
+  
+  .admin-input { width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; outline: none; font-family: var(--font-body); font-size: 0.95rem; transition: border-color 0.3s ease; }
+  .admin-input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.15); }
+  
+  .site-footer { position: relative; z-index: 1; text-align: center; padding: 24px; font-size: 0.8rem; color: var(--text-low); border-top: 1px solid rgba(255,255,255,0.05); margin-top: auto; }
 </style>
 </head>
 <body>
 
-  <div class="admin-header">
-    <h1 class="admin-title">Panic HQ · Control Room</h1>
-    <a href="{{ url_for('index') }}" class="back-link">&larr; Back to Standings</a>
-  </div>
-
+  <!-- THEMED TOAST NOTIFICATIONS (Bottom Pop-up) -->
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
+      <div id="toast-container" style="position: fixed; bottom: -150px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 10px; transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
       {% for category, msg in messages %}
-        <div class="flash-msg" {% if category == 'error' %}style="background: rgba(255, 77, 109, 0.1); border-color: var(--red); color: var(--red);"{% endif %}>{{ msg }}</div>
+        {% set border_color = 'rgba(255, 77, 109, 0.5)' if category == 'error' else 'rgba(0, 229, 255, 0.4)' %}
+        {% set text_color = '#FF4D6D' if category == 'error' else '#00E5FF' %}
+        <div style="background: #161D38; color: {{ text_color }}; padding: 12px 28px; border-radius: 50px; border: 1px solid {{ border_color }}; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5); font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.95rem; text-align: center; white-space: nowrap;">
+          {{ msg }}
+        </div>
       {% endfor %}
+      </div>
+      <script>
+        setTimeout(() => { document.getElementById('toast-container').style.bottom = '30px'; }, 150);
+        setTimeout(() => { document.getElementById('toast-container').style.bottom = '-150px'; }, 4000);
+      </script>
     {% endif %}
   {% endwith %}
 
-<!-- WAITING ROOM -->
-  <div class="panel">
-    <h2>Waiting Room</h2>
-    <p>New players who registered and need to be approved to join the league.</p>
-    
-    {% if pending_players %}
-      {% for user in pending_players %}
-      <div class="user-row">
-        <div>
-          <strong style="font-size: 1rem;">{{ user.name }}</strong> <span style="color: var(--text-low); font-size: 0.85rem;">({{ user.email }})</span>
-        </div>
-        <div style="display: flex; gap: 10px;">
-          <form action="{{ url_for('approve_player', user_id=user.id) }}" method="POST" style="margin:0;">
-            <button type="submit" class="btn btn-green">Admit</button>
-          </form>
-          <form action="{{ url_for('reject_player', user_id=user.id) }}" method="POST" style="margin:0;" onsubmit="return confirm('Reject this player and hide them from the waiting room?');">
-            <button type="submit" class="btn btn-red">Reject</button>
-          </form>
-        </div>
-      </div>
-      {% endfor %}
-    {% else %}
-      <p style="color: var(--text-low); font-style: italic;">No pending players in the waiting room.</p>
-    {% endif %}
-  </div>
-
-  <!-- ACTIVE ROSTER -->
-  <div class="panel">
-    <h2>Active Roster</h2>
-    <p>Manage current players and admin privileges.</p>
-    
-    <div style="max-height: 350px; overflow-y: auto; padding-right: 8px;">
-      {% if active_players %}
-        {% for user in active_players %}
-          <div class="user-row">
-            <div>
-              <strong style="font-size: 1rem;">{{ user.name }} <span style="color: var(--cyan); font-size: 0.85rem; margin-left: 5px;">[ID: {{ user.id }}]</span></strong> 
-              <span style="color: var(--text-low); font-size: 0.85rem;">({{ user.email }})</span>
-              {% if user.role == 'admin' %}
-                <span style="color: var(--gold); font-size: 0.75rem; font-weight: bold; margin-left: 5px;">[ADMIN]</span>
-              {% endif %}
-            </div>
-
-              <div style="display: flex; gap: 10px; margin-top: 8px;">
-              {% if user.role != 'admin' %}
-                <form action="{{ url_for('promote_player', user_id=user.id) }}" method="POST" style="display:inline;">
-                  <button type="submit" class="btn btn-brand" style="padding: 6px 12px; font-size: 0.75rem;">Make Admin</button>
-                </form>
-              {% endif %}
-              
-              {% if user.id != current_user.id and user.id != 1 %}
-              <form action="{{ url_for('eliminate_player', user_id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Remove this player from the league?');">
-                <button type="submit" class="btn btn-red" style="padding: 6px 12px; font-size: 0.75rem;">Eliminate</button>
-              </form>
-              
-              <form action="{{ url_for('add_strike', user_id=user.id) }}" method="POST" style="display:inline;">
-                <button type="submit" class="btn" style="background: #FF9800; color: black; border: none; padding: 6px 12px; font-size: 0.75rem; border-radius: 6px; font-family: var(--font-heading); font-weight: bold; text-transform: uppercase; cursor: pointer;" onclick="return confirm('Are you sure you want to give {{ user.name }} a strike?');">⚠️ Strike ({{ user.strikes }})</button>
-              </form>
-              {% if user.strikes > 0 %}
-              <form action="{{ url_for('remove_strike', user_id=user.id) }}" method="POST" style="display:inline;">
-                <button type="submit" class="btn" style="background: transparent; color: #FF9800; border: 1px solid #FF9800; padding: 6px 12px; font-size: 0.75rem; border-radius: 6px; font-family: var(--font-heading); font-weight: bold; text-transform: uppercase; cursor: pointer;" title="Remove one strike">− Strike</button>
-              </form>
-              {% endif %}
-              {% endif %}
-            </div>
-          </div>
-        {% endfor %}
-      {% else %}
-        <p style="color: var(--text-low); font-style: italic;">No active players in the league.</p>
-      {% endif %}
+  <header class="top-bar">
+    <div class="brand">
+      <svg class="crest" viewBox="0 0 100 108" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="crestEdge2" x1="0" y1="0" x2="100" y2="108" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#00E5FF"/>
+            <stop offset="55%" stop-color="#7C5CFF"/>
+            <stop offset="100%" stop-color="#FF2E9A"/>
+          </linearGradient>
+        </defs>
+        <polygon points="50,3 92,22 92,64 50,105 8,64 8,22" fill="#10162C" stroke="url(#crestEdge2)" stroke-width="4"/>
+        <circle cx="50" cy="46" r="22" fill="#0A0E1A" stroke="url(#crestEdge2)" stroke-width="2.5"/>
+        <polygon points="50,32 60,39 56,50 44,50 40,39" fill="url(#crestEdge2)"/>
+        <line x1="50" y1="32" x2="50" y2="24" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="60" y1="39" x2="67" y2="34" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="56" y1="50" x2="59" y2="58" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="44" y1="50" x2="41" y2="58" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="40" y1="39" x2="33" y2="34" stroke="url(#crestEdge2)" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="42" y="78" width="4" height="10" fill="url(#crestEdge2)"/>
+        <rect x="48" y="72" width="4" height="16" fill="url(#crestEdge2)"/>
+        <rect x="54" y="82" width="4" height="6" fill="url(#crestEdge2)"/>
+      </svg>
+      <div class="wordmark">PANIC KEH<small>Season Table</small></div>
     </div>
-  </div>
-  
-  <!-- ALL USERS DIRECTORY (DELETE MANAGEMENT) -->
-  <div class="panel">
-    <h2>All Users Directory</h2>
-    <p>Complete list of all registered accounts. Use this section to permanently delete users.</p>
     
-    <div style="max-height: 350px; overflow-y: auto; padding-right: 8px;">
-      {% if all_users %}
-        {% for user in all_users %}
-          <div class="user-row">
-            <div>
-              <strong style="font-size: 1rem;">{{ user.name }} <span style="color: var(--cyan); font-size: 0.85rem; margin-left: 5px;">[ID: {{ user.id }}]</span></strong> 
-              <span style="color: var(--text-low); font-size: 0.85rem;">({{ user.email }})</span>
-              {% if user.role == 'admin' %}
-                <span style="color: var(--gold); font-size: 0.75rem; font-weight: bold; margin-left: 5px;">[ADMIN]</span>
-              {% endif %}
-              
-              <!-- Display their current status so you know where they are -->
-              <span style="color: var(--text-mid); font-size: 0.75rem; margin-left: 5px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.2); padding: 2px 4px; border-radius: 4px;">
-                {{ user.status }} {% if user.in_league %}(Active){% endif %}
-              </span>
-            </div>
+    <nav class="top-nav">
+      <a href="{{ url_for('index') }}" class="{{ 'active' if request.path == url_for('index') else '' }}">Standings</a>
+      <a href="{{ url_for('submit') }}" class="{{ 'active' if request.path == url_for('submit') else '' }}">Submit Result</a>
+      <a href="{{ url_for('admin') }}" class="{{ 'active' if request.path == '/panic-hq' else '' }}" style="color: var(--gold);">Admin Panel</a>
+      <a href="{{ url_for('logout') }}" style="color: var(--red);">Logout</a>
+    </nav>
+  </header>
 
-            <div style="display: flex; gap: 10px; margin-top: 8px;">
-              {% if user.id != current_user.id and user.id != 1 %}
-              <form action="{{ url_for('delete_player', user_id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('DANGER: Permanently delete {{ user.name }} from the database? This cannot be undone.');">
-                <button type="submit" class="btn btn-red" style="padding: 6px 12px; font-size: 0.75rem;">Delete</button>
-              </form>
-              {% else %}
-                 <span style="color: var(--text-low); font-size: 0.75rem; font-style: italic;">Protected</span>
-              {% endif %}
-            </div>
-          </div>
-        {% endfor %}
-      {% else %}
-        <p style="color: var(--text-low); font-style: italic;">No users found in the database.</p>
-      {% endif %}
+  <main class="admin-wrap">
+    <div class="admin-header">
+      <h1 class="admin-title">Control Room</h1>
     </div>
-  </div>
-  
-  <!-- PENDING MATCH APPROVALS -->
-  <div class="panel">
-    <h2>Pending Match Approvals</h2>
-    <p>Review and approve submitted match results and screenshots.</p>
-    
-    {% if pending_matches %}
-      {% for match in pending_matches %}
+
+    <!-- WAITING ROOM -->
+    <div class="panel">
+      <h2>Waiting Room</h2>
+      <p>New players who registered and need to be approved to join the league.</p>
+      
+      {% if pending_players %}
+        {% for user in pending_players %}
         <div class="user-row">
           <div>
-            <strong>{{ match.player_a.name }} ({{ match.score_a }}) vs ({{ match.score_b }}) {{ match.player_b.name }}</strong>
-            <br>
-            {% if match.screenshot_path %}
-              <div class="evidence-gallery" style="margin-top: 10px;">
-               {% for img_url in match.screenshot_path.split(',') %}
-                 {% if img_url.strip() %}
-                   <a href="{{ img_url.strip() }}" target="_blank" style="display: inline-block; margin-right: 10px; padding: 5px 10px; background: #2a2a35; border-radius: 5px; color: #00ffff; text-decoration: none; font-size: 0.9em;">
-                       Evidence {{ loop.index }} 📸
-                   </a>
-                 {% endif %}
-               {% endfor %}
-              </div>
-            {% endif %}
+            <strong style="font-size: 1.05rem;">{{ user.name }}</strong> <span style="color: var(--text-low); font-size: 0.85rem; margin-left: 6px;">{{ user.email }}</span>
           </div>
           <div style="display: flex; gap: 10px;">
-            <form action="{{ url_for('approve_match', match_id=match.id) }}" method="POST" style="display:inline;">
-               <button type="submit" class="btn btn-green" style="padding: 6px 12px; font-size: 0.75rem;">Approve</button>
+            <form action="{{ url_for('approve_player', user_id=user.id) }}" method="POST" style="margin:0;">
+              <button type="submit" class="btn btn-green">Admit</button>
             </form>
-            <form action="{{ url_for('reject_match', match_id=match.id) }}" method="POST" style="display:inline;">
-               <button type="submit" class="btn btn-red" style="padding: 6px 12px; font-size: 0.75rem;">Reject</button>
+            <form action="{{ url_for('reject_player', user_id=user.id) }}" method="POST" style="margin:0;" onsubmit="return confirm('Reject this player and hide them from the waiting room?');">
+              <button type="submit" class="btn btn-red">Reject</button>
             </form>
           </div>
-        </div>
-      {% endfor %}
-    {% else %}
-      <p style="color: var(--text-low); font-style: italic;">No pending matches to approve.</p>
-    {% endif %}
-  </div>
-  
-  <!-- MASTER FIXTURE TRACKER -->
-  <div class="panel">
-    <h2>Master Fixture List</h2>
-    <p>Search any Gamertag to track their pending matches.</p>
-    
-    <div style="margin-bottom: 15px;">
-      <input type="text" id="adminFixtureSearch" onkeyup="filterAdminFixtures()" placeholder="🔍 Search Gamertag..." style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; outline: none;">
-    </div>
-    
-    <div style="max-height: 400px; overflow-y: auto; padding-right: 8px;">
-      {% if all_pending_fixtures %}
-        {% for match in all_pending_fixtures %}
-        <div class="admin-fixture-card user-row" style="display: flex; flex-direction: column; gap: 10px; border-left: 3px solid var(--violet);">
-          
-          {% if match.matchday %}
-          <div style="font-size: 0.65rem; color: var(--text-low); text-transform: uppercase; letter-spacing: 0.05em;">Matchday {{ match.matchday }}</div>
-          {% endif %}
-          <div style="display: flex; justify-content: space-between; width: 100%;">
-            <span style="font-weight: bold; color: var(--text-hi);">{{ match.player_a.name }}</span>
-            <span style="color: var(--text-low); font-size: 0.8rem;">VS</span>
-            <span style="font-weight: bold; color: var(--text-hi);">{{ match.player_b.name }}</span>
-          </div>
-          
-          {% if current_user.id == 1 %}
-          <form action="{{ url_for('admin_override') }}" method="POST" style="display: flex; justify-content: center; gap: 8px; width: 100%; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px;">
-            <input type="hidden" name="match_id" value="{{ match.id }}">
-            <button type="submit" name="action" value="walkover_home" class="btn" style="background: #00E5FF; color: black; font-size: 0.65rem; padding: 5px 8px;" onclick="return confirm('Give {{ match.player_a.name }} a 3-0 win?');">3-0 Home</button>
-            <button type="submit" name="action" value="void" class="btn btn-red" style="font-size: 0.65rem; padding: 5px 8px;" onclick="return confirm('DANGER: VOID this match? Neither player gets points.');">VOID</button>
-            <button type="submit" name="action" value="unvoid" style="background: var(--violet); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; cursor: pointer; text-transform: uppercase;">UNVOID</button>
-            <button type="submit" name="action" value="walkover_away" class="btn" style="background: #00E5FF; color: black; font-size: 0.65rem; padding: 5px 8px;" onclick="return confirm('Give {{ match.player_b.name }} a 3-0 win?');">3-0 Away</button>
-          </form>
-          {% endif %}
-
         </div>
         {% endfor %}
       {% else %}
-        <p style="color: var(--text-low); font-style: italic;">No pending fixtures left. Season complete!</p>
+        <p style="color: var(--text-low); font-style: italic; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; text-align: center; border: 1px dashed rgba(255,255,255,0.1);">No pending players in the waiting room.</p>
       {% endif %}
     </div>
-  </div>
-  
-  <!-- FIXTURE GENERATOR & SEASON RESET -->
-  <div class="panel">
-    <h2>Season Management</h2>
-    <p>Generate fixtures for all admitted players or reset the entire league to start over.</p>
-    
-    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-      <form action="{{ url_for('generate_fixtures') }}" method="POST">
-        <button type="submit" class="btn btn-brand">Generate Fixtures</button>
-      </form>
-      <form action="{{ url_for('sync_matchdays') }}" method="POST">
-        <button type="submit" class="btn" style="background: #00E5FF; color: black;" title="Safely re-numbers every match's Matchday to a proper round-robin schedule. Never deletes or duplicates matches.">Sync Matchdays</button>
-      </form>
-      <form action="{{ url_for('reset_strikes') }}" method="POST" onsubmit="return confirm('Clear ALL players strikes back to 0?');">
-        <button type="submit" class="btn" style="background: #FF9800; color: black;">Reset All Strikes</button>
-      </form>
-      <form action="{{ url_for('reset_league') }}" method="POST" onsubmit="
-        const userInput = prompt('DANGER: This will wipe all fixtures and reset player stats to zero!\n\nType RESET in all caps to confirm:');
-        if (userInput !== 'RESET') {
-          alert('Reset canceled. The league is safe.');
-          return false;
-        }
-        return true;
-      ">
-        <button type="submit" class="btn btn-red">Reset Entire League</button>
-      </form>
+
+    <!-- ACTIVE ROSTER -->
+    <div class="panel">
+      <h2>Active Roster</h2>
+      <p>Manage current players, issue strikes, and configure admin privileges.</p>
+      
+      <div class="scroll-box">
+        {% if active_players %}
+          {% for user in active_players %}
+            <div class="user-row">
+              <div style="flex: 1; min-width: 250px;">
+                <strong style="font-size: 1.05rem;">{{ user.name }} <span style="color: var(--cyan); font-size: 0.80rem; margin-left: 5px; opacity: 0.8;">[ID: {{ user.id }}]</span></strong> 
+                <span style="color: var(--text-low); font-size: 0.85rem; margin-left: 6px; display: block; margin-top: 4px;">{{ user.email }}</span>
+                {% if user.role == 'admin' %}
+                  <span style="display: inline-block; color: var(--gold); font-size: 0.70rem; font-weight: 800; margin-top: 6px; padding: 2px 6px; background: rgba(255, 201, 60, 0.1); border: 1px solid rgba(255, 201, 60, 0.3); border-radius: 4px; text-transform: uppercase;">Admin</span>
+                {% endif %}
+              </div>
+
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+                {% if user.role != 'admin' %}
+                  <form action="{{ url_for('promote_player', user_id=user.id) }}" method="POST" style="margin:0;">
+                    <button type="submit" class="btn btn-brand" style="padding: 6px 12px; font-size: 0.75rem;">Make Admin</button>
+                  </form>
+                {% endif %}
+                
+                {% if user.id != current_user.id and user.id != 1 %}
+                <form action="{{ url_for('eliminate_player', user_id=user.id) }}" method="POST" style="margin:0;" onsubmit="return confirm('Remove this player from the league?');">
+                  <button type="submit" class="btn btn-red" style="padding: 6px 12px; font-size: 0.75rem;">Eliminate</button>
+                </form>
+                
+                <form action="{{ url_for('add_strike', user_id=user.id) }}" method="POST" style="margin:0;">
+                  <button type="submit" class="btn" style="background: #FF9800; color: #0A0E1A; padding: 6px 12px; font-size: 0.75rem;" onclick="return confirm('Are you sure you want to give {{ user.name }} a strike?');">⚠️ Strike ({{ user.strikes }})</button>
+                </form>
+                {% if user.strikes > 0 %}
+                <form action="{{ url_for('remove_strike', user_id=user.id) }}" method="POST" style="margin:0;">
+                  <button type="submit" class="btn" style="background: transparent; color: #FF9800; border: 1px solid #FF9800; padding: 6px 12px; font-size: 0.75rem;" title="Remove one strike">− Strike</button>
+                </form>
+                {% endif %}
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p style="color: var(--text-low); font-style: italic; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; text-align: center; border: 1px dashed rgba(255,255,255,0.1);">No active players in the league.</p>
+        {% endif %}
+      </div>
     </div>
-  </div>
+    
+    <!-- ALL USERS DIRECTORY (DELETE MANAGEMENT) -->
+    <div class="panel">
+      <h2>All Users Directory</h2>
+      <p>Complete list of all registered accounts. Use this section to permanently delete rogue users.</p>
+      
+      <div class="scroll-box">
+        {% if all_users %}
+          {% for user in all_users %}
+            <div class="user-row">
+              <div style="flex: 1; min-width: 250px;">
+                <strong style="font-size: 1.05rem;">{{ user.name }} <span style="color: var(--cyan); font-size: 0.80rem; margin-left: 5px; opacity: 0.8;">[ID: {{ user.id }}]</span></strong> 
+                <span style="color: var(--text-low); font-size: 0.85rem; margin-left: 6px; display: block; margin-top: 4px;">{{ user.email }}</span>
+                
+                <div style="display: flex; gap: 8px; margin-top: 8px; align-items: center;">
+                  {% if user.role == 'admin' %}
+                    <span style="color: var(--gold); font-size: 0.70rem; font-weight: 800; padding: 2px 6px; background: rgba(255, 201, 60, 0.1); border: 1px solid rgba(255, 201, 60, 0.3); border-radius: 4px; text-transform: uppercase;">Admin</span>
+                  {% endif %}
+                  
+                  <span style="color: var(--text-hi); font-size: 0.70rem; font-weight: 600; padding: 2px 6px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; text-transform: uppercase;">
+                    Status: {{ user.status }} {% if user.in_league %}(Active){% endif %}
+                  </span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 10px; align-items: center;">
+                {% if user.id != current_user.id and user.id != 1 %}
+                <form action="{{ url_for('delete_player', user_id=user.id) }}" method="POST" style="margin:0;" onsubmit="return confirm('DANGER: Permanently delete {{ user.name }} from the database? This cannot be undone.');">
+                  <button type="submit" class="btn btn-red" style="padding: 6px 12px; font-size: 0.75rem;">Delete</button>
+                </form>
+                {% else %}
+                  <span style="color: var(--green); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; background: rgba(51, 230, 160, 0.1); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(51, 230, 160, 0.3);">Protected</span>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p style="color: var(--text-low); font-style: italic;">No users found in the database.</p>
+        {% endif %}
+      </div>
+    </div>
+    
+    <!-- PENDING MATCH APPROVALS -->
+    <div class="panel">
+      <h2>Pending Match Approvals</h2>
+      <p>Review and approve submitted match results and evidence screenshots.</p>
+      
+      {% if pending_matches %}
+        {% for match in pending_matches %}
+          <div class="user-row" style="border-left: 3px solid var(--cyan);">
+            <div style="flex: 1;">
+              <strong style="font-size: 1.1rem; color: var(--text-hi); letter-spacing: 0.03em;">
+                {{ match.player_a.name }} <span style="color: var(--gold); padding: 0 4px;">({{ match.score_a }})</span> 
+                <span style="color: var(--text-low); font-size: 0.8rem; margin: 0 8px;">VS</span> 
+                <span style="color: var(--gold); padding: 0 4px;">({{ match.score_b }})</span> {{ match.player_b.name }}
+              </strong>
+              
+              {% if match.screenshot_path %}
+                <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                 {% for img_url in match.screenshot_path.split(',') %}
+                   {% if img_url.strip() %}
+                     <a href="{{ img_url.strip() }}" target="_blank" style="padding: 4px 10px; background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 6px; color: var(--cyan); text-decoration: none; font-size: 0.75rem; font-weight: 700; transition: all 0.2s ease;">
+                         Evidence {{ loop.index }} 📸
+                     </a>
+                   {% endif %}
+                 {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            <div style="display: flex; gap: 10px; align-items: flex-start;">
+              <form action="{{ url_for('approve_match', match_id=match.id) }}" method="POST" style="margin:0;">
+                 <button type="submit" class="btn btn-green" style="padding: 8px 16px;">Approve</button>
+              </form>
+              <form action="{{ url_for('reject_match', match_id=match.id) }}" method="POST" style="margin:0;">
+                 <button type="submit" class="btn btn-red" style="padding: 8px 16px;">Reject</button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p style="color: var(--text-low); font-style: italic; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; text-align: center; border: 1px dashed rgba(255,255,255,0.1);">No pending matches to approve.</p>
+      {% endif %}
+    </div>
+    
+    <!-- MASTER FIXTURE TRACKER -->
+    <div class="panel">
+      <h2>Master Fixture List</h2>
+      <p>Search any Gamertag to quickly track their pending matches and sequence.</p>
+      
+      <div style="margin-bottom: 20px;">
+        <input type="text" id="adminFixtureSearch" onkeyup="filterAdminFixtures()" placeholder="🔍 Search by Gamertag or Matchday..." class="admin-input">
+      </div>
+      
+      <div class="scroll-box" style="max-height: 450px;">
+        {% if all_pending_fixtures %}
+          {% for match in all_pending_fixtures %}
+          <div class="admin-fixture-card user-row" style="flex-direction: column; align-items: stretch; gap: 12px; border-left: 3px solid var(--violet);">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              {% if match.matchday %}
+              <div style="font-family: var(--font-heading); font-weight: 700; font-size: 0.75rem; color: var(--text-mid); text-transform: uppercase; letter-spacing: 0.08em; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 4px;">Matchday {{ match.matchday }}</div>
+              {% endif %}
+              
+              <div style="flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 0 15px;">
+                <span style="font-weight: 800; font-size: 1.05rem; color: var(--text-hi); text-align: right; flex: 1;">{{ match.player_a.name }}</span>
+                <span style="color: var(--text-low); font-family: var(--font-display); font-size: 0.75rem; margin: 0 15px; text-align: center;">VS</span>
+                <span style="font-weight: 800; font-size: 1.05rem; color: var(--text-hi); text-align: left; flex: 1;">{{ match.player_b.name }}</span>
+              </div>
+            </div>
+            
+            {% if current_user.id == 1 %}
+            <form action="{{ url_for('admin_override') }}" method="POST" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; width: 100%; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 12px;">
+              <input type="hidden" name="match_id" value="{{ match.id }}">
+              <button type="submit" name="action" value="walkover_home" class="btn" style="background: rgba(0, 229, 255, 0.15); color: var(--cyan); border: 1px solid rgba(0, 229, 255, 0.4); font-size: 0.70rem; padding: 6px 10px;" onclick="return confirm('Give {{ match.player_a.name }} a 3-0 win?');">3-0 Home</button>
+              <button type="submit" name="action" value="void" class="btn btn-red" style="font-size: 0.70rem; padding: 6px 10px; background: rgba(255, 77, 109, 0.15); color: var(--red); border: 1px solid var(--red);" onclick="return confirm('DANGER: VOID this match? Neither player gets points.');">VOID</button>
+              <button type="submit" name="action" value="unvoid" class="btn" style="background: rgba(124, 92, 255, 0.15); color: var(--violet); border: 1px solid var(--violet); padding: 6px 10px; font-size: 0.70rem;">UNVOID</button>
+              <button type="submit" name="action" value="walkover_away" class="btn" style="background: rgba(0, 229, 255, 0.15); color: var(--cyan); border: 1px solid rgba(0, 229, 255, 0.4); font-size: 0.70rem; padding: 6px 10px;" onclick="return confirm('Give {{ match.player_b.name }} a 3-0 win?');">3-0 Away</button>
+            </form>
+            {% endif %}
+
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="color: var(--text-low); font-style: italic; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; text-align: center; border: 1px dashed rgba(255,255,255,0.1);">No pending fixtures left. Season complete!</p>
+        {% endif %}
+      </div>
+    </div>
+    
+    <!-- FIXTURE GENERATOR & SEASON RESET -->
+    <div class="panel">
+      <h2>Season Management</h2>
+      <p>Configure automated fixture generation or execute full league resets.</p>
+      
+      <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05);">
+        <form action="{{ url_for('generate_fixtures') }}" method="POST" style="margin:0;">
+          <button type="submit" class="btn btn-brand" style="padding: 12px 24px; font-size: 0.9rem;">Generate Fixtures</button>
+        </form>
+        <form action="{{ url_for('sync_matchdays') }}" method="POST" style="margin:0;">
+          <button type="submit" class="btn" style="background: var(--cyan); color: #0A0E1A; padding: 12px 24px; font-size: 0.9rem;" title="Safely re-numbers every match's Matchday to a proper round-robin schedule. Never deletes or duplicates matches.">Sync Matchdays</button>
+        </form>
+        <form action="{{ url_for('reset_strikes') }}" method="POST" style="margin:0;" onsubmit="return confirm('Clear ALL players strikes back to 0?');">
+          <button type="submit" class="btn" style="background: #FF9800; color: #0A0E1A; padding: 12px 24px; font-size: 0.9rem;">Reset All Strikes</button>
+        </form>
+        <form action="{{ url_for('reset_league') }}" method="POST" style="margin:0; margin-left: auto;" onsubmit="
+          const userInput = prompt('DANGER: This will wipe all fixtures, wipe squad images, and reset player stats to zero!\n\nType RESET in all caps to confirm:');
+          if (userInput !== 'RESET') {
+            alert('Reset canceled. The league is safe.');
+            return false;
+          }
+          return true;
+        ">
+          <button type="submit" class="btn btn-red" style="padding: 12px 24px; font-size: 0.9rem;">Reset Entire League</button>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    &copy; 2026 Panic Keh &middot; eFootball League
+  </footer>
 
   <script>
     function filterAdminFixtures() {
@@ -277,6 +401,7 @@
       let visibleCount = 0;
       
       cards.forEach(card => {
+        // Find the specific container holding the team names
         let namesRow = card.querySelector('div[style*="justify-content: space-between"]');
         let text = namesRow ? namesRow.textContent.toLowerCase() : card.textContent.toLowerCase();
         
@@ -288,7 +413,7 @@
           if (!badge) {
               badge = document.createElement('div');
               badge.className = 'match-order-badge';
-              badge.style.cssText = 'background: rgba(0, 229, 255, 0.15); color: #00E5FF; font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-bottom: 5px; text-align: center; text-transform: uppercase; border: 1px solid rgba(0, 229, 255, 0.3);';
+              badge.style.cssText = 'background: rgba(0, 229, 255, 0.15); color: #00E5FF; font-size: 0.70rem; padding: 4px 10px; border-radius: 4px; font-weight: bold; margin-bottom: 8px; text-align: center; text-transform: uppercase; border: 1px solid rgba(0, 229, 255, 0.3); font-family: var(--font-heading); letter-spacing: 0.05em;';
               card.prepend(badge);
           }
           
@@ -307,5 +432,3 @@
   </script>
 </body>
 </html>
-                                                                                                                                                                                                                                                    </html>
-                                                                                                                                                                                                                                                    
