@@ -55,6 +55,7 @@ class User(db.Model, UserMixin):
     in_league = db.Column(db.Boolean, default=False) 
     is_verified = db.Column(db.Boolean, default=False)
     emblem = db.Column(db.String(50), default='🛡️')
+    squad_img = db.Column(db.String(500), nullable=True) # NEW: Stores squad screenshot
     name_changed = db.Column(db.Boolean, default=False)
     
     # Stats
@@ -130,7 +131,6 @@ def get_pending_fixtures_sorted():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        # Enforce Title Case for Gamertag, ALL CAPS for Team
         gamertag = request.form.get('gamertag', '').strip().title()
         team = request.form.get('team', '').strip().upper()
         email = request.form.get('email')
@@ -325,7 +325,6 @@ def index():
             'matches': matches_in_md
         })
 
-        # Grab all claimed teams to disable them in the dropdown
     taken_teams = [u.emblem for u in User.query.all() if u.emblem]
 
     return render_template(
@@ -336,7 +335,6 @@ def index():
         ticker_fixtures=ticker_fixtures,
         taken_teams=taken_teams
     )
-
 
 @app.route('/submit', methods=['GET', 'POST'])
 @login_required
@@ -548,13 +546,14 @@ def reset_league():
     for u in users:
         u.played = u.won = u.drawn = u.lost = u.gd = u.points = u.goals_for = u.goals_against = u.strikes = 0
         u.name_changed = False
+        u.squad_img = None
         u.status = 'active'
         if u.role != 'admin':
             u.in_league = False
             u.status = 'dormant' 
             
     db.session.commit()
-    flash("Season reset! Players are back in the waiting room and can change their club names.", "success")
+    flash("Season reset! Squads wiped and players are back in the waiting room.", "success")
     return redirect(url_for('admin'))
 
 @app.route('/panic-hq/add_strike/<int:user_id>', methods=['POST'])
@@ -777,12 +776,10 @@ def eliminate_player(user_id):
 @app.route('/edit_profile', methods=['POST'])
 @login_required
 def edit_profile():
-    # NEW: Instant block if any matches exist in the database
-    if Match.query.first():
+    if Match.query.first() and (request.form.get('gamertag') or request.form.get('team')):
         flash("Error: Roster is locked. Profiles cannot be edited after matches are generated.", "error")
         return redirect(url_for('index'))
 
-    # Enforce Title Case for Gamertag, ALL CAPS for Team
     new_name = request.form.get('gamertag', '').strip().title()
     new_team = request.form.get('team', '').strip().upper()
     
@@ -797,8 +794,12 @@ def edit_profile():
         if User.query.filter_by(name=new_name).first():
             flash("That Gamertag is already taken.", "error")
             return redirect(url_for('index'))
-            
         current_user.name = new_name
+        
+    squad_file = request.files.get('squad_img')
+    if squad_file and squad_file.filename != '':
+        upload_result = cloudinary.uploader.upload(squad_file)
+        current_user.squad_img = upload_result['secure_url']
         
     db.session.commit()
     flash("Profile updated successfully!", "success")
@@ -851,8 +852,13 @@ with app.app_context():
         db.session.rollback()
         
     try:
-        # Patch to expand emblem column to handle full club names
         db.session.execute(text('ALTER TABLE "user" ALTER COLUMN emblem TYPE VARCHAR(50)'))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    try:
+        db.session.execute(text('ALTER TABLE "user" ADD COLUMN squad_img VARCHAR(500)'))
         db.session.commit()
     except Exception:
         db.session.rollback()
