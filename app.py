@@ -772,6 +772,11 @@ def eliminate_player(user_id):
 @app.route('/edit_profile', methods=['POST'])
 @login_required
 def edit_profile():
+    # NEW: Instant block if any matches exist in the database
+    if Match.query.first():
+        flash("Error: Roster is locked. Profiles cannot be edited after matches are generated.", "error")
+        return redirect(url_for('index'))
+
     # Enforce Title Case for Gamertag, ALL CAPS for Team
     new_name = request.form.get('gamertag', '').strip().title()
     new_team = request.form.get('team', '').strip().upper()
@@ -784,16 +789,11 @@ def edit_profile():
         current_user.emblem = new_team
         
     if new_name and new_name != current_user.name:
-        if current_user.name_changed:
-            flash("You have already used your one-time name change!", "error")
-            return redirect(url_for('index'))
-        
         if User.query.filter_by(name=new_name).first():
             flash("That Gamertag is already taken.", "error")
             return redirect(url_for('index'))
             
         current_user.name = new_name
-        current_user.name_changed = True
         
     db.session.commit()
     flash("Profile updated successfully!", "success")
