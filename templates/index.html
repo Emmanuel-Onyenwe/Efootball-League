@@ -41,7 +41,7 @@
   .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; }
   .marquee-content {
     display: inline-block; padding-left: 100%;
-    animation: marquee 90s linear infinite; color: var(--text-mid); font-size: 0.85rem;
+    animation: marquee 70s linear infinite; color: var(--text-mid); font-size: 0.85rem;
   }
   @keyframes marquee {
     0%   { transform: translate(0, 0); }
@@ -343,8 +343,10 @@
               <td class="player-cell">
                 {{ render_crest(user.emblem) }}
                 <div style="display: flex; flex-direction: column; justify-content: center;">
-                  <strong style="line-height: 1.2; text-transform: uppercase;">{{ user.emblem }}</strong>
-                  <span style="font-size: 0.70rem; color: var(--text-mid); font-weight: 500;">{{ user.name }}</span>
+                  <!-- Locked the club name to 0.80rem and tightened line height -->
+                  <strong style="line-height: 1.1; text-transform: uppercase; font-size: 0.80rem;">{{ user.emblem }}</strong>
+                  <!-- Dropped the gamertag to 0.65rem to match the new proportion -->
+                  <span style="font-size: 0.65rem; color: var(--text-mid); font-weight: 500; margin-top: 1px;">{{ user.name }}</span>
                 </div>
               </td>
 
