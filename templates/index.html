@@ -246,66 +246,79 @@
 
   <main class="layout-grid">
     <section class="panel">
+      
+  <!-- EDIT PROFILE ACCORDION -->
   {% if current_user.is_authenticated and current_user.in_league %}
   <div class="panel" style="margin-bottom: 20px; padding: 15px;">
     <details>
       <summary style="cursor: pointer; font-weight: 700; color: #00E5FF; font-size: 1.1rem; list-style: none;">
         ⚙️ Edit Profile (Gamertag & Team)
       </summary>
-      <form action="{{ url_for('edit_profile') }}" method="POST" style="margin-top: 15px;">
-        
-        <div style="margin-bottom: 15px;">
-          <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">Update Gamertag</label>
-          <input type="text" name="gamertag" value="{{ current_user.name }}" 
-                 style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+      
+      <!-- NEW: Checks if the league has started -->
+      {% if fixtures or completed_by_matchday %}
+        <div style="margin-top: 15px; padding: 16px; background: rgba(255, 77, 109, 0.1); border: 1px solid rgba(255, 77, 109, 0.3); border-radius: 8px; text-align: center;">
+          <p style="color: var(--text-hi); font-size: 0.95rem; margin: 0;">
+            🔒 <strong>ROSTER LOCKED</strong><br>
+            <span style="color: var(--text-mid); font-size: 0.85rem; display: block; margin-top: 6px;">Profiles cannot be edited after the fixture grid has been generated. Contact the Head Admin if a manual correction is required.</span>
+          </p>
         </div>
+      {% else %}
+        <form action="{{ url_for('edit_profile') }}" method="POST" style="margin-top: 15px;">
+          
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">Update Gamertag</label>
+            <input type="text" name="gamertag" value="{{ current_user.name }}" 
+                   style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+          </div>
 
-        <div style="margin-bottom: 15px;">
-          <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">Official Team (25 Top Clubs)</label>
-          <select name="team" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
-            <option value="{{ current_user.emblem }}" selected>Current: {{ current_user.emblem }}</option>
-            <optgroup label="🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League">
-                <option value="ARSENAL FC">ARSENAL FC</option>
-                <option value="CHELSEA FC">CHELSEA FC</option>
-                <option value="LIVERPOOL FC">LIVERPOOL FC</option>
-                <option value="MANCHESTER CITY FC">MANCHESTER CITY FC</option>
-                <option value="MANCHESTER UNITED FC">MANCHESTER UNITED FC</option>
-            </optgroup>
-            <optgroup label="🇪🇸 La Liga">
-                <option value="ATLETICO MADRID">ATLÉTICO MADRID</option>
-                <option value="FC BARCELONA">FC BARCELONA</option>
-                <option value="REAL MADRID CF">REAL MADRID CF</option>
-                <option value="SEVILLA FC">SEVILLA FC</option>
-                <option value="VILLARREAL CF">VILLARREAL CF</option>
-            </optgroup>
-            <optgroup label="🇮🇹 Serie A">
-                <option value="AC MILAN">AC MILAN</option>
-                <option value="AS ROMA">AS ROMA</option>
-                <option value="INTER MILAN">INTER MILAN</option>
-                <option value="JUVENTUS FC">JUVENTUS FC</option>
-                <option value="SSC NAPOLI">SSC NAPOLI</option>
-            </optgroup>
-            <optgroup label="🇩🇪 Bundesliga">
-                <option value="BAYER 04 LEVERKUSEN">BAYER 04 LEVERKUSEN</option>
-                <option value="BORUSSIA DORTMUND">BORUSSIA DORTMUND</option>
-                <option value="EINTRACHT FRANKFURT">EINTRACHT FRANKFURT</option>
-                <option value="FC BAYERN MUNICH">FC BAYERN MUNICH</option>
-                <option value="RB LEIPZIG">RB LEIPZIG</option>
-            </optgroup>
-            <optgroup label="🇫🇷 Ligue 1">
-                <option value="AS MONACO">AS MONACO</option>
-                <option value="LOSC LILLE">LOSC LILLE</option>
-                <option value="OLYMPIQUE DE MARSEILLE">OLYMPIQUE DE MARSEILLE</option>
-                <option value="OLYMPIQUE LYONNAIS">OLYMPIQUE LYONNAIS</option>
-                <option value="PARIS SAINT-GERMAIN">PARIS SAINT-GERMAIN</option>
-            </optgroup>
-          </select>
-        </div>
+          <div style="margin-bottom: 15px;">
+            <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">Official Team (25 Top Clubs)</label>
+            <select name="team" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+              <option value="{{ current_user.emblem }}" selected>Current: {{ current_user.emblem }}</option>
+              <optgroup label="🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League">
+                  <option value="ARSENAL FC">ARSENAL FC</option>
+                  <option value="CHELSEA FC">CHELSEA FC</option>
+                  <option value="LIVERPOOL FC">LIVERPOOL FC</option>
+                  <option value="MANCHESTER CITY FC">MANCHESTER CITY FC</option>
+                  <option value="MANCHESTER UNITED FC">MANCHESTER UNITED FC</option>
+              </optgroup>
+              <optgroup label="🇪🇸 La Liga">
+                  <option value="ATLETICO MADRID">ATLÉTICO MADRID</option>
+                  <option value="FC BARCELONA">FC BARCELONA</option>
+                  <option value="REAL MADRID CF">REAL MADRID CF</option>
+                  <option value="SEVILLA FC">SEVILLA FC</option>
+                  <option value="VILLARREAL CF">VILLARREAL CF</option>
+              </optgroup>
+              <optgroup label="🇮🇹 Serie A">
+                  <option value="AC MILAN">AC MILAN</option>
+                  <option value="AS ROMA">AS ROMA</option>
+                  <option value="INTER MILAN">INTER MILAN</option>
+                  <option value="JUVENTUS FC">JUVENTUS FC</option>
+                  <option value="SSC NAPOLI">SSC NAPOLI</option>
+              </optgroup>
+              <optgroup label="🇩🇪 Bundesliga">
+                  <option value="BAYER 04 LEVERKUSEN">BAYER 04 LEVERKUSEN</option>
+                  <option value="BORUSSIA DORTMUND">BORUSSIA DORTMUND</option>
+                  <option value="EINTRACHT FRANKFURT">EINTRACHT FRANKFURT</option>
+                  <option value="FC BAYERN MUNICH">FC BAYERN MUNICH</option>
+                  <option value="RB LEIPZIG">RB LEIPZIG</option>
+              </optgroup>
+              <optgroup label="🇫🇷 Ligue 1">
+                  <option value="AS MONACO">AS MONACO</option>
+                  <option value="LOSC LILLE">LOSC LILLE</option>
+                  <option value="OLYMPIQUE DE MARSEILLE">OLYMPIQUE DE MARSEILLE</option>
+                  <option value="OLYMPIQUE LYONNAIS">OLYMPIQUE LYONNAIS</option>
+                  <option value="PARIS SAINT-GERMAIN">PARIS SAINT-GERMAIN</option>
+              </optgroup>
+            </select>
+          </div>
 
-        <button type="submit" class="btn btn-brand" style="width: 100%; padding: 12px; font-size: 1rem; border-radius: 8px; background: #00E5FF; color: #161D38; font-weight: bold; border: none; cursor: pointer;">
-          Save Profile
-        </button>
-      </form>
+          <button type="submit" class="btn btn-brand" style="width: 100%; padding: 12px; font-size: 1rem; border-radius: 8px; background: #00E5FF; color: #161D38; font-weight: bold; border: none; cursor: pointer;">
+            Save Profile
+          </button>
+        </form>
+      {% endif %}
     </details>
   </div>
   {% endif %}
