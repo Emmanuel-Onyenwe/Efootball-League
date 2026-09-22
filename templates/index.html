@@ -6,7 +6,7 @@
 <title>Panic Keh eFootball League</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg-primary: #0A0E1A; --bg-panel: #10162C; --bg-panel-alt: #161D38;
@@ -92,17 +92,16 @@
   .fixture-scroll-box { overflow-y: auto; padding-right: 5px; max-height: 650px; }
   @media (max-width: 960px) { .fixture-scroll-box { max-height: 240px; } }
 
-  /* UPDATED LOGO TEXT - Bold, Aligned, Professional */
   .custom-crest { 
     display: inline-flex; align-items: center; justify-content: center; 
-    width: 38px; height: 38px; border-radius: 50%; 
-    font-family: var(--font-display); font-size: 0.80rem; font-weight: 900; letter-spacing: 0.02em; 
-    box-shadow: inset 0 2px 4px rgba(255,255,255,0.25), 0 3px 6px rgba(0,0,0,0.6); 
-    border: 1px solid rgba(255,255,255,0.1); 
-    flex-shrink: 0; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.9), 0px 0px 4px rgba(0,0,0,0.7); 
+    width: 34px; height: 34px; border-radius: 50%; 
+    font-family: var(--font-display); font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em; 
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.4), 0 2px 5px rgba(0,0,0,0.6); 
+    border: 1px solid rgba(255,255,255,0.2); 
+    flex-shrink: 0; color: white; text-shadow: 0px 1px 2px rgba(0,0,0,0.8); 
   }
   .custom-crest.dark-text { 
-    color: #0A0E1A; text-shadow: 1px 1px 1px rgba(255,255,255,0.6); 
+    color: #111; text-shadow: 0px 1px 1px rgba(255,255,255,0.4); 
   }
 
   /* FORCE DARK MODE ON DROPDOWN LISTS */
@@ -115,64 +114,64 @@
 </head>
 <body>
 
-<!-- UPDATED PREMIUM FADING CREST GENERATOR -->
+<!-- ORIGINAL DISTINCT CREST GENERATOR -->
 {% macro render_crest(club_name) %}
   {% set name = club_name | upper | replace('É', 'E') | trim %}
   
   {% if 'REAL MADRID' in name %}
-    {% set abbr, grad, txt = 'RMA', 'linear-gradient(135deg, #FFFFFF 30%, #E5E9F4 60%, #FEBE10 100%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'RMA', 'linear-gradient(135deg, #FFFFFF 60%, #FEBE10 100%)', 'dark-text' %}
   {% elif 'BARCELONA' in name %}
-    {% set abbr, grad, txt = 'FCB', 'linear-gradient(135deg, #004D98 35%, #E5A91E 48%, #E5A91E 52%, #A50044 65%)', '' %}
+    {% set abbr, grad, txt = 'FCB', 'repeating-linear-gradient(90deg, #004D98 0%, #004D98 25%, #A50044 25%, #A50044 50%)', '' %}
   {% elif 'ATLETICO' in name %}
-    {% set abbr, grad, txt = 'ATM', 'linear-gradient(135deg, #CB3524 30%, #FFFFFF 50%, #272E61 70%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'ATM', 'repeating-linear-gradient(90deg, #CB3524 0%, #CB3524 25%, #FFFFFF 25%, #FFFFFF 50%)', 'dark-text' %}
   {% elif 'SEVILLA' in name %}
-    {% set abbr, grad, txt = 'SEV', 'linear-gradient(135deg, #FFFFFF 40%, #E5E9F4 50%, #F43333 60%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'SEV', 'linear-gradient(135deg, #FFFFFF 50%, #F43333 50%)', 'dark-text' %}
   {% elif 'VILLARREAL' in name %}
-    {% set abbr, grad, txt = 'VIL', 'radial-gradient(circle at top left, #FCEE21 50%, #D8C71B 70%, #004170 100%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'VIL', 'radial-gradient(circle, #FCEE21 60%, #004170 100%)', 'dark-text' %}
   
   {% elif 'MANCHESTER CITY' in name %}
-    {% set abbr, grad, txt = 'MCI', 'radial-gradient(circle at top left, #FFFFFF 10%, #6CABDD 60%, #4A90E2 100%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'MCI', 'radial-gradient(circle, #6CABDD 40%, #FFFFFF 100%)', 'dark-text' %}
   {% elif 'MANCHESTER UNITED' in name %}
-    {% set abbr, grad, txt = 'MUN', 'linear-gradient(135deg, #DA291C 40%, #8A0000 70%, #000000 100%)', '' %}
+    {% set abbr, grad, txt = 'MUN', 'linear-gradient(135deg, #DA291C 60%, #000000 100%)', '' %}
   {% elif 'LIVERPOOL' in name %}
-    {% set abbr, grad, txt = 'LIV', 'radial-gradient(circle at top left, #C8102E 50%, #8A0018 80%, #00B2A9 100%)', '' %}
+    {% set abbr, grad, txt = 'LIV', 'radial-gradient(circle, #C8102E 70%, #00B2A9 100%)', '' %}
   {% elif 'ARSENAL' in name %}
-    {% set abbr, grad, txt = 'ARS', 'linear-gradient(135deg, #EF0107 40%, #9C0000 75%, #FFFFFF 100%)', '' %}
+    {% set abbr, grad, txt = 'ARS', 'linear-gradient(135deg, #EF0107 60%, #FFFFFF 100%)', 'dark-text' %}
   {% elif 'CHELSEA' in name %}
-    {% set abbr, grad, txt = 'CHE', 'radial-gradient(circle at center, #034694 40%, #022B5C 80%, #FFFFFF 100%)', '' %}
+    {% set abbr, grad, txt = 'CHE', 'radial-gradient(circle, #034694 70%, #FFFFFF 100%)', '' %}
   
   {% elif 'BAYERN' in name %}
-    {% set abbr, grad, txt = 'BAY', 'radial-gradient(circle at top left, #DC052D 40%, #8A0018 70%, #0066B2 100%)', '' %}
+    {% set abbr, grad, txt = 'BAY', 'radial-gradient(circle, #DC052D 60%, #0066B2 100%)', '' %}
   {% elif 'DORTMUND' in name %}
-    {% set abbr, grad, txt = 'BVB', 'radial-gradient(circle at center, #FDE100 40%, #E5A91E 70%, #000000 100%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'BVB', 'radial-gradient(circle, #FDE100 65%, #000000 100%)', 'dark-text' %}
   {% elif 'LEVERKUSEN' in name %}
-    {% set abbr, grad, txt = 'B04', 'linear-gradient(135deg, #E32221 40%, #9C0000 60%, #000000 80%)', '' %}
+    {% set abbr, grad, txt = 'B04', 'linear-gradient(135deg, #E32221 50%, #000000 50%)', '' %}
   {% elif 'LEIPZIG' in name %}
-    {% set abbr, grad, txt = 'RBL', 'linear-gradient(135deg, #FFFFFF 40%, #D1D5DB 60%, #DD013F 80%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'RBL', 'linear-gradient(135deg, #FFFFFF 50%, #DD013F 50%)', 'dark-text' %}
   {% elif 'FRANKFURT' in name %}
-    {% set abbr, grad, txt = 'SGE', 'linear-gradient(135deg, #000000 30%, #E1000F 50%, #FFFFFF 70%)', '' %}
+    {% set abbr, grad, txt = 'SGE', 'linear-gradient(135deg, #000000 33%, #E1000F 33%, #E1000F 66%, #FFFFFF 66%)', 'dark-text' %}
   
   {% elif 'JUVENTUS' in name %}
-    {% set abbr, grad, txt = 'JUV', 'linear-gradient(135deg, #FFFFFF 30%, #888888 50%, #000000 70%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'JUV', 'repeating-linear-gradient(90deg, #000000 0%, #000000 25%, #FFFFFF 25%, #FFFFFF 50%)', '' %}
   {% elif 'INTER' in name %}
-    {% set abbr, grad, txt = 'INT', 'linear-gradient(135deg, #00185B 30%, #003087 50%, #006CB5 70%)', '' %}
+    {% set abbr, grad, txt = 'INT', 'repeating-linear-gradient(90deg, #00185B 0%, #00185B 25%, #006CB5 25%, #006CB5 50%)', '' %}
   {% elif 'MILAN' in name %}
-    {% set abbr, grad, txt = 'ACM', 'linear-gradient(135deg, #FB090B 30%, #8A0000 50%, #000000 70%)', '' %}
+    {% set abbr, grad, txt = 'ACM', 'repeating-linear-gradient(90deg, #FB090B 0%, #FB090B 25%, #000000 25%, #000000 50%)', '' %}
   {% elif 'NAPOLI' in name %}
-    {% set abbr, grad, txt = 'NAP', 'radial-gradient(circle at top left, #12A0D7 50%, #0D7AA3 75%, #FFFFFF 100%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'NAP', 'radial-gradient(circle, #12A0D7 60%, #FFFFFF 100%)', 'dark-text' %}
   {% elif 'ROMA' in name %}
-    {% set abbr, grad, txt = 'ROM', 'linear-gradient(135deg, #8E1F2F 40%, #5E0F1A 70%, #F0B823 100%)', '' %}
+    {% set abbr, grad, txt = 'ROM', 'linear-gradient(135deg, #8E1F2F 60%, #F0B823 100%)', '' %}
   
   {% elif 'PARIS' in name or 'PSG' in name %}
-    {% set abbr, grad, txt = 'PSG', 'linear-gradient(135deg, #004170 30%, #FFFFFF 47%, #DA291C 50%, #FFFFFF 53%, #004170 70%)', '' %}
+    {% set abbr, grad, txt = 'PSG', 'linear-gradient(90deg, #004170 38%, #FFFFFF 38%, #FFFFFF 41%, #DA291C 41%, #DA291C 59%, #FFFFFF 59%, #FFFFFF 62%, #004170 62%)', '' %}
   {% elif 'MONACO' in name %}
-    {% set abbr, grad, txt = 'ASM', 'linear-gradient(135deg, #E32221 40%, #A61414 60%, #FFFFFF 80%)', '' %}
+    {% set abbr, grad, txt = 'ASM', 'linear-gradient(135deg, #E32221 50%, #FFFFFF 50%)', '' %}
   {% elif 'LILLE' in name %}
-    {% set abbr, grad, txt = 'LIL', 'linear-gradient(135deg, #E2001A 40%, #A60010 60%, #202A44 80%)', '' %}
+    {% set abbr, grad, txt = 'LIL', 'linear-gradient(135deg, #E2001A 60%, #202A44 100%)', '' %}
   {% elif 'MARSEILLE' in name %}
-    {% set abbr, grad, txt = 'OM', 'radial-gradient(circle at top left, #FFFFFF 40%, #D1D5DB 60%, #2FAEE0 100%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'OM', 'radial-gradient(circle, #FFFFFF 60%, #2FAEE0 100%)', 'dark-text' %}
   {% elif 'LYONNAIS' in name or 'LYON' in name %}
-    {% set abbr, grad, txt = 'OL', 'linear-gradient(135deg, #FFFFFF 30%, #DA291C 50%, #10225C 70%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'OL', 'linear-gradient(90deg, #FFFFFF 33%, #DA291C 33%, #DA291C 66%, #10225C 66%)', 'dark-text' %}
   
   {% else %}
     {% set abbr, grad, txt = name[:3], 'linear-gradient(135deg, #333333, #111111)', '' %}
@@ -268,7 +267,7 @@
 
   <main class="layout-grid">
     <section class="panel">
-  <!-- EDIT PROFILE ACCORDION (Now contains Gamertag, Club & Squad Upload) -->
+  <!-- EDIT PROFILE ACCORDION -->
   {% if current_user.is_authenticated and current_user.in_league %}
   <div class="panel" style="margin-bottom: 20px; padding: 15px;">
     <details>
@@ -335,12 +334,14 @@
             </select>
           </div>
 
-          <!-- SQUAD UPLOAD (Now located alongside Gamertag and Team) -->
+          <!-- SQUAD UPLOAD -->
+          {% if not current_user.squad_img %}
           <div style="margin-bottom: 20px;">
             <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">Team Strength / Squad (Screenshot)</label>
             <input type="file" name="squad_img" accept="image/*" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
-            <small style="color: var(--text-mid); display: block; margin-top: 5px;">Upload your active lineup to show your team strength. This option vanishes when the league officially starts.</small>
+            <small style="color: var(--text-mid); display: block; margin-top: 5px;">Upload your active lineup to show your team strength. You can only upload this once!</small>
           </div>
+          {% endif %}
 
           <button type="submit" class="btn btn-brand" style="width: 100%; padding: 12px; font-size: 1rem; border-radius: 8px; background: #00E5FF; color: #161D38; font-weight: bold; border: none; cursor: pointer;">
             Save Profile
@@ -684,7 +685,7 @@
   <div id="squadModal" class="modal-overlay" onclick="closeSquad()">
     <div class="modal-card" style="padding: 10px; width: 95%; max-width: 900px; background: #0A0E1A;" onclick="event.stopPropagation()">
       <button class="close-btn" onclick="closeSquad()" style="top: -15px; right: -10px; background: var(--violet); width: 32px; height: 32px; border-radius: 50%; font-size: 1.5rem; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">&times;</button>
-      <img id="squadImage" src="" style="width: 100%; height: auto; max-height: 80vh; object-fit: contain; border-radius: 8px; border: 2px solid var(--cyan);">
+      <img id="squadImage" src="" style="width: 100%; height: auto; max-height: 85vh; object-fit: contain; border-radius: 8px; border: 2px solid var(--cyan);">
     </div>
   </div>
 
