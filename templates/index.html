@@ -92,7 +92,6 @@
   .fixture-scroll-box { overflow-y: auto; padding-right: 5px; max-height: 650px; }
   @media (max-width: 960px) { .fixture-scroll-box { max-height: 240px; } }
 
-  /* UPDATED CUSTOM TEAM CRESTS WITH GLOSSY EMBOSS EFFECT */
   .custom-crest { 
     display: inline-flex; align-items: center; justify-content: center; 
     width: 34px; height: 34px; border-radius: 50%; 
@@ -108,7 +107,6 @@
 </head>
 <body>
 
-<!-- SUPERCHARGED 25-TEAM CREST GENERATOR -->
 {% macro render_crest(club_name) %}
   {% set name = club_name | upper | trim %}
   
@@ -267,39 +265,39 @@
           <select name="team" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
             <option value="{{ current_user.emblem }}" selected>Current: {{ current_user.emblem }}</option>
             <optgroup label="🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League">
-                <option value="ARSENAL FC">Arsenal FC</option>
-                <option value="CHELSEA FC">Chelsea FC</option>
-                <option value="LIVERPOOL FC">Liverpool FC</option>
-                <option value="MANCHESTER CITY FC">Manchester City FC</option>
-                <option value="MANCHESTER UNITED FC">Manchester United FC</option>
+                <option value="ARSENAL FC">ARSENAL FC</option>
+                <option value="CHELSEA FC">CHELSEA FC</option>
+                <option value="LIVERPOOL FC">LIVERPOOL FC</option>
+                <option value="MANCHESTER CITY FC">MANCHESTER CITY FC</option>
+                <option value="MANCHESTER UNITED FC">MANCHESTER UNITED FC</option>
             </optgroup>
             <optgroup label="🇪🇸 La Liga">
-                <option value="ATLETICO MADRID">Atlético Madrid</option>
-                <option value="FC BARCELONA">FC Barcelona</option>
-                <option value="REAL MADRID CF">Real Madrid CF</option>
-                <option value="SEVILLA FC">Sevilla FC</option>
-                <option value="VILLARREAL CF">Villarreal CF</option>
+                <option value="ATLETICO MADRID">ATLÉTICO MADRID</option>
+                <option value="FC BARCELONA">FC BARCELONA</option>
+                <option value="REAL MADRID CF">REAL MADRID CF</option>
+                <option value="SEVILLA FC">SEVILLA FC</option>
+                <option value="VILLARREAL CF">VILLARREAL CF</option>
             </optgroup>
             <optgroup label="🇮🇹 Serie A">
-                <option value="AC MILAN">AC Milan</option>
-                <option value="AS ROMA">AS Roma</option>
-                <option value="INTER MILAN">Inter Milan</option>
-                <option value="JUVENTUS FC">Juventus FC</option>
-                <option value="SSC NAPOLI">SSC Napoli</option>
+                <option value="AC MILAN">AC MILAN</option>
+                <option value="AS ROMA">AS ROMA</option>
+                <option value="INTER MILAN">INTER MILAN</option>
+                <option value="JUVENTUS FC">JUVENTUS FC</option>
+                <option value="SSC NAPOLI">SSC NAPOLI</option>
             </optgroup>
             <optgroup label="🇩🇪 Bundesliga">
-                <option value="BAYER 04 LEVERKUSEN">Bayer 04 Leverkusen</option>
-                <option value="BORUSSIA DORTMUND">Borussia Dortmund</option>
-                <option value="EINTRACHT FRANKFURT">Eintracht Frankfurt</option>
-                <option value="FC BAYERN MUNICH">FC Bayern Munich</option>
-                <option value="RB LEIPZIG">RB Leipzig</option>
+                <option value="BAYER 04 LEVERKUSEN">BAYER 04 LEVERKUSEN</option>
+                <option value="BORUSSIA DORTMUND">BORUSSIA DORTMUND</option>
+                <option value="EINTRACHT FRANKFURT">EINTRACHT FRANKFURT</option>
+                <option value="FC BAYERN MUNICH">FC BAYERN MUNICH</option>
+                <option value="RB LEIPZIG">RB LEIPZIG</option>
             </optgroup>
             <optgroup label="🇫🇷 Ligue 1">
-                <option value="AS MONACO">AS Monaco</option>
-                <option value="LOSC LILLE">LOSC Lille</option>
-                <option value="OLYMPIQUE DE MARSEILLE">Olympique de Marseille</option>
-                <option value="OLYMPIQUE LYONNAIS">Olympique Lyonnais</option>
-                <option value="PARIS SAINT-GERMAIN">Paris Saint-Germain</option>
+                <option value="AS MONACO">AS MONACO</option>
+                <option value="LOSC LILLE">LOSC LILLE</option>
+                <option value="OLYMPIQUE DE MARSEILLE">OLYMPIQUE DE MARSEILLE</option>
+                <option value="OLYMPIQUE LYONNAIS">OLYMPIQUE LYONNAIS</option>
+                <option value="PARIS SAINT-GERMAIN">PARIS SAINT-GERMAIN</option>
             </optgroup>
           </select>
         </div>
@@ -585,39 +583,39 @@
           <select name="team" class="modal-input" style="margin-bottom: 10px;" required>
             <option value="" disabled selected>Select Your Official Club</option>
             <optgroup label="🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League">
-                <option value="ARSENAL FC">Arsenal FC</option>
-                <option value="CHELSEA FC">Chelsea FC</option>
-                <option value="LIVERPOOL FC">Liverpool FC</option>
-                <option value="MANCHESTER CITY FC">Manchester City FC</option>
-                <option value="MANCHESTER UNITED FC">Manchester United FC</option>
+                <option value="ARSENAL FC">ARSENAL FC</option>
+                <option value="CHELSEA FC">CHELSEA FC</option>
+                <option value="LIVERPOOL FC">LIVERPOOL FC</option>
+                <option value="MANCHESTER CITY FC">MANCHESTER CITY FC</option>
+                <option value="MANCHESTER UNITED FC">MANCHESTER UNITED FC</option>
             </optgroup>
             <optgroup label="🇪🇸 La Liga">
-                <option value="ATLETICO MADRID">Atlético Madrid</option>
-                <option value="FC BARCELONA">FC Barcelona</option>
-                <option value="REAL MADRID CF">Real Madrid CF</option>
-                <option value="SEVILLA FC">Sevilla FC</option>
-                <option value="VILLARREAL CF">Villarreal CF</option>
+                <option value="ATLETICO MADRID">ATLÉTICO MADRID</option>
+                <option value="FC BARCELONA">FC BARCELONA</option>
+                <option value="REAL MADRID CF">REAL MADRID CF</option>
+                <option value="SEVILLA FC">SEVILLA FC</option>
+                <option value="VILLARREAL CF">VILLARREAL CF</option>
             </optgroup>
             <optgroup label="🇮🇹 Serie A">
-                <option value="AC MILAN">AC Milan</option>
-                <option value="AS ROMA">AS Roma</option>
-                <option value="INTER MILAN">Inter Milan</option>
-                <option value="JUVENTUS FC">Juventus FC</option>
-                <option value="SSC NAPOLI">SSC Napoli</option>
+                <option value="AC MILAN">AC MILAN</option>
+                <option value="AS ROMA">AS ROMA</option>
+                <option value="INTER MILAN">INTER MILAN</option>
+                <option value="JUVENTUS FC">JUVENTUS FC</option>
+                <option value="SSC NAPOLI">SSC NAPOLI</option>
             </optgroup>
             <optgroup label="🇩🇪 Bundesliga">
-                <option value="BAYER 04 LEVERKUSEN">Bayer 04 Leverkusen</option>
-                <option value="BORUSSIA DORTMUND">Borussia Dortmund</option>
-                <option value="EINTRACHT FRANKFURT">Eintracht Frankfurt</option>
-                <option value="FC BAYERN MUNICH">FC Bayern Munich</option>
-                <option value="RB LEIPZIG">RB Leipzig</option>
+                <option value="BAYER 04 LEVERKUSEN">BAYER 04 LEVERKUSEN</option>
+                <option value="BORUSSIA DORTMUND">BORUSSIA DORTMUND</option>
+                <option value="EINTRACHT FRANKFURT">EINTRACHT FRANKFURT</option>
+                <option value="FC BAYERN MUNICH">FC BAYERN MUNICH</option>
+                <option value="RB LEIPZIG">RB LEIPZIG</option>
             </optgroup>
             <optgroup label="🇫🇷 Ligue 1">
-                <option value="AS MONACO">AS Monaco</option>
-                <option value="LOSC LILLE">LOSC Lille</option>
-                <option value="OLYMPIQUE DE MARSEILLE">Olympique de Marseille</option>
-                <option value="OLYMPIQUE LYONNAIS">Olympique Lyonnais</option>
-                <option value="PARIS SAINT-GERMAIN">Paris Saint-Germain</option>
+                <option value="AS MONACO">AS MONACO</option>
+                <option value="LOSC LILLE">LOSC LILLE</option>
+                <option value="OLYMPIQUE DE MARSEILLE">OLYMPIQUE DE MARSEILLE</option>
+                <option value="OLYMPIQUE LYONNAIS">OLYMPIQUE LYONNAIS</option>
+                <option value="PARIS SAINT-GERMAIN">PARIS SAINT-GERMAIN</option>
             </optgroup>
           </select>
           <input type="email" name="email" class="modal-input" placeholder="Email Address" style="margin-bottom: 10px;" required>
