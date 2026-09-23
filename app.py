@@ -593,6 +593,20 @@ def reset_strikes():
     flash("All player strikes have been cleared.", "success")
     return redirect(url_for('admin'))
 
+@app.route('/panic-hq/wipe-squads', methods=['POST'])
+@login_required
+def wipe_squads():
+    if current_user.role != 'admin':
+        abort(403)
+        
+    users = User.query.all()
+    for u in users:
+        u.squad_img = None # Clears the image, making the upload box reappear
+        
+    db.session.commit()
+    flash("All squad images wiped! Players can now re-upload one final time.", "success")
+    return redirect(url_for('admin'))
+    
 @app.route('/panic-hq/admin_override', methods=['POST'])
 @login_required
 def admin_override():
