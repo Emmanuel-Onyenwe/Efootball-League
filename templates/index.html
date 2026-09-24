@@ -63,16 +63,16 @@
   .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; }
   .marquee-content {
     display: inline-block; padding-left: 100%;
-    animation: marquee 80s linear infinite; color: var(--text-mid); font-size: 0.85rem;
+    animation: marquee 45s linear infinite; color: var(--text-mid); font-size: 0.85rem;
   }
   @keyframes marquee {
     0%   { transform: translate(0, 0); }
     100% { transform: translate(-100%, 0); }
   }
 
-  /* LAYOUT FIX: Let grid items stretch to match equal heights on desktop */
-  .layout-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 32px; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; }
-
+  /* LAYOUT FIX: align-items: stretch allows right panel to exactly match left panel. */
+  .layout-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 32px; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; align-items: stretch; }
+  
   @media (max-width: 960px) { .layout-grid { grid-template-columns: 1fr; } }
   @media (max-width: 768px) {
     .top-bar { flex-direction: column; gap: 16px; text-align: center; padding: 20px 15px; }
@@ -101,7 +101,6 @@
   
   .fixture-list { padding: 16px 24px; display: flex; flex-direction: column; gap: 12px; }
   .fixture-card { background: var(--bg-panel-alt); padding: 12px 16px; border-radius: 8px; border-left: 3px solid var(--violet); }
-  .fixture-vs { color: var(--text-low); font-size: 0.75rem; font-family: var(--font-display); text-align: center; padding: 0 8px; }
   
   .site-footer { position: relative; z-index: 1; text-align: center; padding: 24px; font-size: 0.8rem; color: var(--text-low); border-top: 1px solid rgba(255,255,255,0.05); margin-top: auto; }
   
@@ -114,7 +113,8 @@
   .modal-btn { width: 100%; padding: 12px; background: var(--grad-brand); border: none; color: black; font-weight: bold; border-radius: 5px; cursor: pointer; }
 
   /* SCROLLBAR & HEIGHT FIXES */
-  .side-panel { display: flex; flex-direction: column; height: 100%; }
+  /* min-height: 0 forces the panel not to grow indefinitely with 180 fixtures */
+  .side-panel { display: flex; flex-direction: column; min-height: 0; height: 100%; }
   .fixture-scroll-box { flex: 1; min-height: 0; overflow-y: auto; padding-right: 5px; }
   
   .fixture-scroll-box::-webkit-scrollbar { width: 6px; }
@@ -122,8 +122,11 @@
   .fixture-scroll-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
   .fixture-scroll-box::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
   
-  /* Retain a fixed max-height ONLY on mobile when the panels stack vertically */
-  @media (max-width: 960px) { .fixture-scroll-box { max-height: 450px; flex: none; } }
+  /* Reset height lock for Mobile stacked view */
+  @media (max-width: 960px) { 
+    .side-panel { height: auto; }
+    .fixture-scroll-box { max-height: 450px; flex: none; } 
+  }
 
   .custom-crest { 
     display: inline-flex; align-items: center; justify-content: center; 
@@ -443,34 +446,35 @@
           <div style="text-align: center; font-size: 0.65rem; color: var(--text-low); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Matchday {{ match.matchday }}</div>
           {% endif %}
           
-          <div class="fixture-teams" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+          <div class="fixture-teams" style="display: grid; grid-template-columns: 1fr 30px 1fr; align-items: center; gap: 8px;">
             
             <!-- Home Team (Left) -->
-            <div style="flex: 1; display: flex; align-items: center; gap: 8px; text-align: left; min-width: 0;">
+            <div style="display: flex; align-items: center; justify-content: flex-start; gap: 8px; min-width: 0; overflow: hidden;">
               {{ render_crest(match.player_a.emblem) }}
-              <div style="min-width: 0;">
-                <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; word-break: break-word;">
-                  {{ match.player_a.emblem }}
+              <div style="min-width: 0; text-align: left; display: flex; flex-direction: column; flex: 1;">
+                <div style="display: flex; align-items: center; justify-content: flex-start; gap: 4px;">
+                  <div style="font-size: 0.70rem; font-weight: 700; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_a.emblem }}</div>
                   {% if match.player_a.squad_img %}
-                    <span onclick="showSquad('{{ match.player_a.squad_img }}')" style="cursor: pointer; font-size: 0.95rem; line-height: 1;" title="View Squad">👁️</span>
+                    <span onclick="showSquad('{{ match.player_a.squad_img }}')" style="cursor: pointer; font-size: 0.90rem; flex-shrink: 0; line-height: 1;" title="View Squad">👁️</span>
                   {% endif %}
                 </div>
-                <div style="font-size: 0.65rem; color: var(--text-mid); font-weight: normal; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_a.name }}</div>
+                <div style="font-size: 0.65rem; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_a.name }}</div>
               </div>
             </div>
             
-            <div class="fixture-vs" style="width: 30px; text-align: center; flex-shrink: 0;">VS</div>
+            <!-- VS -->
+            <div class="fixture-vs" style="text-align: center; font-size: 0.70rem; flex-shrink: 0;">VS</div>
             
             <!-- Away Team (Right) -->
-            <div style="flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 8px; text-align: right; min-width: 0;">
-              <div style="min-width: 0;">
-                <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; justify-content: flex-end; gap: 4px; flex-wrap: wrap; word-break: break-word;">
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; overflow: hidden;">
+              <div style="min-width: 0; text-align: right; display: flex; flex-direction: column; flex: 1; align-items: flex-end;">
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 4px; max-width: 100%;">
                   {% if match.player_b.squad_img %}
-                    <span onclick="showSquad('{{ match.player_b.squad_img }}')" style="cursor: pointer; font-size: 0.95rem; line-height: 1;" title="View Squad">👁️</span>
+                    <span onclick="showSquad('{{ match.player_b.squad_img }}')" style="cursor: pointer; font-size: 0.90rem; flex-shrink: 0; line-height: 1;" title="View Squad">👁️</span>
                   {% endif %}
-                  {{ match.player_b.emblem }}
+                  <div style="font-size: 0.70rem; font-weight: 700; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_b.emblem }}</div>
                 </div>
-                <div style="font-size: 0.65rem; color: var(--text-mid); font-weight: normal; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_b.name }}</div>
+                <div style="font-size: 0.65rem; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">{{ match.player_b.name }}</div>
               </div>
               {{ render_crest(match.player_b.emblem) }}
             </div>
