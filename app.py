@@ -55,7 +55,7 @@ class User(db.Model, UserMixin):
     in_league = db.Column(db.Boolean, default=False) 
     is_verified = db.Column(db.Boolean, default=False)
     emblem = db.Column(db.String(50), default='🛡️')
-    squad_img = db.Column(db.String(500), nullable=True) # NEW: Stores squad screenshot
+    squad_img = db.Column(db.String(500), nullable=True)
     name_changed = db.Column(db.Boolean, default=False)
     
     # Stats
@@ -96,6 +96,24 @@ def send_email(to, subject, template):
         print(f"SUCCESS: Email sent to {to}")
     except Exception as e:
         print(f"FAILED: Email could not be sent to {to}. Error: {e}")
+
+# --- BUSINESS DAYS DEADLINE CALCULATOR ---
+def get_matchday_deadline(matchday_number):
+    """
+    Calculates a deadline skipping Saturdays (5) and Sundays (6).
+    If generated on Thursday, Matchday 1 = Friday, Matchday 2 = Monday.
+    """
+    target_date = datetime.now()
+    added_days = 0
+    
+    while added_days < matchday_number:
+        target_date += timedelta(days=1)
+        # Weekdays are 0-4 (Monday-Friday)
+        if target_date.weekday() < 5:
+            added_days += 1
+            
+    # Set the deadline to exactly 11:59 PM for that matchday
+    return target_date.replace(hour=23, minute=59, second=59, microsecond=0)
 
 def generate_round_robin_schedule(player_ids):
     players = list(player_ids)
@@ -369,7 +387,6 @@ def submit():
         ((Match.player_a_id == current_user.id) | (Match.player_b_id == current_user.id))
     ).all()
     
-    # NEW: Fetch the 15 most recently completed matches to feed the ticker
     recent_matches = Match.query.filter_by(status='approved').order_by(Match.updated_at.desc()).limit(15).all()
     
     return render_template('submit.html', fixtures=fixtures, recent_matches=recent_matches)
@@ -439,21 +456,6 @@ def promote_player(user_id):
         flash(f"{user.name} is now a Co-Admin!", "success")
     return redirect(url_for('admin'))
 
-def get_deadline_for_matchday(matchday):
-    if matchday == 1:
-        return datetime(2026, 9, 2, 23, 59, 59)
-    new_anchor = datetime(2026, 9, 7, 23, 59, 59)
-    cycle_index = matchday - 2 
-    weeks_added = cycle_index // 3
-    remainder = cycle_index % 3
-    
-    if remainder == 0: offset = 0
-    elif remainder == 1: offset = 2
-    else: offset = 4
-        
-    days_added = (weeks_added * 7) + offset
-    return new_anchor + timedelta(days=days_added)
-
 @app.route('/panic-hq/generate_fixtures', methods=['POST'])
 @login_required
 def generate_fixtures():
@@ -493,7 +495,7 @@ def sync_matchdays():
     for pair, matchdays in pair_matchdays.items():
         existing = matches_by_pair.get(pair, [])
         for leg_index, matchday in enumerate(matchdays):
-            matchday_deadline = get_deadline_for_matchday(matchday)
+            matchday_deadline = get_matchday_deadline(matchday)
             
             if leg_index < len(existing):
                 m = existing[leg_index]
@@ -614,7 +616,7 @@ def wipe_squads():
         
     users = User.query.all()
     for u in users:
-        u.squad_img = None # Clears the image, making the upload box reappear
+        u.squad_img = None 
         
     db.session.commit()
     flash("All squad images wiped! Players can now re-upload one final time.", "success")
@@ -745,9 +747,6 @@ def hard_reset_schedule():
 
     full_schedule = generate_round_robin_schedule(grid_seed)
 
-    now = datetime.now()
-    end_of_today = now.replace(hour=23, minute=59, second=59, microsecond=0)
-
     for home, away in full_schedule[0]:
         if veteran_partner.get(home) == away:
             continue  
@@ -756,7 +755,7 @@ def hard_reset_schedule():
             player_b_id=away,
             status='pending',
             matchday=1,
-            deadline=end_of_today + timedelta(days=1 * 2)
+            deadline=get_matchday_deadline(1)
         ))
 
     for matchday, round_matches in enumerate(full_schedule[1:], start=2):
@@ -766,7 +765,7 @@ def hard_reset_schedule():
                 player_b_id=away,
                 status='pending',
                 matchday=matchday,
-                deadline=end_of_today + timedelta(days=matchday * 2)
+                deadline=get_matchday_deadline(matchday)
             ))
 
     db.session.commit()
