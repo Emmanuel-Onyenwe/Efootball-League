@@ -63,13 +63,16 @@
   .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; }
   .marquee-content {
     display: inline-block; padding-left: 100%;
-    animation: marquee 50s linear infinite; color: var(--text-mid); font-size: 0.85rem;
+    animation: marquee 45s linear infinite; color: var(--text-mid); font-size: 0.85rem;
   }
   @keyframes marquee {
     0%   { transform: translate(0, 0); }
     100% { transform: translate(-100%, 0); }
   }
-  .layout-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 32px; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; align-content: start; }
+
+  /* LAYOUT FIX: align-items: start allows panels to scroll independently without stretching */
+  .layout-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 32px; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; align-content: start; align-items: start; }
+  
   @media (max-width: 960px) { .layout-grid { grid-template-columns: 1fr; } }
   @media (max-width: 768px) {
     .top-bar { flex-direction: column; gap: 16px; text-align: center; padding: 20px 15px; }
@@ -110,9 +113,17 @@
   .modal-input { width: 100%; padding: 12px; margin: 10px 0 20px; background: #1B2340; border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 5px; box-sizing: border-box; }
   .modal-btn { width: 100%; padding: 12px; background: var(--grad-brand); border: none; color: black; font-weight: bold; border-radius: 5px; cursor: pointer; }
 
+  /* SCROLLBAR FIXES */
   .side-panel { display: flex; flex-direction: column; }
-  .fixture-scroll-box { overflow-y: auto; padding-right: 5px; max-height: 650px; }
-  @media (max-width: 960px) { .fixture-scroll-box { max-height: 240px; } }
+  .fixture-scroll-box { overflow-y: auto; padding-right: 5px; max-height: 600px; }
+  
+  .fixture-scroll-box::-webkit-scrollbar { width: 6px; }
+  .fixture-scroll-box::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
+  .fixture-scroll-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+  .fixture-scroll-box::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
+  
+  /* Increased Mobile Height */
+  @media (max-width: 960px) { .fixture-scroll-box { max-height: 450px; } }
 
   .custom-crest { 
     display: inline-flex; align-items: center; justify-content: center; 
@@ -126,7 +137,6 @@
     color: #111; text-shadow: 0px 1px 1px rgba(255,255,255,0.4); 
   }
 
-  /* FORCE DARK MODE ON DROPDOWN LISTS */
   select option, select optgroup {
     background-color: var(--bg-panel);
     color: var(--text-hi);
@@ -297,7 +307,6 @@
         ⚙️ Edit Profile <span style="text-transform: none; color: var(--text-mid); font-size: 0.75rem;">(Gamertag, Team & Squad)</span>
       </summary>
       
-      <!-- Checks if the league has started -->
       {% if fixtures or completed_by_matchday %}
         <div style="margin-top: 15px; padding: 16px; background: rgba(255, 77, 109, 0.1); border: 1px solid rgba(255, 77, 109, 0.3); border-radius: 8px; text-align: center;">
           <p style="color: var(--text-hi); font-size: 0.95rem; margin: 0;">
@@ -436,32 +445,32 @@
           
           <div class="fixture-teams" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
             
-            <!-- Home Team (Left) with Eye Icon aligned Left -->
-            <div style="flex: 1; display: flex; align-items: center; gap: 8px; text-align: left;">
+            <!-- Home Team (Left) -->
+            <div style="flex: 1; display: flex; align-items: center; gap: 8px; text-align: left; min-width: 0;">
               {{ render_crest(match.player_a.emblem) }}
-              <div>
-                <div style="font-size: 0.80rem; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 5px;">
+              <div style="min-width: 0;">
+                <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; word-break: break-word;">
                   {{ match.player_a.emblem }}
                   {% if match.player_a.squad_img %}
                     <span onclick="showSquad('{{ match.player_a.squad_img }}')" style="cursor: pointer; font-size: 0.95rem; line-height: 1;" title="View Squad">👁️</span>
                   {% endif %}
                 </div>
-                <div style="font-size: 0.65rem; color: var(--text-mid); font-weight: normal; margin-top: 1px;">{{ match.player_a.name }}</div>
+                <div style="font-size: 0.65rem; color: var(--text-mid); font-weight: normal; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_a.name }}</div>
               </div>
             </div>
             
-            <div class="fixture-vs" style="width: 30px; text-align: center;">VS</div>
+            <div class="fixture-vs" style="width: 30px; text-align: center; flex-shrink: 0;">VS</div>
             
-            <!-- Away Team (Right) with Eye Icon aligned Right -->
-            <div style="flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 8px; text-align: right;">
-              <div>
-                <div style="font-size: 0.80rem; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; justify-content: flex-end; gap: 5px;">
+            <!-- Away Team (Right) -->
+            <div style="flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 8px; text-align: right; min-width: 0;">
+              <div style="min-width: 0;">
+                <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; justify-content: flex-end; gap: 4px; flex-wrap: wrap; word-break: break-word;">
                   {% if match.player_b.squad_img %}
                     <span onclick="showSquad('{{ match.player_b.squad_img }}')" style="cursor: pointer; font-size: 0.95rem; line-height: 1;" title="View Squad">👁️</span>
                   {% endif %}
                   {{ match.player_b.emblem }}
                 </div>
-                <div style="font-size: 0.65rem; color: var(--text-mid); font-weight: normal; margin-top: 1px;">{{ match.player_b.name }}</div>
+                <div style="font-size: 0.65rem; color: var(--text-mid); font-weight: normal; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_b.name }}</div>
               </div>
               {{ render_crest(match.player_b.emblem) }}
             </div>
@@ -505,7 +514,7 @@
             
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
               
-              <!-- PLAYER A (LEFT ALIGNED) -->
+              <!-- PLAYER A -->
               <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
                 {{ render_crest(match.player_a.emblem) }}
                 <div style="text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
@@ -531,7 +540,7 @@
                 {% endif %}
               </div>
               
-              <!-- PLAYER B (RIGHT ALIGNED) -->
+              <!-- PLAYER B -->
               <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 8px;">
                 <div style="text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                   <div style="font-weight: 700; color: var(--text-hi); font-size: 0.85rem; line-height: 1.2;">{{ match.player_b.emblem }}</div>
@@ -569,7 +578,7 @@
     <section class="panel" style="grid-column: 1 / -1; margin-top: 10px;">
       <div class="panel-header">
         <h2>League Briefing & Rules</h2>
-        <p>Everything you need to know about how the Panic Keh eFootball League operates. Tap any section to read the details.</p>
+        <p>Everything you need to know about how the Panic Keh eFootball League operates.</p>
       </div>
       <div style="padding: 20px; display: flex; flex-direction: column; gap: 15px;">
         <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
@@ -588,15 +597,15 @@
         </details>
         <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
           <summary style="color: var(--magenta); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
-            Match Submissions & Deadlines
+            Match Submissions & Squad Integrity
           </summary>
           <div style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
             <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6; margin-bottom: 10px;">
-              <strong>Step 1:</strong> The <strong>WINNER</strong> must post the final score screenshot in the WhatsApp group and tag the opponent to confirm (If a draw, the <strong>HOME</strong> player posts).<br>
-              <strong>Step 2:</strong> Once confirmed, that same player logs in and submits the result via the <strong>Submit Result</strong> tab.
+              <strong>Step 1:</strong> The <strong>WINNER</strong> must post TWO screenshots in the WhatsApp group: The Final Score and the Match Player Ratings showing the active squad.<br>
+              <strong>Step 2:</strong> Submit those exact same screenshots via the website. If your in-game squad does not match your official profile 👁️, the match is voided and you receive a Strike.
             </p>
             <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6;">
-              Active players are free to play ahead. You have strictly <strong>24 hours</strong> to clear your pending fixture.
+              <strong>Pre-Match Check:</strong> Always check your opponent's 👁️ squad before playing. If they load in with hidden/different players, abandon the match immediately, screenshot their live formation, and claim a 3-0 Walkover.
             </p>
           </div>
         </details>
@@ -703,7 +712,6 @@
     </div>
   </div>
   
-  <!-- ENLARGED SQUAD REVEAL MODAL (Optimized for PC View) -->
   <div id="squadModal" class="modal-overlay" onclick="closeSquad()">
     <div class="modal-card" style="padding: 10px; width: 95%; max-width: 900px; background: #0A0E1A;" onclick="event.stopPropagation()">
       <button class="close-btn" onclick="closeSquad()" style="top: -15px; right: -10px; background: var(--violet); width: 32px; height: 32px; border-radius: 50%; font-size: 1.5rem; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">&times;</button>
