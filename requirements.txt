@@ -2,9 +2,7 @@ Flask
 Flask-SQLAlchemy
 gunicorn
 Flask-Login
-psycopg2-binary
+psycopg-binary
 cloudinary
 Flask-Mail
 itsdangerous
-psycopg2-binary
-psycopg-binary
