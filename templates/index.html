@@ -70,9 +70,9 @@
     100% { transform: translate(-100%, 0); }
   }
 
-  /* LAYOUT FIX: align-items: start allows panels to scroll independently without stretching */
-  .layout-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 32px; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; align-content: start; align-items: start; }
-  
+  /* LAYOUT FIX: Let grid items stretch to match equal heights on desktop */
+  .layout-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 32px; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; }
+
   @media (max-width: 960px) { .layout-grid { grid-template-columns: 1fr; } }
   @media (max-width: 768px) {
     .top-bar { flex-direction: column; gap: 16px; text-align: center; padding: 20px 15px; }
@@ -113,17 +113,17 @@
   .modal-input { width: 100%; padding: 12px; margin: 10px 0 20px; background: #1B2340; border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 5px; box-sizing: border-box; }
   .modal-btn { width: 100%; padding: 12px; background: var(--grad-brand); border: none; color: black; font-weight: bold; border-radius: 5px; cursor: pointer; }
 
-  /* SCROLLBAR FIXES */
-  .side-panel { display: flex; flex-direction: column; }
-  .fixture-scroll-box { overflow-y: auto; padding-right: 5px; max-height: 600px; }
+  /* SCROLLBAR & HEIGHT FIXES */
+  .side-panel { display: flex; flex-direction: column; height: 100%; }
+  .fixture-scroll-box { flex: 1; min-height: 0; overflow-y: auto; padding-right: 5px; }
   
   .fixture-scroll-box::-webkit-scrollbar { width: 6px; }
   .fixture-scroll-box::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
   .fixture-scroll-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
   .fixture-scroll-box::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
   
-  /* Increased Mobile Height */
-  @media (max-width: 960px) { .fixture-scroll-box { max-height: 450px; } }
+  /* Retain a fixed max-height ONLY on mobile when the panels stack vertically */
+  @media (max-width: 960px) { .fixture-scroll-box { max-height: 450px; flex: none; } }
 
   .custom-crest { 
     display: inline-flex; align-items: center; justify-content: center; 
