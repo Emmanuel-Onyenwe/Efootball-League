@@ -18,7 +18,9 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'supersecretkey')
 # --- PERMANENT DATABASE CONFIGURATION ---
 uri = os.environ.get("DATABASE_URL", "sqlite:///league.db")
 if uri.startswith("postgres://"):
-    uri = uri.replace("postgres://", "postgresql://", 1)
+    uri = uri.replace("postgres://", "postgresql+psycopg2://", 1)
+elif uri.startswith("postgresql://") and not uri.startswith("postgresql+"):
+    uri = uri.replace("postgresql://", "postgresql+psycopg2://", 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = uri
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_pre_ping': True, 'pool_recycle': 300}
 
