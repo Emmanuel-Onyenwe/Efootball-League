@@ -620,4 +620,194 @@
           </div>
         </details>
         <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-          <summary style="color: var(--gold); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointe
+          <summary style="color: var(--gold); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
+            Network Disconnects
+          </summary>
+          <div style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
+            <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6;">
+              If the network drops, state the score and half in WhatsApp immediately. We do NOT restart 0-0.<br><br>
+              • <strong>Before 75th Min:</strong> Start a new match, play <strong>ONE HALF (45 mins)</strong>, quit, and add the new goals to the original score.<br>
+              • <strong>75th Min or Later:</strong> If leading by 2+ goals, the match is over (Leader takes 3 pts). If leading by 1 goal or tied, play <strong>ONE HALF (45 mins)</strong> to settle it.
+            </p>
+          </div>
+        </details>
+        <details style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 8px; border-left: 3px solid var(--red); border-top: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);">
+          <summary style="color: var(--red); font-family: var(--font-heading); text-transform: uppercase; font-size: 1.1rem; font-weight: bold; cursor: pointer; outline: none;">
+            Penalties & Eliminations
+          </summary>
+          <div style="margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
+            <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6;">
+              <strong>Ghosting:</strong> Dodging matches results in <strong>1 Strike</strong> and a <strong>3-0 Walkover</strong> loss. If both players fail to make an effort within 24 hours, the match is <strong>VOIDED</strong> (0 points, 0 goals).
+            </p>
+            <p style="color: var(--text-mid); font-size: 0.9rem; line-height: 1.6; margin-top: 10px;">
+              <strong>Elimination:</strong> Hitting <strong>2 Strikes</strong> gets you eliminated. If you are scheduled to play an eliminated player, that match is erased from the schedule. Because we use a Total Points system, active players will automatically be awarded a <strong>3-0 Walkover</strong> for fixtures against eliminated opponents to ensure no points are unfairly lost.
+            </p>
+          </div>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    &copy; 2026 Panic Keh &middot; eFootball League
+  </footer>
+  
+  <div id="authModal" class="modal-overlay">
+    <div class="modal-card">
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+      
+      <div id="loginForm">
+        <h2 style="font-family: var(--font-display); margin-bottom: 20px; text-align: center;">LOGIN</h2>
+        <form method="POST" action="{{ url_for('login') }}">
+          <input type="email" name="email" class="modal-input" placeholder="Email Address" required>
+          <input type="password" name="password" class="modal-input" placeholder="Password" required>
+          <button type="submit" class="modal-btn">LOG IN</button>
+        </form>
+        <p style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: var(--text-mid);">
+          New here? <a href="#" onclick="switchModal('register')" style="color: var(--cyan);">Register</a><br><br>
+          <a href="{{ url_for('forgot_password') }}" style="color: var(--text-low);">Forgot Password?</a>
+        </p>
+      </div>
+
+      <div id="registerForm" style="display: none;">
+        <h2 style="font-family: var(--font-display); margin-bottom: 20px; text-align: center;">REGISTER</h2>
+        <form method="POST" action="{{ url_for('register') }}">
+          <input type="text" name="gamertag" class="modal-input" placeholder="Gamertag (Username)" style="margin-bottom: 10px;" required>
+          <select name="team" class="modal-input" style="margin-bottom: 10px;" required>
+            <option value="" disabled selected>Select Your Official Club</option>
+            <optgroup label="🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League">
+                {{ team_option('ARSENAL FC', 'ARSENAL FC') }}
+                {{ team_option('CHELSEA FC', 'CHELSEA FC') }}
+                {{ team_option('LIVERPOOL FC', 'LIVERPOOL FC') }}
+                {{ team_option('MANCHESTER CITY FC', 'MANCHESTER CITY FC') }}
+                {{ team_option('MANCHESTER UNITED FC', 'MANCHESTER UNITED FC') }}
+            </optgroup>
+            <optgroup label="🇪🇸 La Liga">
+                {{ team_option('ATLETICO MADRID', 'ATLÉTICO MADRID') }}
+                {{ team_option('FC BARCELONA', 'FC BARCELONA') }}
+                {{ team_option('REAL MADRID CF', 'REAL MADRID CF') }}
+                {{ team_option('SEVILLA FC', 'SEVILLA FC') }}
+                {{ team_option('VILLARREAL CF', 'VILLARREAL CF') }}
+            </optgroup>
+            <optgroup label="🇮🇹 Serie A">
+                {{ team_option('AC MILAN', 'AC MILAN') }}
+                {{ team_option('AS ROMA', 'AS ROMA') }}
+                {{ team_option('INTER MILAN', 'INTER MILAN') }}
+                {{ team_option('JUVENTUS FC', 'JUVENTUS FC') }}
+                {{ team_option('SSC NAPOLI', 'SSC NAPOLI') }}
+            </optgroup>
+            <optgroup label="🇩🇪 Bundesliga">
+                {{ team_option('BAYER 04 LEVERKUSEN', 'BAYER 04 LEVERKUSEN') }}
+                {{ team_option('BORUSSIA DORTMUND', 'BORUSSIA DORTMUND') }}
+                {{ team_option('EINTRACHT FRANKFURT', 'EINTRACHT FRANKFURT') }}
+                {{ team_option('FC BAYERN MUNICH', 'FC BAYERN MUNICH') }}
+                {{ team_option('RB LEIPZIG', 'RB LEIPZIG') }}
+            </optgroup>
+            <optgroup label="🇫🇷 Ligue 1">
+                {{ team_option('AS MONACO', 'AS MONACO') }}
+                {{ team_option('LOSC LILLE', 'LOSC LILLE') }}
+                {{ team_option('OLYMPIQUE DE MARSEILLE', 'OLYMPIQUE DE MARSEILLE') }}
+                {{ team_option('OLYMPIQUE LYONNAIS', 'OLYMPIQUE LYONNAIS') }}
+                {{ team_option('PARIS SAINT-GERMAIN', 'PARIS SAINT-GERMAIN') }}
+            </optgroup>
+          </select>
+          <input type="email" name="email" class="modal-input" placeholder="Email Address" style="margin-bottom: 10px;" required>
+          <input type="password" name="password" class="modal-input" placeholder="Password" required>
+          <button type="submit" class="modal-btn">JOIN LEAGUE</button>
+        </form>
+        <p style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: var(--text-mid);">
+          Already playing? <a href="#" onclick="switchModal('login')" style="color: var(--cyan);">Log In</a>
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <div id="squadModal" class="modal-overlay" onclick="closeSquad()">
+    <div class="modal-card" style="padding: 10px; width: 95%; max-width: 900px; background: #0A0E1A;" onclick="event.stopPropagation()">
+      <button class="close-btn" onclick="closeSquad()" style="top: -15px; right: -10px; background: var(--violet); width: 32px; height: 32px; border-radius: 50%; font-size: 1.5rem; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">&times;</button>
+      <img id="squadImage" src="" style="width: 100%; height: auto; max-height: 85vh; object-fit: contain; border-radius: 8px; border: 2px solid var(--cyan);">
+    </div>
+  </div>
+
+  <script>
+    function showSquad(url) {
+      document.getElementById('squadImage').src = url;
+      document.getElementById('squadModal').classList.add('active');
+    }
+    function closeSquad() {
+      document.getElementById('squadModal').classList.remove('active');
+      setTimeout(() => { document.getElementById('squadImage').src = ''; }, 300);
+    }
+  </script>
+
+  <script>
+    const modal = document.getElementById('authModal');
+    const mainContent = document.querySelector('main');
+    const header = document.querySelector('header');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+
+    function openModal(type) {
+      modal.classList.add('active');
+      mainContent.classList.add('blur-bg');
+      header.classList.add('blur-bg');
+      switchModal(type);
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+      mainContent.classList.remove('blur-bg');
+      header.classList.remove('blur-bg');
+    }
+
+    function switchModal(type) {
+      if (type === 'register') {
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'block';
+      } else {
+        registerForm.style.display = 'none';
+        loginForm.style.display = 'block';
+      }
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const showParam = urlParams.get('show');
+    if (showParam === 'login' || showParam === 'register') {
+      openModal(showParam);
+    }
+  </script>
+
+  <script>
+    function updateTimers() {
+      const timers = document.querySelectorAll('.match-countdown');
+      const now = new Date().getTime();
+
+      timers.forEach(timer => {
+        const deadlineAttr = timer.getAttribute('data-deadline');
+        if (!deadlineAttr) return;
+
+        const deadline = new Date(deadlineAttr).getTime();
+        const distance = deadline - now;
+        
+        if (distance < 0) {
+            timer.innerHTML = `<div style="color: var(--red); font-size: 0.75rem; font-weight: bold; margin-bottom: 2px;">DEADLINE PASSED</div>`;
+            return;
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        
+        timer.innerHTML = `
+          <div style="color: var(--text-mid); font-size: 0.65rem; margin-bottom: 2px;">MATCH DEADLINE</div>
+          ⏳ <b>${days}d ${hours}h ${minutes}m</b> remaining
+        `;
+      });
+    }
+    
+    updateTimers();
+    setInterval(updateTimers, 60000); 
+  </script>
+
+</body>
+</html>
