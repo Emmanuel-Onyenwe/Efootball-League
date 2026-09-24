@@ -63,15 +63,15 @@
   .marquee-container { flex: 1; overflow: hidden; white-space: nowrap; }
   .marquee-content {
     display: inline-block; padding-left: 100%;
-    animation: marquee 80s linear infinite; color: var(--text-mid); font-size: 0.85rem;
+    animation: marquee 45s linear infinite; color: var(--text-mid); font-size: 0.85rem;
   }
   @keyframes marquee {
     0%   { transform: translate(0, 0); }
     100% { transform: translate(-100%, 0); }
   }
 
-  /* LAYOUT FIX: align-items: start ensures the panels do NOT stretch to match the taller side */
-  .layout-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 32px; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; align-content: start; align-items: start; }
+  /* LAYOUT FIX: align-items: stretch allows dynamic matching heights */
+  .layout-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 32px; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; align-items: stretch; }
   
   @media (max-width: 960px) { .layout-grid { grid-template-columns: 1fr; } }
   @media (max-width: 768px) {
@@ -95,8 +95,6 @@
   .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--bg-panel-alt); font-size: 0.75rem; font-weight: 600; color: var(--text-mid); }
   .rank-1 .rank-badge { background: rgba(255,201,60,0.15); color: var(--gold); }
   
-  .player-cell { text-align: left; display: flex; align-items: center; gap: 12px; padding: 8px 16px; }
-  
   .stat-pts { font-family: var(--font-display); font-weight: 700; color: var(--gold); }
   
   .fixture-list { padding: 16px 24px; display: flex; flex-direction: column; gap: 12px; }
@@ -112,18 +110,23 @@
   .modal-input { width: 100%; padding: 12px; margin: 10px 0 20px; background: #1B2340; border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 5px; box-sizing: border-box; }
   .modal-btn { width: 100%; padding: 12px; background: var(--grad-brand); border: none; color: black; font-weight: bold; border-radius: 5px; cursor: pointer; }
 
-  /* SCROLLBAR & HEIGHT FIXES */
-  .side-panel { display: flex; flex-direction: column; }
-  /* Hard lock at 820px to perfectly match the 14-team table height */
-  .fixture-scroll-box { overflow-y: auto; padding-right: 5px; max-height: 820px; } 
+  /* SCROLLBAR & ABSOLUTE HEIGHT FIXES */
+  .side-panel { display: flex; flex-direction: column; height: 100%; }
+  
+  /* Wrapper sets relative anchor so absolute child can fill it safely */
+  .fixture-scroll-wrapper { flex: 1; position: relative; min-height: 500px; }
+  
+  /* Absolute fill ensures scrolling content never expands panel height */
+  .fixture-scroll-box { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; padding-right: 5px; } 
   
   .fixture-scroll-box::-webkit-scrollbar { width: 6px; }
   .fixture-scroll-box::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
   .fixture-scroll-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
   .fixture-scroll-box::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
   
-  /* Retain smaller height for mobile devices */
-  @media (max-width: 960px) { .fixture-scroll-box { max-height: 450px; } }
+  @media (max-width: 960px) { 
+    .side-panel { height: auto; }
+  }
 
   .custom-crest { 
     display: inline-flex; align-items: center; justify-content: center; 
@@ -392,7 +395,8 @@
           <thead>
             <tr>
               <th width="40">#</th>
-              <th class="left">CLUB / MANAGER</th>
+              <!-- NEW: Spanning 2 columns to give the eye icon its own dedicated column -->
+              <th class="left" colspan="2">CLUB / MANAGER</th>
               <th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GD</th><th>PTS</th>
             </tr>
           </thead>
@@ -401,24 +405,23 @@
             <tr class="{% if loop.index == 1 %}rank-1{% endif %}">
               <td><div class="rank-badge">{{ loop.index }}</div></td>
               
-              <td class="player-cell" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 16px;">
-                <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+              <!-- NEW: Club Column perfectly aligned to left -->
+              <td style="text-align: left; padding: 10px 0 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.03);">
+                <div style="display: flex; align-items: center; gap: 10px;">
                   {{ render_crest(user.emblem) }}
-                  <div style="display: flex; flex-direction: column; justify-content: center; text-align: left; min-width: 0;">
-                    <strong style="line-height: 1.1; text-transform: uppercase; font-size: 0.80rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                      {{ user.emblem }}
-                    </strong>
-                    <span style="font-size: 0.65rem; color: var(--text-mid); font-weight: 500; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ user.name }}</span>
+                  <div style="display: flex; flex-direction: column; justify-content: center;">
+                    <strong style="line-height: 1.1; text-transform: uppercase; font-size: 0.80rem; white-space: nowrap;">{{ user.emblem }}</strong>
+                    <span style="font-size: 0.65rem; color: var(--text-mid); font-weight: 500; margin-top: 1px; white-space: nowrap;">{{ user.name }}</span>
                   </div>
                 </div>
-                <!-- Dedicated Right-Aligned Eye Column -->
-                <div style="width: 20px; text-align: right; flex-shrink: 0;">
-                  {% if user.squad_img %}
-                    <span onclick="showSquad('{{ user.squad_img }}')" style="cursor: pointer; font-size: 1.1rem; line-height: 1;" title="View Squad">👁️</span>
-                  {% endif %}
-                </div>
               </td>
-
+              
+              <!-- NEW: Eye Icon Column perfectly locked straight down the middle -->
+              <td style="text-align: right; width: 30px; padding: 10px 16px 10px 0; border-bottom: 1px solid rgba(255,255,255,0.03);">
+                {% if user.squad_img %}
+                  <span onclick="showSquad('{{ user.squad_img }}')" style="cursor: pointer; font-size: 1.1rem; line-height: 1;" title="View Squad">👁️</span>
+                {% endif %}
+              </td>
 
               <td>{{ user.played }}</td>
               <td>{{ user.won }}</td>
@@ -442,62 +445,66 @@
         <p>{{ fixtures|length }} pending matches</p>
       </div>
       
-      <div class="fixture-list fixture-scroll-box">
-        {% for match in fixtures %}
-        <div class="fixture-card">
-          {% if match.matchday %}
-          <div style="text-align: center; font-size: 0.65rem; color: var(--text-low); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Matchday {{ match.matchday }}</div>
-          {% endif %}
-          
-          <div class="fixture-teams" style="display: grid; grid-template-columns: 1fr 20px 30px 20px 1fr; align-items: center; gap: 4px;">
+      <!-- NEW: Wrapper allows absolute child to perfectly fill matched height -->
+      <div class="fixture-scroll-wrapper">
+        <div class="fixture-list fixture-scroll-box">
+          {% for match in fixtures %}
+          <div class="fixture-card">
+            {% if match.matchday %}
+            <div style="text-align: center; font-size: 0.65rem; color: var(--text-low); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Matchday {{ match.matchday }}</div>
+            {% endif %}
             
-            <!-- Home Team (Left) -->
-            <div style="display: flex; align-items: center; justify-content: flex-start; gap: 8px; min-width: 0; overflow: hidden;">
-              {{ render_crest(match.player_a.emblem) }}
-              <div style="min-width: 0; text-align: left; display: flex; flex-direction: column; justify-content: center;">
-                <div style="font-size: 0.70rem; font-weight: 700; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_a.emblem }}</div>
-                <div style="font-size: 0.65rem; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_a.name }}</div>
+            <!-- NEW: Bulletproof 5-Column Symmetrical Grid -->
+            <div class="fixture-teams" style="display: grid; grid-template-columns: 1fr 20px 30px 20px 1fr; align-items: center; gap: 4px;">
+              
+              <!-- Home Team (Left) -->
+              <div style="display: flex; align-items: center; justify-content: flex-start; gap: 8px; min-width: 0; overflow: hidden;">
+                {{ render_crest(match.player_a.emblem) }}
+                <div style="min-width: 0; text-align: left; display: flex; flex-direction: column; justify-content: center;">
+                  <div style="font-size: 0.70rem; font-weight: 700; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_a.emblem }}</div>
+                  <div style="font-size: 0.65rem; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_a.name }}</div>
+                </div>
               </div>
-            </div>
-            
-            <!-- Home Eye (Locked Column) -->
-            <div style="text-align: center;">
-              {% if match.player_a.squad_img %}
-                <span onclick="showSquad('{{ match.player_a.squad_img }}')" style="cursor: pointer; font-size: 0.90rem; line-height: 1;" title="View Squad">👁️</span>
-              {% endif %}
-            </div>
-            
-            <!-- VS -->
-            <div class="fixture-vs" style="text-align: center; font-size: 0.70rem;">VS</div>
-            
-            <!-- Away Eye (Locked Column) -->
-            <div style="text-align: center;">
-              {% if match.player_b.squad_img %}
-                <span onclick="showSquad('{{ match.player_b.squad_img }}')" style="cursor: pointer; font-size: 0.90rem; line-height: 1;" title="View Squad">👁️</span>
-              {% endif %}
-            </div>
-
-            <!-- Away Team (Right) -->
-            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; overflow: hidden;">
-              <div style="min-width: 0; text-align: right; display: flex; flex-direction: column; justify-content: center;">
-                <div style="font-size: 0.70rem; font-weight: 700; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_b.emblem }}</div>
-                <div style="font-size: 0.65rem; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_b.name }}</div>
+              
+              <!-- Home Eye (Locked Column) -->
+              <div style="text-align: center;">
+                {% if match.player_a.squad_img %}
+                  <span onclick="showSquad('{{ match.player_a.squad_img }}')" style="cursor: pointer; font-size: 0.90rem; line-height: 1;" title="View Squad">👁️</span>
+                {% endif %}
               </div>
-              {{ render_crest(match.player_b.emblem) }}
-            </div>
+              
+              <!-- VS -->
+              <div class="fixture-vs" style="text-align: center; font-size: 0.70rem;">VS</div>
+              
+              <!-- Away Eye (Locked Column) -->
+              <div style="text-align: center;">
+                {% if match.player_b.squad_img %}
+                  <span onclick="showSquad('{{ match.player_b.squad_img }}')" style="cursor: pointer; font-size: 0.90rem; line-height: 1;" title="View Squad">👁️</span>
+                {% endif %}
+              </div>
 
+              <!-- Away Team (Right) -->
+              <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; overflow: hidden;">
+                <div style="min-width: 0; text-align: right; display: flex; flex-direction: column; justify-content: center;">
+                  <div style="font-size: 0.70rem; font-weight: 700; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_b.emblem }}</div>
+                  <div style="font-size: 0.65rem; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_b.name }}</div>
+                </div>
+                {{ render_crest(match.player_b.emblem) }}
+              </div>
+
+            </div>
+            
+            {% if match.deadline %}
+            <div class="match-countdown" data-deadline="{{ match.deadline.isoformat() }}Z" style="text-align: center; font-size: 0.75rem; color: var(--gold); margin-top: 8px; font-family: var(--font-display);">
+              Calculating time...
+            </div>
+            {% endif %}
+            
           </div>
-          
-          {% if match.deadline %}
-          <div class="match-countdown" data-deadline="{{ match.deadline.isoformat() }}Z" style="text-align: center; font-size: 0.75rem; color: var(--gold); margin-top: 8px; font-family: var(--font-display);">
-            Calculating time...
-          </div>
-          {% endif %}
-          
+          {% else %}
+          <p style="color: var(--text-low); text-align: center; font-size: 0.9rem; padding: 20px 0;">No upcoming fixtures.</p>
+          {% endfor %}
         </div>
-        {% else %}
-        <p style="color: var(--text-low); text-align: center; font-size: 0.9rem; padding: 20px 0;">No upcoming fixtures.</p>
-        {% endfor %}
       </div>
     </aside>
 
