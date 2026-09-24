@@ -580,6 +580,19 @@ def remove_strike(user_id):
         flash(f"Strike removed from {user.name}. Total strikes: {user.strikes}", "success")
     return redirect(url_for('admin'))
 
+@app.route('/panic-hq/wipe-squad/<int:user_id>', methods=['POST'])
+@login_required
+def wipe_user_squad(user_id):
+    if current_user.role != 'admin':
+        abort(403)
+        
+    user = User.query.get_or_404(user_id)
+    user.squad_img = None
+    db.session.commit()
+    
+    flash(f"Squad wiped for {user.name}. The upload box has returned to their profile.", "success")
+    return redirect(url_for('admin'))
+
 @app.route('/panic-hq/reset_strikes', methods=['POST'])
 @login_required
 def reset_strikes():
