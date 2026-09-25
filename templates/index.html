@@ -41,10 +41,11 @@
     z-index: 0;
   }
   
-  /* SCREENSHOT FIXES: Prevents Matchday badges from breaking onto a second line */
+  /* SCREENSHOT FIXES: Prevents Matchday badges from breaking onto a second line or clipping */
   div[id^="capture-upcoming-"] > div > span:first-child,
   div[id^="capture-md-"] > div > span:first-child {
     white-space: nowrap !important;
+    display: inline-block !important;
   }
   
   .top-bar { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; background: rgba(16, 22, 44, 0.72); border-bottom: 2px solid var(--magenta); }
@@ -78,8 +79,8 @@
     100% { transform: translate(-100%, 0); }
   }
 
-  /* LAYOUT FIX: align-items: start ensures the panels do NOT stretch to match the taller side */
-  .layout-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 32px; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; align-content: start; align-items: start; }
+  /* LAYOUT FIX: Dynamic Grid. Removed align-items: start so columns naturally stretch to match heights */
+  .layout-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 32px; max-width: 1400px; margin: 0 auto; flex: 1; width: 100%; align-content: start; }
   
   @media (max-width: 960px) { .layout-grid { grid-template-columns: 1fr; } }
   @media (max-width: 768px) {
@@ -88,11 +89,11 @@
     nav.top-nav { flex-wrap: wrap; justify-content: center; gap: 15px; font-size: 0.85rem; }
     .layout-grid { padding: 15px; }
     
-    /* 1. Shrinks table padding and font size slightly so stats fit */
+    /* Shrinks table padding and font size slightly so stats fit */
     th, td { padding: 10px 4px !important; font-size: 0.8rem !important; }
     .player-cell { padding: 8px 4px !important; gap: 6px !important; }
     
-    /* 2. Controls the invisible box width. Change 95px to 85px if stats are still hidden! */
+    /* Controls the invisible box width */
     .team-name-text { font-size: 0.65rem !important; min-width: 95px !important; }
     
     .manager-name-text { font-size: 0.55rem !important; }
@@ -131,13 +132,13 @@
   .modal-input { width: 100%; padding: 12px; margin: 10px 0 20px; background: #1B2340; border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 5px; box-sizing: border-box; }
   .modal-btn { width: 100%; padding: 12px; background: var(--grad-brand); border: none; color: black; font-weight: bold; border-radius: 5px; cursor: pointer; }
 
-  /* SCROLLBAR & HEIGHT FIXES */
-  .side-panel { display: flex; flex-direction: column; }
-  /* Dynamic height: 890px if logged in (compensates for Profile box), 820px if logged out */
+  /* DYNAMIC CSS HEIGHT FIXES: Syncs sidebar scroll exactly to table height */
+  .side-panel { display: flex; flex-direction: column; height: 100%; }
   .fixture-scroll-box { 
+    flex: 1; 
+    min-height: 0; /* Critical flex trick to enable inner scrolling */
     overflow-y: auto; 
     padding-right: 5px; 
-    max-height: {% if current_user.is_authenticated and current_user.in_league %}884px{% else %}820px{% endif %}; 
   } 
 
   .fixture-scroll-box::-webkit-scrollbar { width: 6px; }
@@ -146,7 +147,7 @@
   .fixture-scroll-box::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
   
   /* Retain smaller height for mobile devices */
-  @media (max-width: 960px) { .fixture-scroll-box { max-height: 450px; } }
+  @media (max-width: 960px) { .fixture-scroll-box { height: auto; max-height: 450px; flex: none; } }
 
   .custom-crest { 
     display: inline-flex; align-items: center; justify-content: center; 
@@ -443,18 +444,18 @@
               <td class="player-cell">
                 {{ render_crest(user.emblem) }}
                 <div style="display: flex; flex-direction: column; justify-content: center;">
-                  <div style="display: flex; align-items: center;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
                     
                     <!-- 🔴 TWEAK 'min-width: 140px;' FOR DESKTOP SPACING 🔴 -->
-                    <strong class="team-name-text" style="line-height: 1.1; text-transform: uppercase; font-size: 0.80rem; text-align: left; display: inline-block; min-width: 100px; white-space: normal; word-wrap: break-word;">{{ user.emblem }}</strong>
+                    <strong class="team-name-text" style="line-height: 1.2; text-transform: uppercase; font-size: 0.80rem; text-align: left; display: block; min-width: 100px; white-space: normal; word-wrap: break-word;">{{ user.emblem }}</strong>
                     
                     {% if user.squad_img %}
-                      <span onclick="showSquad('{{ user.squad_img }}')" style="cursor: pointer; line-height: 1; margin-left: 4px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" title="View Squad">
+                      <span onclick="showSquad('{{ user.squad_img }}')" style="cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="View Squad">
                         <svg viewBox="0 0 24 24" fill="none" stroke="#A8B2D1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                       </span>
                     {% endif %}
                   </div>
-                  <span class="manager-name-text" style="font-size: 0.65rem; color: var(--text-mid); font-weight: 500; margin-top: 1px;">{{ user.name }}</span>
+                  <span class="manager-name-text" style="font-size: 0.65rem; color: var(--text-mid); font-weight: 500; margin-top: 2px;">{{ user.name }}</span>
                 </div>
               </td>
 
@@ -515,7 +516,7 @@
                           <div style="display: flex; align-items: center; justify-content: flex-start; gap: 4px;">
                             <div style="font-size: 0.70rem; font-weight: 700; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_a.emblem }}</div>
                             {% if match.player_a.squad_img %}
-                              <span onclick="showSquad('{{ match.player_a.squad_img }}')" style="cursor: pointer; line-height: 1; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" title="View Squad">
+                              <span onclick="showSquad('{{ match.player_a.squad_img }}')" style="cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="View Squad">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="#A8B2D1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                               </span>
                             {% endif %}
@@ -532,7 +533,7 @@
                         <div style="min-width: 0; text-align: right; display: flex; flex-direction: column; flex: 1; align-items: flex-end;">
                           <div style="display: flex; align-items: center; justify-content: flex-end; gap: 4px; max-width: 100%;">
                             {% if match.player_b.squad_img %}
-                              <span onclick="showSquad('{{ match.player_b.squad_img }}')" style="cursor: pointer; line-height: 1; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" title="View Squad">
+                              <span onclick="showSquad('{{ match.player_b.squad_img }}')" style="cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="View Squad">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="#A8B2D1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                               </span>
                             {% endif %}
