@@ -385,13 +385,14 @@ def submit():
             return redirect(url_for('index'))
             
     pending_matches = Match.query.filter(
-    ((Match.player_a_id == current_user.id) | (Match.player_b_id == current_user.id)),
-    Match.status == 'pending'
+        ((Match.player_a_id == current_user.id) | (Match.player_b_id == current_user.id)),
+        Match.status == 'pending'
     ).order_by(Match.matchday.asc()).all()
     
     recent_matches = Match.query.filter_by(status='approved').order_by(Match.updated_at.desc()).limit(15).all()
     
-    return render_template('submit.html', fixtures=fixtures, recent_matches=recent_matches)
+    return render_template('submit.html', pending_matches=pending_matches, recent_matches=recent_matches)
+
 
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
