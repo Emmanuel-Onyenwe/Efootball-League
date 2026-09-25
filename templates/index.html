@@ -161,16 +161,16 @@
 </head>
 <body>
 
-<!-- ORIGINAL DISTINCT CREST GENERATOR -->
+<!-- ORIGINAL DISTINCT CREST GENERATOR (Updated for html2canvas support) -->
 {% macro render_crest(club_name) %}
   {% set name = club_name | upper | replace('É', 'E') | trim %}
   
   {% if 'REAL MADRID' in name %}
     {% set abbr, grad, txt = 'RMA', 'linear-gradient(135deg, #FFFFFF 60%, #FEBE10 100%)', 'dark-text' %}
   {% elif 'BARCELONA' in name %}
-    {% set abbr, grad, txt = 'FCB', 'repeating-linear-gradient(90deg, #004D98 0%, #004D98 25%, #A50044 25%, #A50044 50%)', '' %}
+    {% set abbr, grad, txt = 'FCB', 'linear-gradient(90deg, #004D98 33%, #A50044 33%, #A50044 66%, #004D98 66%)', '' %}
   {% elif 'ATLETICO' in name %}
-    {% set abbr, grad, txt = 'ATM', 'repeating-linear-gradient(90deg, #CB3524 0%, #CB3524 25%, #FFFFFF 25%, #FFFFFF 50%)', 'dark-text' %}
+    {% set abbr, grad, txt = 'ATM', 'linear-gradient(90deg, #CB3524 33%, #FFFFFF 33%, #FFFFFF 66%, #CB3524 66%)', 'dark-text' %}
   {% elif 'SEVILLA' in name %}
     {% set abbr, grad, txt = 'SEV', 'linear-gradient(135deg, #FFFFFF 50%, #F43333 50%)', 'dark-text' %}
   {% elif 'VILLARREAL' in name %}
@@ -199,11 +199,11 @@
     {% set abbr, grad, txt = 'SGE', 'linear-gradient(135deg, #000000 33%, #E1000F 33%, #E1000F 66%, #FFFFFF 66%)', 'dark-text' %}
   
   {% elif 'JUVENTUS' in name %}
-    {% set abbr, grad, txt = 'JUV', 'repeating-linear-gradient(90deg, #000000 0%, #000000 25%, #FFFFFF 25%, #FFFFFF 50%)', '' %}
+    {% set abbr, grad, txt = 'JUV', 'linear-gradient(90deg, #000000 33%, #FFFFFF 33%, #FFFFFF 66%, #000000 66%)', '' %}
   {% elif 'INTER' in name %}
-    {% set abbr, grad, txt = 'INT', 'repeating-linear-gradient(90deg, #00185B 0%, #00185B 25%, #006CB5 25%, #006CB5 50%)', '' %}
+    {% set abbr, grad, txt = 'INT', 'linear-gradient(90deg, #00185B 33%, #006CB5 33%, #006CB5 66%, #00185B 66%)', '' %}
   {% elif 'MILAN' in name %}
-    {% set abbr, grad, txt = 'ACM', 'repeating-linear-gradient(90deg, #FB090B 0%, #FB090B 25%, #000000 25%, #000000 50%)', '' %}
+    {% set abbr, grad, txt = 'ACM', 'linear-gradient(90deg, #FB090B 33%, #000000 33%, #000000 66%, #FB090B 66%)', '' %}
   {% elif 'NAPOLI' in name %}
     {% set abbr, grad, txt = 'NAP', 'radial-gradient(circle, #12A0D7 60%, #FFFFFF 100%)', 'dark-text' %}
   {% elif 'ROMA' in name %}
@@ -871,7 +871,6 @@
 <!-- HTML2CANVAS SCRIPT FOR DYNAMIC SCREENSHOTS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
-    // Handles the Full Matchday Result Capture (Admins)
     function shareMatchday(matchdayNum) {
       const container = document.getElementById('capture-md-' + matchdayNum);
       const branding = document.getElementById('branding-md-' + matchdayNum);
@@ -879,12 +878,18 @@
       const singleBtns = container.querySelectorAll('.share-btn-single');
       const evidenceLinks = container.querySelectorAll('.evidence-links a');
       
+      const originalWidth = container.style.width;
+      
       shareBtn.style.display = 'none';
       singleBtns.forEach(btn => btn.style.display = 'none');
       evidenceLinks.forEach(link => link.style.display = 'none'); 
       branding.style.display = 'block';
       
+      // Force desktop width so text doesn't truncate on mobile
+      container.style.width = '650px';
+      
       html2canvas(container, { backgroundColor: '#10162C', scale: 2 }).then(canvas => {
+        container.style.width = originalWidth;
         shareBtn.style.display = 'block';
         singleBtns.forEach(btn => btn.style.display = 'inline-block');
         evidenceLinks.forEach(link => link.style.display = 'inline-block');
@@ -896,19 +901,25 @@
         link.click();
       }).catch(err => {
         console.error("Screenshot failed:", err);
+        container.style.width = originalWidth;
       });
     }
 
-    // Handles the Upcoming Fixture Capture (Admins = All, Players = Personal)
     function shareUpcoming(matchdayNum) {
       const container = document.getElementById('capture-upcoming-' + matchdayNum);
       const branding = document.getElementById('branding-upcoming-' + matchdayNum);
       const shareBtn = container.querySelector('.share-btn-upcoming');
       
+      const originalWidth = container.style.width;
+      
       shareBtn.style.display = 'none';
       branding.style.display = 'block';
       
+      // Force desktop width so text doesn't truncate on mobile
+      container.style.width = '650px';
+      
       html2canvas(container, { backgroundColor: '#10162C', scale: 2 }).then(canvas => {
+        container.style.width = originalWidth;
         shareBtn.style.display = 'block';
         branding.style.display = 'none';
         
@@ -918,22 +929,27 @@
         link.click();
       }).catch(err => {
         console.error("Screenshot failed:", err);
+        container.style.width = originalWidth;
       });
     }
 
-    // Handles the Single Match Result Capture (Players)
     function shareSingleMatch(matchId) {
       const container = document.getElementById('capture-single-' + matchId);
       const branding = document.getElementById('branding-single-' + matchId);
       const shareBtns = container.querySelectorAll('.share-btn-single');
       const evidenceLinks = container.querySelectorAll('.evidence-links a');
       
+      const originalWidth = container.style.width;
+      
       shareBtns.forEach(btn => btn.style.display = 'none');
       evidenceLinks.forEach(link => link.style.display = 'none');
       branding.style.display = 'block';
       
-      // Use the inner card's background color
+      // Force desktop width so text doesn't truncate on mobile
+      container.style.width = '650px';
+      
       html2canvas(container, { backgroundColor: '#161D38', scale: 2 }).then(canvas => {
+        container.style.width = originalWidth;
         shareBtns.forEach(btn => btn.style.display = 'inline-block');
         evidenceLinks.forEach(link => link.style.display = 'inline-block');
         branding.style.display = 'none';
@@ -944,8 +960,9 @@
         link.click();
       }).catch(err => {
         console.error("Screenshot failed:", err);
+        container.style.width = originalWidth;
       });
     }
-                                                                            </script>
+  </script>
 </body>
 </html>
