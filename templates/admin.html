@@ -324,7 +324,7 @@
       {% endif %}
     </div>
     
-    <!-- MASTER FIXTURE TRACKER -->
+        <!-- MASTER FIXTURE TRACKER -->
     <div class="panel">
       <h2>Master Fixture List</h2>
       <p>Search any Gamertag to quickly track their pending matches and sequence.</p>
@@ -351,20 +351,7 @@
             </div>
             
             {% if current_user.id == 1 %}
-            <form action="{{ url_for('admin_override') }}" method="POST" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; width: 100%; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 12px;">
-              <input type="hidden" name="match_id" value="{{ match.id }}">
-              <button type="submit" name="action" value="walkover_home" class="btn" style="background: rgba(0, 229, 255, 0.15); color: var(--cyan); border: 1px solid rgba(0, 229, 255, 0.4); font-size: 0.70rem; padding: 6px 10px;" onclick="return confirm('Give {{ match.player_a.name }} a 3-0 win?');">3-0 Home</button>
-              <button type="submit" name="action" value="void" class="btn btn-red" style="font-size: 0.70rem; padding: 6px 10px; background: rgba(255, 77, 109, 0.15); color: var(--red); border: 1px solid var(--red);" onclick="return confirm('DANGER: VOID this match? Neither player gets points.');">VOID</button>
-              <button type="submit" name="action" value="unvoid" class="btn" style="background: rgba(124, 92, 255, 0.15); color: var(--violet); border: 1px solid var(--violet); padding: 6px 10px; font-size: 0.70rem;">UNVOID</button>
-              <button type="submit" name="action" value="walkover_away" class="btn" style="background: rgba(0, 229, 255, 0.15); color: var(--cyan); border: 1px solid rgba(0, 229, 255, 0.4); font-size: 0.70rem; padding: 6px 10px;" onclick="return confirm('Give {{ match.player_b.name }} a 3-0 win?');">3-0 Away</button>
-            </form>
-            {% endif %}
-
-          </div>
-
-            
-            {% if current_user.id == 1 %}
-            <form action="{{ url_for('admin_override') }}" method="POST" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; width: 100%; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 12px;">
+            <form action="{{ url_for('admin_override') }}" method="POST" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; width: 100%; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 12px; margin: 0;">
               <input type="hidden" name="match_id" value="{{ match.id }}">
               <button type="submit" name="action" value="walkover_home" class="btn" style="background: rgba(0, 229, 255, 0.15); color: var(--cyan); border: 1px solid rgba(0, 229, 255, 0.4); font-size: 0.70rem; padding: 6px 10px;" onclick="return confirm('Give {{ match.player_a.name }} a 3-0 win?');">3-0 Home</button>
               <button type="submit" name="action" value="void" class="btn btn-red" style="font-size: 0.70rem; padding: 6px 10px; background: rgba(255, 77, 109, 0.15); color: var(--red); border: 1px solid var(--red);" onclick="return confirm('DANGER: VOID this match? Neither player gets points.');">VOID</button>
