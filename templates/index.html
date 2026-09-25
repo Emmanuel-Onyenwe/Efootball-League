@@ -162,69 +162,71 @@
 <body>
 
 <!-- FOOLPROOF CREST GENERATOR (Optimized for html2canvas) -->
+<!-- RESTORED PREMIUM CREST GENERATOR (html2canvas safe) -->
 {% macro render_crest(club_name) %}
   {% set name = club_name | upper | replace('É', 'E') | trim %}
   
   {% if 'REAL MADRID' in name %}
-    {% set abbr, grad, txt = 'RMA', 'linear-gradient(135deg, #FFFFFF, #FEBE10)', 'dark-text' %}
+    {% set abbr, grad, txt = 'RMA', 'linear-gradient(135deg, #FFFFFF 60%, #FEBE10 100%)', 'dark-text' %}
   {% elif 'BARCELONA' in name %}
-    {% set abbr, grad, txt = 'FCB', 'linear-gradient(135deg, #004D98, #A50044)', '' %}
+    {% set abbr, grad, txt = 'FCB', 'linear-gradient(90deg, #004D98 0%, #004D98 25%, #A50044 25%, #A50044 50%, #004D98 50%, #004D98 75%, #A50044 75%, #A50044 100%)', '' %}
   {% elif 'ATLETICO' in name %}
-    {% set abbr, grad, txt = 'ATM', 'linear-gradient(135deg, #CB3524, #FFFFFF)', 'dark-text' %}
+    {% set abbr, grad, txt = 'ATM', 'linear-gradient(90deg, #CB3524 0%, #CB3524 25%, #FFFFFF 25%, #FFFFFF 50%, #CB3524 50%, #CB3524 75%, #FFFFFF 75%, #FFFFFF 100%)', 'dark-text' %}
   {% elif 'SEVILLA' in name %}
-    {% set abbr, grad, txt = 'SEV', 'linear-gradient(135deg, #FFFFFF, #F43333)', 'dark-text' %}
+    {% set abbr, grad, txt = 'SEV', 'linear-gradient(135deg, #FFFFFF 50%, #F43333 50%)', 'dark-text' %}
   {% elif 'VILLARREAL' in name %}
-    {% set abbr, grad, txt = 'VIL', 'linear-gradient(135deg, #FCEE21, #004170)', 'dark-text' %}
+    {% set abbr, grad, txt = 'VIL', 'linear-gradient(135deg, #FCEE21 50%, #DBCB09 80%, #004170 100%)', 'dark-text' %}
   
   {% elif 'MANCHESTER CITY' in name %}
-    {% set abbr, grad, txt = 'MCI', 'linear-gradient(135deg, #6CABDD, #FFFFFF)', 'dark-text' %}
+    {% set abbr, grad, txt = 'MCI', 'linear-gradient(135deg, #6CABDD 40%, #4FA4D8 75%, #FFFFFF 100%)', 'dark-text' %}
   {% elif 'MANCHESTER UNITED' in name %}
-    {% set abbr, grad, txt = 'MUN', 'linear-gradient(135deg, #DA291C, #000000)', '' %}
+    {% set abbr, grad, txt = 'MUN', 'linear-gradient(135deg, #DA291C 60%, #000000 100%)', '' %}
   {% elif 'LIVERPOOL' in name %}
-    {% set abbr, grad, txt = 'LIV', 'linear-gradient(135deg, #C8102E, #00B2A9)', '' %}
+    {% set abbr, grad, txt = 'LIV', 'linear-gradient(135deg, #C8102E 50%, #A50D26 80%, #00B2A9 100%)', '' %}
   {% elif 'ARSENAL' in name %}
-    {% set abbr, grad, txt = 'ARS', 'linear-gradient(135deg, #EF0107, #FFFFFF)', 'dark-text' %}
+    {% set abbr, grad, txt = 'ARS', 'linear-gradient(135deg, #EF0107 60%, #FFFFFF 100%)', 'dark-text' %}
   {% elif 'CHELSEA' in name %}
-    {% set abbr, grad, txt = 'CHE', 'linear-gradient(135deg, #034694, #FFFFFF)', '' %}
+    {% set abbr, grad, txt = 'CHE', 'linear-gradient(135deg, #034694 50%, #023877 80%, #FFFFFF 100%)', '' %}
   
   {% elif 'BAYERN' in name %}
-    {% set abbr, grad, txt = 'BAY', 'linear-gradient(135deg, #DC052D, #0066B2)', '' %}
+    {% set abbr, grad, txt = 'BAY', 'linear-gradient(135deg, #DC052D 50%, #B00424 80%, #0066B2 100%)', '' %}
   {% elif 'DORTMUND' in name %}
-    {% set abbr, grad, txt = 'BVB', 'linear-gradient(135deg, #FDE100, #000000)', 'dark-text' %}
+    {% set abbr, grad, txt = 'BVB', 'linear-gradient(135deg, #FDE100 50%, #D9C100 80%, #000000 100%)', 'dark-text' %}
   {% elif 'LEVERKUSEN' in name %}
-    {% set abbr, grad, txt = 'B04', 'linear-gradient(135deg, #E32221, #000000)', '' %}
+    {% set abbr, grad, txt = 'B04', 'linear-gradient(135deg, #E32221 50%, #000000 50%)', '' %}
   {% elif 'LEIPZIG' in name %}
-    {% set abbr, grad, txt = 'RBL', 'linear-gradient(135deg, #FFFFFF, #DD013F)', 'dark-text' %}
+    {% set abbr, grad, txt = 'RBL', 'linear-gradient(135deg, #FFFFFF 50%, #DD013F 50%)', 'dark-text' %}
   {% elif 'FRANKFURT' in name %}
-    {% set abbr, grad, txt = 'SGE', 'linear-gradient(135deg, #000000, #E1000F)', 'dark-text' %}
+    {% set abbr, grad, txt = 'SGE', 'linear-gradient(135deg, #000000 33%, #E1000F 33%, #E1000F 66%, #FFFFFF 66%)', 'dark-text' %}
   
   {% elif 'JUVENTUS' in name %}
-    {% set abbr, grad, txt = 'JUV', 'linear-gradient(135deg, #000000, #FFFFFF)', '' %}
+    {% set abbr, grad, txt = 'JUV', 'linear-gradient(90deg, #000000 0%, #000000 25%, #FFFFFF 25%, #FFFFFF 50%, #000000 50%, #000000 75%, #FFFFFF 75%, #FFFFFF 100%)', '' %}
   {% elif 'INTER' in name %}
-    {% set abbr, grad, txt = 'INT', 'linear-gradient(135deg, #00185B, #006CB5)', '' %}
+    {% set abbr, grad, txt = 'INT', 'linear-gradient(90deg, #00185B 0%, #00185B 25%, #006CB5 25%, #006CB5 50%, #00185B 50%, #00185B 75%, #006CB5 75%, #006CB5 100%)', '' %}
   {% elif 'MILAN' in name %}
-    {% set abbr, grad, txt = 'ACM', 'linear-gradient(135deg, #FB090B, #000000)', '' %}
+    {% set abbr, grad, txt = 'ACM', 'linear-gradient(90deg, #FB090B 0%, #FB090B 25%, #000000 25%, #000000 50%, #FB090B 50%, #FB090B 75%, #000000 75%, #000000 100%)', '' %}
   {% elif 'NAPOLI' in name %}
-    {% set abbr, grad, txt = 'NAP', 'linear-gradient(135deg, #12A0D7, #FFFFFF)', 'dark-text' %}
+    {% set abbr, grad, txt = 'NAP', 'linear-gradient(135deg, #12A0D7 50%, #0E7AA5 80%, #FFFFFF 100%)', 'dark-text' %}
   {% elif 'ROMA' in name %}
-    {% set abbr, grad, txt = 'ROM', 'linear-gradient(135deg, #8E1F2F, #F0B823)', '' %}
+    {% set abbr, grad, txt = 'ROM', 'linear-gradient(135deg, #8E1F2F 60%, #F0B823 100%)', '' %}
   
   {% elif 'PARIS' in name or 'PSG' in name %}
-    {% set abbr, grad, txt = 'PSG', 'linear-gradient(135deg, #004170, #DA291C)', '' %}
+    {% set abbr, grad, txt = 'PSG', 'linear-gradient(90deg, #004170 38%, #FFFFFF 38%, #FFFFFF 41%, #DA291C 41%, #DA291C 59%, #FFFFFF 59%, #FFFFFF 62%, #004170 62%)', '' %}
   {% elif 'MONACO' in name %}
-    {% set abbr, grad, txt = 'ASM', 'linear-gradient(135deg, #E32221, #FFFFFF)', '' %}
+    {% set abbr, grad, txt = 'ASM', 'linear-gradient(135deg, #E32221 50%, #FFFFFF 50%)', '' %}
   {% elif 'LILLE' in name %}
-    {% set abbr, grad, txt = 'LIL', 'linear-gradient(135deg, #E2001A, #202A44)', '' %}
+    {% set abbr, grad, txt = 'LIL', 'linear-gradient(135deg, #E2001A 60%, #202A44 100%)', '' %}
   {% elif 'MARSEILLE' in name %}
-    {% set abbr, grad, txt = 'OM', 'linear-gradient(135deg, #FFFFFF, #2FAEE0)', 'dark-text' %}
+    {% set abbr, grad, txt = 'OM', 'linear-gradient(135deg, #FFFFFF 50%, #E0E0E0 80%, #2FAEE0 100%)', 'dark-text' %}
   {% elif 'LYONNAIS' in name or 'LYON' in name %}
-    {% set abbr, grad, txt = 'OL', 'linear-gradient(135deg, #FFFFFF, #10225C)', 'dark-text' %}
+    {% set abbr, grad, txt = 'OL', 'linear-gradient(90deg, #FFFFFF 33%, #DA291C 33%, #DA291C 66%, #10225C 66%)', 'dark-text' %}
   
   {% else %}
     {% set abbr, grad, txt = name[:3], 'linear-gradient(135deg, #333333, #111111)', '' %}
   {% endif %}
   
-  <div class="custom-crest {{ txt }}" style="background: {{ grad }};">
+  <!-- Changed 'background' to 'background-image' to fix the html2canvas parsing bug -->
+  <div class="custom-crest {{ txt }}" style="background-image: {{ grad }}; background-color: var(--bg-panel-alt);">
     {{ abbr }}
   </div>
 {% endmacro %}
