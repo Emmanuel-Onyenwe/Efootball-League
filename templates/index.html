@@ -868,8 +868,8 @@
     updateTimers();
     setInterval(updateTimers, 60000); 
   </script>
-<!-- HTML2CANVAS SCRIPT FOR DYNAMIC SCREENSHOTS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- HTML-TO-IMAGE SCRIPT (Converts to SVG first to perfectly preserve all logos and gradients) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
   <script>
     function shareMatchday(matchdayNum) {
       const container = document.getElementById('capture-md-' + matchdayNum);
@@ -888,21 +888,23 @@
       // Force desktop width so text doesn't truncate on mobile
       container.style.width = '650px';
       
-      html2canvas(container, { backgroundColor: '#10162C', scale: 2 }).then(canvas => {
-        container.style.width = originalWidth;
-        shareBtn.style.display = 'block';
-        singleBtns.forEach(btn => btn.style.display = 'inline-block');
-        evidenceLinks.forEach(link => link.style.display = 'inline-block');
-        branding.style.display = 'none';
-        
-        const link = document.createElement('a');
-        link.download = 'PanicKeh_Results_MD_' + matchdayNum + '.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      }).catch(err => {
-        console.error("Screenshot failed:", err);
-        container.style.width = originalWidth;
-      });
+      htmlToImage.toPng(container, { backgroundColor: '#10162C', pixelRatio: 2 })
+        .then(function (dataUrl) {
+          container.style.width = originalWidth;
+          shareBtn.style.display = 'block';
+          singleBtns.forEach(btn => btn.style.display = 'inline-block');
+          evidenceLinks.forEach(link => link.style.display = 'inline-block');
+          branding.style.display = 'none';
+          
+          const link = document.createElement('a');
+          link.download = 'PanicKeh_Results_MD_' + matchdayNum + '.png';
+          link.href = dataUrl;
+          link.click();
+        })
+        .catch(function (error) {
+          console.error("Screenshot failed:", error);
+          container.style.width = originalWidth;
+        });
     }
 
     function shareUpcoming(matchdayNum) {
@@ -918,19 +920,21 @@
       // Force desktop width so text doesn't truncate on mobile
       container.style.width = '650px';
       
-      html2canvas(container, { backgroundColor: '#10162C', scale: 2 }).then(canvas => {
-        container.style.width = originalWidth;
-        shareBtn.style.display = 'block';
-        branding.style.display = 'none';
-        
-        const link = document.createElement('a');
-        link.download = 'PanicKeh_Upcoming_MD_' + matchdayNum + '.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      }).catch(err => {
-        console.error("Screenshot failed:", err);
-        container.style.width = originalWidth;
-      });
+      htmlToImage.toPng(container, { backgroundColor: '#10162C', pixelRatio: 2 })
+        .then(function (dataUrl) {
+          container.style.width = originalWidth;
+          shareBtn.style.display = 'block';
+          branding.style.display = 'none';
+          
+          const link = document.createElement('a');
+          link.download = 'PanicKeh_Upcoming_MD_' + matchdayNum + '.png';
+          link.href = dataUrl;
+          link.click();
+        })
+        .catch(function (error) {
+          console.error("Screenshot failed:", error);
+          container.style.width = originalWidth;
+        });
     }
 
     function shareSingleMatch(matchId) {
@@ -948,20 +952,123 @@
       // Force desktop width so text doesn't truncate on mobile
       container.style.width = '650px';
       
-      html2canvas(container, { backgroundColor: '#161D38', scale: 2 }).then(canvas => {
-        container.style.width = originalWidth;
-        shareBtns.forEach(btn => btn.style.display = 'inline-block');
-        evidenceLinks.forEach(link => link.style.display = 'inline-block');
-        branding.style.display = 'none';
-        
-        const link = document.createElement('a');
-        link.download = 'PanicKeh_MatchResult_' + matchId + '.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      }).catch(err => {
-        console.error("Screenshot failed:", err);
-        container.style.width = originalWidth;
-      });
+      htmlToImage.toPng(container, { backgroundColor: '#161D38', pixelRatio: 2 })
+        .then(function (dataUrl) {
+          container.style.width = originalWidth;
+          shareBtns.forEach(btn => btn.style.display = 'inline-block');
+          evidenceLinks.forEach(link => link.style.display = 'inline-block');
+          branding.style.display = 'none';
+          
+          const link = document.createElement('a');
+          link.download = 'PanicKeh_MatchResult_' + matchId + '.png';
+          link.href = dataUrl;
+          link.click();
+        })
+        .catch(function (error) {
+          console.error("Screenshot failed:", error);
+          container.style.width = originalWidth;
+        });
+    }
+  </script><!-- HTML-TO-IMAGE SCRIPT (Converts to SVG first to perfectly preserve all logos and gradients) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+  <script>
+    function shareMatchday(matchdayNum) {
+      const container = document.getElementById('capture-md-' + matchdayNum);
+      const branding = document.getElementById('branding-md-' + matchdayNum);
+      const shareBtn = container.querySelector('.share-btn');
+      const singleBtns = container.querySelectorAll('.share-btn-single');
+      const evidenceLinks = container.querySelectorAll('.evidence-links a');
+      
+      const originalWidth = container.style.width;
+      
+      shareBtn.style.display = 'none';
+      singleBtns.forEach(btn => btn.style.display = 'none');
+      evidenceLinks.forEach(link => link.style.display = 'none'); 
+      branding.style.display = 'block';
+      
+      // Force desktop width so text doesn't truncate on mobile
+      container.style.width = '650px';
+      
+      htmlToImage.toPng(container, { backgroundColor: '#10162C', pixelRatio: 2 })
+        .then(function (dataUrl) {
+          container.style.width = originalWidth;
+          shareBtn.style.display = 'block';
+          singleBtns.forEach(btn => btn.style.display = 'inline-block');
+          evidenceLinks.forEach(link => link.style.display = 'inline-block');
+          branding.style.display = 'none';
+          
+          const link = document.createElement('a');
+          link.download = 'PanicKeh_Results_MD_' + matchdayNum + '.png';
+          link.href = dataUrl;
+          link.click();
+        })
+        .catch(function (error) {
+          console.error("Screenshot failed:", error);
+          container.style.width = originalWidth;
+        });
+    }
+
+    function shareUpcoming(matchdayNum) {
+      const container = document.getElementById('capture-upcoming-' + matchdayNum);
+      const branding = document.getElementById('branding-upcoming-' + matchdayNum);
+      const shareBtn = container.querySelector('.share-btn-upcoming');
+      
+      const originalWidth = container.style.width;
+      
+      shareBtn.style.display = 'none';
+      branding.style.display = 'block';
+      
+      // Force desktop width so text doesn't truncate on mobile
+      container.style.width = '650px';
+      
+      htmlToImage.toPng(container, { backgroundColor: '#10162C', pixelRatio: 2 })
+        .then(function (dataUrl) {
+          container.style.width = originalWidth;
+          shareBtn.style.display = 'block';
+          branding.style.display = 'none';
+          
+          const link = document.createElement('a');
+          link.download = 'PanicKeh_Upcoming_MD_' + matchdayNum + '.png';
+          link.href = dataUrl;
+          link.click();
+        })
+        .catch(function (error) {
+          console.error("Screenshot failed:", error);
+          container.style.width = originalWidth;
+        });
+    }
+
+    function shareSingleMatch(matchId) {
+      const container = document.getElementById('capture-single-' + matchId);
+      const branding = document.getElementById('branding-single-' + matchId);
+      const shareBtns = container.querySelectorAll('.share-btn-single');
+      const evidenceLinks = container.querySelectorAll('.evidence-links a');
+      
+      const originalWidth = container.style.width;
+      
+      shareBtns.forEach(btn => btn.style.display = 'none');
+      evidenceLinks.forEach(link => link.style.display = 'none');
+      branding.style.display = 'block';
+      
+      // Force desktop width so text doesn't truncate on mobile
+      container.style.width = '650px';
+      
+      htmlToImage.toPng(container, { backgroundColor: '#161D38', pixelRatio: 2 })
+        .then(function (dataUrl) {
+          container.style.width = originalWidth;
+          shareBtns.forEach(btn => btn.style.display = 'inline-block');
+          evidenceLinks.forEach(link => link.style.display = 'inline-block');
+          branding.style.display = 'none';
+          
+          const link = document.createElement('a');
+          link.download = 'PanicKeh_MatchResult_' + matchId + '.png';
+          link.href = dataUrl;
+          link.click();
+        })
+        .catch(function (error) {
+          console.error("Screenshot failed:", error);
+          container.style.width = originalWidth;
+        });
     }
   </script>
 </body>
