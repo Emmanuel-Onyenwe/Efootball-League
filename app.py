@@ -809,13 +809,18 @@ def eliminate_player(user_id):
 @app.route('/edit_profile', methods=['POST'])
 @login_required
 def edit_profile():
-    if Match.query.first() and (request.form.get('gamertag') or request.form.get('team')):
-        flash("Error: Roster is locked. Profiles cannot be edited after matches are generated.", "error")
-        return redirect(url_for('index'))
-
     new_name = request.form.get('gamertag', '').strip().title()
     new_team = request.form.get('team', '').strip().upper()
     
+    # SECURITY BYPASS: Only block if they are actively trying to CHANGE their locked details
+    if Match.query.first():
+        changing_name = new_name and new_name != current_user.name
+        changing_team = new_team and new_team != current_user.emblem
+        
+        if changing_name or changing_team:
+            flash("Error: Roster is locked. Profiles cannot be edited after matches are generated.", "error")
+            return redirect(url_for('index'))
+
     if new_team and new_team != current_user.emblem:
         existing_team = User.query.filter_by(emblem=new_team).first()
         if existing_team:
@@ -829,6 +834,7 @@ def edit_profile():
             return redirect(url_for('index'))
         current_user.name = new_name
         
+    # SQUAD UPLOAD: Executes freely even if the roster check above is bypassed
     squad_file = request.files.get('squad_img')
     if squad_file and squad_file.filename != '':
         upload_result = cloudinary.uploader.upload(squad_file)
