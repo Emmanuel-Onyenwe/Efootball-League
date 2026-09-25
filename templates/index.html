@@ -41,6 +41,12 @@
     z-index: 0;
   }
   
+  /* SCREENSHOT FIXES: Prevents Matchday badges from breaking onto a second line */
+  div[id^="capture-upcoming-"] > div > span:first-child,
+  div[id^="capture-md-"] > div > span:first-child {
+    white-space: nowrap !important;
+  }
+  
   .top-bar { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; background: rgba(16, 22, 44, 0.72); border-bottom: 2px solid var(--magenta); }
   .brand { display: flex; align-items: center; gap: 12px; }
   .crest { width: 36px; height: auto; }
@@ -980,14 +986,27 @@
       const evidenceLinks = container.querySelectorAll('.evidence-links a');
       
       const originalWidth = container.style.width;
+  <!-- HTML-TO-IMAGE SCRIPT (Converts to SVG first to perfectly preserve all logos and gradients) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+  <script>
+    function shareMatchday(matchdayNum) {
+      const container = document.getElementById('capture-md-' + matchdayNum);
+      const branding = document.getElementById('branding-md-' + matchdayNum);
+      const shareBtn = container.querySelector('.share-btn');
+      const singleBtns = container.querySelectorAll('.share-btn-single');
+      const evidenceLinks = container.querySelectorAll('.evidence-links a');
+      const eyes = container.querySelectorAll('span[title="View Squad"]'); // Target eye icons
+      
+      const originalWidth = container.style.width;
       
       shareBtn.style.display = 'none';
       singleBtns.forEach(btn => btn.style.display = 'none');
       evidenceLinks.forEach(link => link.style.display = 'none'); 
+      eyes.forEach(eye => eye.style.display = 'none'); // Hide eyes
       branding.style.display = 'block';
       
-      // Force desktop width so text doesn't truncate on mobile
-      container.style.width = '650px';
+      // Increased to 800px to prevent team names from squishing/overlapping
+      container.style.width = '800px';
       
       htmlToImage.toPng(container, { backgroundColor: '#10162C', pixelRatio: 2 })
         .then(function (dataUrl) {
@@ -995,6 +1014,7 @@
           shareBtn.style.display = 'block';
           singleBtns.forEach(btn => btn.style.display = 'inline-block');
           evidenceLinks.forEach(link => link.style.display = 'inline-block');
+          eyes.forEach(eye => eye.style.display = ''); // Restore eyes
           branding.style.display = 'none';
           
           const link = document.createElement('a');
@@ -1012,19 +1032,22 @@
       const container = document.getElementById('capture-upcoming-' + matchdayNum);
       const branding = document.getElementById('branding-upcoming-' + matchdayNum);
       const shareBtn = container.querySelector('.share-btn-upcoming');
+      const eyes = container.querySelectorAll('span[title="View Squad"]'); // Target eye icons
       
       const originalWidth = container.style.width;
       
       shareBtn.style.display = 'none';
+      eyes.forEach(eye => eye.style.display = 'none'); // Hide eyes
       branding.style.display = 'block';
       
-      // Force desktop width so text doesn't truncate on mobile
-      container.style.width = '650px';
+      // Increased to 800px to prevent team names from squishing/overlapping
+      container.style.width = '800px';
       
       htmlToImage.toPng(container, { backgroundColor: '#10162C', pixelRatio: 2 })
         .then(function (dataUrl) {
           container.style.width = originalWidth;
           shareBtn.style.display = 'block';
+          eyes.forEach(eye => eye.style.display = ''); // Restore eyes
           branding.style.display = 'none';
           
           const link = document.createElement('a');
@@ -1043,21 +1066,24 @@
       const branding = document.getElementById('branding-single-' + matchId);
       const shareBtns = container.querySelectorAll('.share-btn-single');
       const evidenceLinks = container.querySelectorAll('.evidence-links a');
+      const eyes = container.querySelectorAll('span[title="View Squad"]'); // Target eye icons
       
       const originalWidth = container.style.width;
       
       shareBtns.forEach(btn => btn.style.display = 'none');
       evidenceLinks.forEach(link => link.style.display = 'none');
+      eyes.forEach(eye => eye.style.display = 'none'); // Hide eyes
       branding.style.display = 'block';
       
-      // Force desktop width so text doesn't truncate on mobile
-      container.style.width = '650px';
+      // Increased to 800px to prevent team names from squishing/overlapping
+      container.style.width = '800px';
       
       htmlToImage.toPng(container, { backgroundColor: '#161D38', pixelRatio: 2 })
         .then(function (dataUrl) {
           container.style.width = originalWidth;
           shareBtns.forEach(btn => btn.style.display = 'inline-block');
           evidenceLinks.forEach(link => link.style.display = 'inline-block');
+          eyes.forEach(eye => eye.style.display = ''); // Restore eyes
           branding.style.display = 'none';
           
           const link = document.createElement('a');
