@@ -162,7 +162,6 @@
 <body>
 
 <!-- BULLETPROOF CREST GENERATOR (Bypasses html2canvas hard-stop bug) -->
-{<!-- ORIGINAL DISTINCT CREST GENERATOR -->
 {% macro render_crest(club_name) %}
   {% set name = club_name | upper | replace('É', 'E') | trim %}
   
@@ -229,7 +228,7 @@
     {{ abbr }}
   </div>
 {% endmacro %}
-  
+
 <!-- SMART DROPDOWN ENGINE -->
 {% set taken_teams_list = taken_teams | default([]) %}
 {% macro team_option(val, label) %}
