@@ -329,12 +329,28 @@
       </summary>
       
       {% if fixtures or completed_by_matchday %}
-        <div style="margin-top: 15px; padding: 16px; background: rgba(255, 77, 109, 0.1); border: 1px solid rgba(255, 77, 109, 0.3); border-radius: 8px; text-align: center;">
-          <p style="color: var(--text-hi); font-size: 0.95rem; margin: 0;">
-            🔒 <strong>ROSTER LOCKED</strong><br>
-            <span style="color: var(--text-mid); font-size: 0.85rem; display: block; margin-top: 6px;">Profiles and Squads cannot be edited after the fixture grid has been generated. Contact the Head Admin if a manual correction is required.</span>
-          </p>
-        </div>
+        {% if not current_user.squad_img %}
+          <!-- EMERGENCY SQUAD UPLOAD (Allows upload even if roster is locked) -->
+          <div style="margin-top: 15px; padding: 16px; background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 8px;">
+            <p style="color: var(--cyan); font-weight: 700; font-size: 0.90rem; margin-bottom: 10px; text-align: center;">⚠️ MISSING SQUAD IMAGE</p>
+            <p style="color: var(--text-mid); font-size: 0.80rem; margin-bottom: 15px; text-align: center;">The roster is locked, but you must upload your active lineup to play.</p>
+            <form action="{{ url_for('edit_profile') }}" method="POST" enctype="multipart/form-data">
+              <input type="hidden" name="gamertag" value="{{ current_user.name }}">
+              <input type="hidden" name="team" value="{{ current_user.emblem }}">
+              
+              <input type="file" name="squad_img" accept="image/*" required style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; margin-bottom: 12px; font-size: 0.85rem;">
+              <button type="submit" style="width: 100%; padding: 10px; font-size: 0.9rem; border-radius: 8px; background: var(--cyan); color: #161D38; font-weight: bold; border: none; cursor: pointer;">Upload Squad</button>
+            </form>
+          </div>
+        {% else %}
+          <!-- STANDARD ROSTER LOCKED MESSAGE -->
+          <div style="margin-top: 15px; padding: 16px; background: rgba(255, 77, 109, 0.1); border: 1px solid rgba(255, 77, 109, 0.3); border-radius: 8px; text-align: center;">
+            <p style="color: var(--text-hi); font-size: 0.95rem; margin: 0;">
+              🔒 <strong>ROSTER LOCKED</strong><br>
+              <span style="color: var(--text-mid); font-size: 0.85rem; display: block; margin-top: 6px;">Profiles and Squads cannot be edited after the fixture grid has been generated. Contact the Head Admin if a manual correction is required.</span>
+            </p>
+          </div>
+        {% endif %}
       {% else %}
         <form action="{{ url_for('edit_profile') }}" method="POST" enctype="multipart/form-data" style="margin-top: 15px;">
           
