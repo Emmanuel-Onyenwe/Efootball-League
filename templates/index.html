@@ -444,19 +444,17 @@
               <td class="player-cell">
                 {{ render_crest(user.emblem) }}
                 <div style="display: flex; flex-direction: column; justify-content: center;">
-                  
-                  <!-- LEAGUE TABLE TEAM ALIGNMENT FIX -->
-                  <div style="display: flex; align-items: center; justify-content: flex-start; gap: 6px;">
-                    <strong class="team-name-text" style="font-size: 0.80rem; font-weight: 700; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 100px;">{{ user.emblem }}</strong>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    
+                    <!-- 🔴 TWEAK 'min-width: 140px;' FOR DESKTOP SPACING 🔴 -->
+                    <strong class="team-name-text" style="line-height: 1; text-transform: uppercase; font-size: 0.80rem; text-align: left; display: block; min-width: 100px; white-space: normal; word-wrap: break-word;">{{ user.emblem }}</strong>
                     
                     {% if user.squad_img %}
-                      <span onclick="showSquad('{{ user.squad_img }}')" style="cursor: pointer; line-height: 1; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" title="View Squad">
+                      <span onclick="showSquad('{{ user.squad_img }}')" style="cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;" title="View Squad">
                         <svg viewBox="0 0 24 24" fill="none" stroke="#A8B2D1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                       </span>
                     {% endif %}
                   </div>
-                  <!-- END FIX -->
-                  
                   <span class="manager-name-text" style="font-size: 0.65rem; color: var(--text-mid); font-weight: 500; margin-top: 2px;">{{ user.name }}</span>
                 </div>
               </td>
