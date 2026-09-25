@@ -162,6 +162,7 @@
 <body>
 
 <!-- BULLETPROOF CREST GENERATOR (Bypasses html2canvas hard-stop bug) -->
+{<!-- ORIGINAL DISTINCT CREST GENERATOR -->
 {% macro render_crest(club_name) %}
   {% set name = club_name | upper | replace('É', 'E') | trim %}
   
@@ -229,12 +230,6 @@
   </div>
 {% endmacro %}
   
-  <!-- Changed 'background' to 'background-image' to fix the html2canvas parsing bug -->
-  <div class="custom-crest {{ txt }}" style="background-image: {{ grad }}; background-color: var(--bg-panel-alt);">
-    {{ abbr }}
-  </div>
-{% endmacro %}
-
 <!-- SMART DROPDOWN ENGINE -->
 {% set taken_teams_list = taken_teams | default([]) %}
 {% macro team_option(val, label) %}
