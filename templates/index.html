@@ -40,6 +40,15 @@
     pointer-events: none;
     z-index: 0;
   }
+
+    /* Force iOS Safari to align the eye emoji perfectly with the text baseline */
+  span[title="View Squad"] {
+    display: inline-flex !important;
+    align-items: center;
+    vertical-align: middle;
+    line-height: 1 !important;
+    -webkit-transform: translateY(0); /* Prevents Safari from shifting it up */
+  }
   
   /* SCREENSHOT FIXES: Prevents Matchday badges from breaking onto a second line */
   div[id^="capture-upcoming-"] > div > span:first-child,
