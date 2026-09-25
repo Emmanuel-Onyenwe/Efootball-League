@@ -125,9 +125,13 @@
 
   /* SCROLLBAR & HEIGHT FIXES */
   .side-panel { display: flex; flex-direction: column; }
-  /* Hard lock at 820px to perfectly match the 14-team table height */
-  .fixture-scroll-box { overflow-y: auto; padding-right: 5px; max-height: 820px; }
-  
+  /* Dynamic height: 890px if logged in (compensates for Profile box), 820px if logged out */
+  .fixture-scroll-box { 
+    overflow-y: auto; 
+    padding-right: 5px; 
+    max-height: {% if current_user.is_authenticated and current_user.in_league %}890px{% else %}820px{% endif %}; 
+  } 
+
   .fixture-scroll-box::-webkit-scrollbar { width: 6px; }
   .fixture-scroll-box::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
   .fixture-scroll-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
