@@ -491,9 +491,9 @@
             <div id="capture-upcoming-{{ matchday_num }}" style="background: var(--bg-panel); padding: 15px; border-radius: 12px; margin-bottom: 15px; position: relative;">
               
               <div style="margin: 0 0 12px 0; display: flex; align-items: center; gap: 12px;">
-                <span style="font-family: var(--font-heading); font-size: 0.90rem; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.08em; background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.3); padding: 4px 12px; border-radius: 6px;">
+                <div style="font-family: var(--font-heading); font-size: 0.90rem; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.08em; background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.3); padding: 4px 14px 4px 12px; border-radius: 6px; display: inline-block; min-width: max-content; box-sizing: border-box; white-space: nowrap;">
                   Matchday {{ matchday_num }}
-                </span>
+                </div>
                 <div style="flex-grow: 1; height: 1px; background: rgba(255, 255, 255, 0.08);"></div>
                 
                 {% if current_user.is_authenticated %}
@@ -583,9 +583,9 @@
           <div id="capture-md-{{ group.matchday }}" style="background: var(--bg-panel); padding: 15px; border-radius: 12px; margin: 10px 0 15px 0; position: relative;">
             
             <div style="margin: 0 0 12px 0; display: flex; align-items: center; gap: 12px;">
-              <span style="font-family: var(--font-heading); font-size: 0.90rem; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.08em; background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.3); padding: 4px 12px; border-radius: 6px;">
+              <div style="font-family: var(--font-heading); font-size: 0.90rem; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.08em; background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.3); padding: 4px 14px 4px 12px; border-radius: 6px; display: inline-block; min-width: max-content; box-sizing: border-box; white-space: nowrap;">
                 Matchday {{ group.matchday }}
-              </span>
+              </div>
               <div style="flex-grow: 1; height: 1px; background: rgba(255, 255, 255, 0.08);"></div>
               
               {% if current_user.is_authenticated and current_user.role == 'admin' %}
