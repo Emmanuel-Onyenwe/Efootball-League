@@ -379,10 +379,12 @@
 
         <div class="field-group">
           <label for="match_id">Select Scheduled Fixture</label>
-          <select name="match_id" id="match_id" required>
+          <select name="match_id" class="modal-input" required>
             <option value="" disabled selected>-- Choose Match --</option>
-            {% for fx in fixtures %}
-            <option value="{{ fx.id }}">{{ fx.player_a.name }} (Home) vs {{ fx.player_b.name }} (Away)</option>
+            {% for match in pending_matches %}
+            <option value="{{ match.id }}">
+            Matchday {{ match.matchday }}: {{ match.player_a.name }} (Home) vs {{ match.player_b.name }} (Away)
+            </option>
             {% endfor %}
           </select>
         </div>
