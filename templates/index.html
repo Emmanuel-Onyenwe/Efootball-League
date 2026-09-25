@@ -630,6 +630,11 @@
 
           </div>
         {% endfor %}
+      {% else %}
+        <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 8px; text-align: center; border: 1px dashed rgba(255,255,255,0.1);">
+           <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem; margin: 0;">No matches have been completed yet.<br>The pitch is waiting!</p>
+        </div>
+      {% endif %} 
       </div>
     </div> 
   </div>
