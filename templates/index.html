@@ -79,8 +79,19 @@
     .brand { justify-content: center; }
     nav.top-nav { flex-wrap: wrap; justify-content: center; gap: 15px; font-size: 0.85rem; }
     .layout-grid { padding: 15px; }
+    
+    /* 1. Shrinks table padding and font size slightly so stats fit */
+    th, td { padding: 10px 4px !important; font-size: 0.8rem !important; }
+    .player-cell { padding: 8px 4px !important; gap: 6px !important; }
+    
+    /* 2. Controls the invisible box width. Change 95px to 85px if stats are still hidden! */
+    .team-name-text { font-size: 0.65rem !important; min-width: 95px !important; }
+    
+    .manager-name-text { font-size: 0.55rem !important; }
+    .custom-crest { width: 26px !important; height: 26px !important; font-size: 0.60rem !important; }
+    .rank-badge { width: 20px !important; height: 20px !important; font-size: 0.65rem !important; }
   }
-
+  
   .panel { background: var(--bg-panel); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
   .panel-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
   .panel-header h2 { font-family: var(--font-heading); font-weight: 700; font-size: 1.2rem; text-transform: uppercase; }
@@ -405,7 +416,10 @@
                 {{ render_crest(user.emblem) }}
                 <div style="display: flex; flex-direction: column; justify-content: center;">
                   <div style="display: flex; align-items: center;">
-                    <strong class="team-name-text" style="line-height: 1.1; text-transform: uppercase; font-size: 0.80rem; text-align: left; display: inline-block; min-width: 165px; white-space: normal; word-wrap: break-word;">{{ user.emblem }}</strong>
+                    
+                    <!-- 🔴 TWEAK 'min-width: 140px;' FOR DESKTOP SPACING 🔴 -->
+                    <strong class="team-name-text" style="line-height: 1.1; text-transform: uppercase; font-size: 0.80rem; text-align: left; display: inline-block; min-width: 140px; white-space: normal; word-wrap: break-word;">{{ user.emblem }}</strong>
+                    
                     {% if user.squad_img %}
                       <span onclick="showSquad('{{ user.squad_img }}')" style="cursor: pointer; font-size: 1.1rem; line-height: 1; margin-left: 2px; flex-shrink: 0;" title="View Squad">👁️</span>
                     {% endif %}
