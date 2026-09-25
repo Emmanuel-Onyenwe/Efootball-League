@@ -41,10 +41,11 @@
     z-index: 0;
   }
   
-  /* SCREENSHOT FIXES: Prevents Matchday badges from breaking onto a second line */
+  /* SCREENSHOT FIXES: Prevents Matchday badges from breaking onto a second line or clipping */
   div[id^="capture-upcoming-"] > div > span:first-child,
   div[id^="capture-md-"] > div > span:first-child {
     white-space: nowrap !important;
+    display: inline-block !important;
   }
   
   .top-bar { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; background: rgba(16, 22, 44, 0.72); border-bottom: 2px solid var(--magenta); }
@@ -443,21 +444,21 @@
               <td class="player-cell">
                 {{ render_crest(user.emblem) }}
                 <div style="display: flex; flex-direction: column; justify-content: center;">
-                  <div style="display: flex; align-items: center;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
                     
                     <!-- 🔴 TWEAK 'min-width: 140px;' FOR DESKTOP SPACING 🔴 -->
-                    <strong class="team-name-text" style="line-height: 1.1; text-transform: uppercase; font-size: 0.80rem; text-align: left; display: inline-block; min-width: 100px; white-space: normal; word-wrap: break-word;">{{ user.emblem }}</strong>
+                    <strong class="team-name-text" style="line-height: 1.2; text-transform: uppercase; font-size: 0.80rem; text-align: left; display: block; min-width: 100px; white-space: normal; word-wrap: break-word;">{{ user.emblem }}</strong>
                     
                     {% if user.squad_img %}
-                      <span onclick="showSquad('{{ user.squad_img }}')" style="cursor: pointer; line-height: 1; margin-left: 4px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" title="View Squad">
+                      <span onclick="showSquad('{{ user.squad_img }}')" style="cursor: pointer; display: flex; align-items: center; flex-shrink: 0;" title="View Squad">
                         <svg viewBox="0 0 24 24" fill="none" stroke="#A8B2D1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                       </span>
                     {% endif %}
                   </div>
-                  <span class="manager-name-text" style="font-size: 0.65rem; color: var(--text-mid); font-weight: 500; margin-top: 1px;">{{ user.name }}</span>
+                  <span class="manager-name-text" style="font-size: 0.65rem; color: var(--text-mid); font-weight: 500; margin-top: 2px;">{{ user.name }}</span>
                 </div>
               </td>
-
+              
               <td>{{ user.played }}</td>
               <td>{{ user.won }}</td>
               <td>{{ user.drawn }}</td>
@@ -1010,5 +1011,30 @@
         });
     }
   </script>
+
+  <!-- DYNAMIC SIDEBAR HEIGHT SYNC -->
+  <script>
+    function syncPanelHeights() {
+      const tableSection = document.querySelector('.layout-grid > section.panel');
+      const fixtureBox = document.querySelector('.fixture-scroll-box');
+      
+      if (tableSection && fixtureBox) {
+        if (window.innerWidth > 960) {
+          // Calculate the height of the left panel
+          let targetHeight = tableSection.offsetHeight;
+          // Subtract the height of the "Upcoming Fixtures" header and padding so it aligns perfectly at the bottom
+          fixtureBox.style.maxHeight = (targetHeight - 85) + 'px'; 
+        } else {
+          // Reset for mobile viewing
+          fixtureBox.style.maxHeight = '450px';
+        }
+      }
+    }
+
+    // Run on load and whenever the window is resized
+    window.addEventListener('load', syncPanelHeights);
+    window.addEventListener('resize', syncPanelHeights);
+  </script>
+
 </body>
 </html>
