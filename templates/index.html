@@ -40,27 +40,6 @@
     pointer-events: none;
     z-index: 0;
   }
-
-    /* 1. Normalize the emoji container for flexbox environments */
-  span[title="View Squad"] {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    line-height: 0 !important;
-    position: relative;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
-  }
-
-  /* 2. Windows PC Override: Nudge down slightly (Targets large screens) */
-  @media screen and (min-width: 1024px) {
-    span[title="View Squad"] { top: 1.5px; }
-  }
-
-  /* 3. iPhone / iOS Override: Nudge down firmly (Targets Apple specifically) */
-  @supports (-webkit-touch-callout: none) {
-    span[title="View Squad"] { top: 3px !important; }
-  }
-
   
   /* SCREENSHOT FIXES: Prevents Matchday badges from breaking onto a second line */
   div[id^="capture-upcoming-"] > div > span:first-child,
@@ -470,7 +449,9 @@
                     <strong class="team-name-text" style="line-height: 1.1; text-transform: uppercase; font-size: 0.80rem; text-align: left; display: inline-block; min-width: 100px; white-space: normal; word-wrap: break-word;">{{ user.emblem }}</strong>
                     
                     {% if user.squad_img %}
-                      <span onclick="showSquad('{{ user.squad_img }}')" style="cursor: pointer; font-size: 1.1rem; line-height: 1; margin-left: 2px; flex-shrink: 0;" title="View Squad">👁️</span>
+                      <span onclick="showSquad('{{ user.squad_img }}')" style="cursor: pointer; line-height: 1; margin-left: 4px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" title="View Squad">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#A8B2D1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      </span>
                     {% endif %}
                   </div>
                   <span class="manager-name-text" style="font-size: 0.65rem; color: var(--text-mid); font-weight: 500; margin-top: 1px;">{{ user.name }}</span>
@@ -534,7 +515,9 @@
                           <div style="display: flex; align-items: center; justify-content: flex-start; gap: 4px;">
                             <div style="font-size: 0.70rem; font-weight: 700; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_a.emblem }}</div>
                             {% if match.player_a.squad_img %}
-                              <span onclick="showSquad('{{ match.player_a.squad_img }}')" style="cursor: pointer; font-size: 0.90rem; flex-shrink: 0; line-height: 1;" title="View Squad">👁️</span>
+                              <span onclick="showSquad('{{ match.player_a.squad_img }}')" style="cursor: pointer; line-height: 1; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" title="View Squad">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#A8B2D1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                              </span>
                             {% endif %}
                           </div>
                           <div style="font-size: 0.65rem; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_a.name }}</div>
@@ -549,7 +532,9 @@
                         <div style="min-width: 0; text-align: right; display: flex; flex-direction: column; flex: 1; align-items: flex-end;">
                           <div style="display: flex; align-items: center; justify-content: flex-end; gap: 4px; max-width: 100%;">
                             {% if match.player_b.squad_img %}
-                              <span onclick="showSquad('{{ match.player_b.squad_img }}')" style="cursor: pointer; font-size: 0.90rem; flex-shrink: 0; line-height: 1;" title="View Squad">👁️</span>
+                              <span onclick="showSquad('{{ match.player_b.squad_img }}')" style="cursor: pointer; line-height: 1; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" title="View Squad">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#A8B2D1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                              </span>
                             {% endif %}
                             <div style="font-size: 0.70rem; font-weight: 700; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_b.emblem }}</div>
                           </div>
@@ -913,118 +898,7 @@
     updateTimers();
     setInterval(updateTimers, 60000); 
   </script>
-<!-- HTML-TO-IMAGE SCRIPT (Converts to SVG first to perfectly preserve all logos and gradients) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
-  <script>
-    function shareMatchday(matchdayNum) {
-      const container = document.getElementById('capture-md-' + matchdayNum);
-      const branding = document.getElementById('branding-md-' + matchdayNum);
-      const shareBtn = container.querySelector('.share-btn');
-      const singleBtns = container.querySelectorAll('.share-btn-single');
-      const evidenceLinks = container.querySelectorAll('.evidence-links a');
-      
-      const originalWidth = container.style.width;
-      
-      shareBtn.style.display = 'none';
-      singleBtns.forEach(btn => btn.style.display = 'none');
-      evidenceLinks.forEach(link => link.style.display = 'none'); 
-      branding.style.display = 'block';
-      
-      // Force desktop width so text doesn't truncate on mobile
-      container.style.width = '650px';
-      
-      htmlToImage.toPng(container, { backgroundColor: '#10162C', pixelRatio: 2 })
-        .then(function (dataUrl) {
-          container.style.width = originalWidth;
-          shareBtn.style.display = 'block';
-          singleBtns.forEach(btn => btn.style.display = 'inline-block');
-          evidenceLinks.forEach(link => link.style.display = 'inline-block');
-          branding.style.display = 'none';
-          
-          const link = document.createElement('a');
-          link.download = 'PanicKeh_Results_MD_' + matchdayNum + '.png';
-          link.href = dataUrl;
-          link.click();
-        })
-        .catch(function (error) {
-          console.error("Screenshot failed:", error);
-          container.style.width = originalWidth;
-        });
-    }
 
-    function shareUpcoming(matchdayNum) {
-      const container = document.getElementById('capture-upcoming-' + matchdayNum);
-      const branding = document.getElementById('branding-upcoming-' + matchdayNum);
-      const shareBtn = container.querySelector('.share-btn-upcoming');
-      
-      const originalWidth = container.style.width;
-      
-      shareBtn.style.display = 'none';
-      branding.style.display = 'block';
-      
-      // Force desktop width so text doesn't truncate on mobile
-      container.style.width = '650px';
-      
-      htmlToImage.toPng(container, { backgroundColor: '#10162C', pixelRatio: 2 })
-        .then(function (dataUrl) {
-          container.style.width = originalWidth;
-          shareBtn.style.display = 'block';
-          branding.style.display = 'none';
-          
-          const link = document.createElement('a');
-          link.download = 'PanicKeh_Upcoming_MD_' + matchdayNum + '.png';
-          link.href = dataUrl;
-          link.click();
-        })
-        .catch(function (error) {
-          console.error("Screenshot failed:", error);
-          container.style.width = originalWidth;
-        });
-    }
-
-    function shareSingleMatch(matchId) {
-      const container = document.getElementById('capture-single-' + matchId);
-      const branding = document.getElementById('branding-single-' + matchId);
-      const shareBtns = container.querySelectorAll('.share-btn-single');
-      const evidenceLinks = container.querySelectorAll('.evidence-links a');
-      
-      const originalWidth = container.style.width;
-      
-      shareBtns.forEach(btn => btn.style.display = 'none');
-      evidenceLinks.forEach(link => link.style.display = 'none');
-      branding.style.display = 'block';
-      
-      // Force desktop width so text doesn't truncate on mobile
-      container.style.width = '650px';
-      
-      htmlToImage.toPng(container, { backgroundColor: '#161D38', pixelRatio: 2 })
-        .then(function (dataUrl) {
-          container.style.width = originalWidth;
-          shareBtns.forEach(btn => btn.style.display = 'inline-block');
-          evidenceLinks.forEach(link => link.style.display = 'inline-block');
-          branding.style.display = 'none';
-          
-          const link = document.createElement('a');
-          link.download = 'PanicKeh_MatchResult_' + matchId + '.png';
-          link.href = dataUrl;
-          link.click();
-        })
-        .catch(function (error) {
-          console.error("Screenshot failed:", error);
-          container.style.width = originalWidth;
-        });
-    }
-  </script><!-- HTML-TO-IMAGE SCRIPT (Converts to SVG first to perfectly preserve all logos and gradients) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
-  <script>
-    function shareMatchday(matchdayNum) {
-      const container = document.getElementById('capture-md-' + matchdayNum);
-      const branding = document.getElementById('branding-md-' + matchdayNum);
-      const shareBtn = container.querySelector('.share-btn');
-      const singleBtns = container.querySelectorAll('.share-btn-single');
-      const evidenceLinks = container.querySelectorAll('.evidence-links a');
-      
-      const originalWidth = container.style.width;
   <!-- HTML-TO-IMAGE SCRIPT (Converts to SVG first to perfectly preserve all logos and gradients) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
   <script>
