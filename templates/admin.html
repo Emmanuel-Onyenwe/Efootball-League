@@ -338,17 +338,30 @@
           {% for match in all_pending_fixtures %}
           <div class="admin-fixture-card user-row" style="flex-direction: column; align-items: stretch; gap: 12px; border-left: 3px solid var(--violet);">
             
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              {% if match.matchday %}
-              <div style="font-family: var(--font-heading); font-weight: 700; font-size: 0.75rem; color: var(--text-mid); text-transform: uppercase; letter-spacing: 0.08em; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 4px;">Matchday {{ match.matchday }}</div>
-              {% endif %}
-              
-              <div style="flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 0 15px;">
-                <span style="font-weight: 800; font-size: 1.05rem; color: var(--text-hi); text-align: right; flex: 1;">{{ match.player_a.name }}</span>
-                <span style="color: var(--text-low); font-family: var(--font-display); font-size: 0.75rem; margin: 0 15px; text-align: center;">VS</span>
-                <span style="font-weight: 800; font-size: 1.05rem; color: var(--text-hi); text-align: left; flex: 1;">{{ match.player_b.name }}</span>
-              </div>
+            {% if match.matchday %}
+            <div style="text-align: center; margin-bottom: 4px;">
+              <span style="font-family: var(--font-heading); font-weight: 700; font-size: 0.75rem; color: var(--text-mid); text-transform: uppercase; letter-spacing: 0.08em; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 4px;">Matchday {{ match.matchday }}</span>
             </div>
+            {% endif %}
+              
+            <div style="display: grid; grid-template-columns: 1fr 40px 1fr; align-items: center; gap: 10px; width: 100%;">
+              <div style="text-align: right; font-weight: 800; font-size: 0.95rem; color: var(--text-hi); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_a.name }}</div>
+              <div style="color: var(--text-mid); font-family: var(--font-display); font-size: 0.70rem; text-align: center; background: rgba(255,255,255,0.05); padding: 4px 0; border-radius: 4px;">VS</div>
+              <div style="text-align: left; font-weight: 800; font-size: 0.95rem; color: var(--text-hi); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_b.name }}</div>
+            </div>
+            
+            {% if current_user.id == 1 %}
+            <form action="{{ url_for('admin_override') }}" method="POST" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; width: 100%; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 12px;">
+              <input type="hidden" name="match_id" value="{{ match.id }}">
+              <button type="submit" name="action" value="walkover_home" class="btn" style="background: rgba(0, 229, 255, 0.15); color: var(--cyan); border: 1px solid rgba(0, 229, 255, 0.4); font-size: 0.70rem; padding: 6px 10px;" onclick="return confirm('Give {{ match.player_a.name }} a 3-0 win?');">3-0 Home</button>
+              <button type="submit" name="action" value="void" class="btn btn-red" style="font-size: 0.70rem; padding: 6px 10px; background: rgba(255, 77, 109, 0.15); color: var(--red); border: 1px solid var(--red);" onclick="return confirm('DANGER: VOID this match? Neither player gets points.');">VOID</button>
+              <button type="submit" name="action" value="unvoid" class="btn" style="background: rgba(124, 92, 255, 0.15); color: var(--violet); border: 1px solid var(--violet); padding: 6px 10px; font-size: 0.70rem;">UNVOID</button>
+              <button type="submit" name="action" value="walkover_away" class="btn" style="background: rgba(0, 229, 255, 0.15); color: var(--cyan); border: 1px solid rgba(0, 229, 255, 0.4); font-size: 0.70rem; padding: 6px 10px;" onclick="return confirm('Give {{ match.player_b.name }} a 3-0 win?');">3-0 Away</button>
+            </form>
+            {% endif %}
+
+          </div>
+
             
             {% if current_user.id == 1 %}
             <form action="{{ url_for('admin_override') }}" method="POST" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; width: 100%; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 12px;">
