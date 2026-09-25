@@ -41,13 +41,21 @@
     z-index: 0;
   }
 
-  /* Force iOS Safari to align the eye emoji perfectly with the text baseline */
+  /* Universal alignment for Android & PC */
   span[title="View Squad"] {
     display: inline-block !important;
-    line-height: 1 !important;
-    height: 1em;
-    vertical-align: -0.15em; /* Pulls the floating Apple emoji down to match Android */
+    vertical-align: middle;
+    line-height: 1;
   }
+
+  /* iOS-ONLY OVERRIDE: Pushes the floating Apple emoji down */
+  @supports (-webkit-touch-callout: none) {
+    span[title="View Squad"] {
+      position: relative;
+      top: 2px; 
+    }
+  }
+
 
   
   /* SCREENSHOT FIXES: Prevents Matchday badges from breaking onto a second line */
