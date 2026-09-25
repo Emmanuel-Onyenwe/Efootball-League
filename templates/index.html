@@ -41,14 +41,14 @@
     z-index: 0;
   }
 
-    /* Force iOS Safari to align the eye emoji perfectly with the text baseline */
+  /* Force iOS Safari to align the eye emoji perfectly with the text baseline */
   span[title="View Squad"] {
-    display: inline-flex !important;
-    align-items: center;
-    vertical-align: middle;
+    display: inline-block !important;
     line-height: 1 !important;
-    -webkit-transform: translateY(0); /* Prevents Safari from shifting it up */
+    height: 1em;
+    vertical-align: -0.15em; /* Pulls the floating Apple emoji down to match Android */
   }
+
   
   /* SCREENSHOT FIXES: Prevents Matchday badges from breaking onto a second line */
   div[id^="capture-upcoming-"] > div > span:first-child,
