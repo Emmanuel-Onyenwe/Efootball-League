@@ -622,7 +622,7 @@ def wipe_squads():
         u.squad_img = None 
         
     db.session.commit()
-    flash("All squad images wiped! Players can now re-upload one final time.", "success")
+    flash("All profile info wiped! Players can now update and re-upload one final time.", "success")
     return redirect(url_for('admin'))
     
 @app.route('/panic-hq/admin_override', methods=['POST'])
@@ -812,8 +812,9 @@ def edit_profile():
     new_name = request.form.get('gamertag', '').strip().title()
     new_team = request.form.get('team', '').strip().upper()
     
-    # SECURITY BYPASS: Only block if they are actively trying to CHANGE their locked details
-    if Match.query.first():
+    # SECURITY BYPASS: Only block if they have an active squad image.
+    # If Admin wiped it, they bypass this lock and can change Team/Gamertag mid-season.
+    if Match.query.first() and current_user.squad_img:
         changing_name = new_name and new_name != current_user.name
         changing_team = new_team and new_team != current_user.emblem
         
@@ -834,7 +835,6 @@ def edit_profile():
             return redirect(url_for('index'))
         current_user.name = new_name
         
-    # SQUAD UPLOAD: Executes freely even if the roster check above is bypassed
     squad_file = request.files.get('squad_img')
     if squad_file and squad_file.filename != '':
         upload_result = cloudinary.uploader.upload(squad_file)
@@ -843,7 +843,7 @@ def edit_profile():
     db.session.commit()
     flash("Profile updated successfully!", "success")
     return redirect(url_for('index'))
-    
+
 @app.route('/panic-hq/reject_player/<int:user_id>', methods=['POST'])
 @login_required
 def reject_player(user_id):
