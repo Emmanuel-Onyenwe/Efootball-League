@@ -148,6 +148,26 @@ def generate_round_robin_schedule(player_ids):
 def get_pending_fixtures_sorted():
     return Match.query.filter_by(status='pending').order_by(Match.matchday, Match.id).all()
 
+# --- MAINTENANCE MODE (OPTION 2) ---
+@app.before_request
+def check_maintenance_mode():
+    # Check if MAINTENANCE_MODE environment variable is set to true/1
+    is_maintenance = os.environ.get('MAINTENANCE_MODE', 'false').lower() in ['true', '1', 't']
+    
+    if is_maintenance:
+        # Allow static files to load just in case, block everything else
+        if request.endpoint and 'static' not in request.endpoint:
+            return """
+            <div style="font-family: Arial, sans-serif; text-align: center; padding-top: 15vh; background-color: #121212; color: #ffffff; height: 100vh; margin: 0;">
+                <h1 style="font-size: 3rem; margin-bottom: 10px;">🛠️ System Upgrade</h1>
+                <p style="font-size: 1.2rem; color: #aaaaaa;">Panic Keh League is currently undergoing maintenance.</p>
+                <p style="font-size: 1.2rem; color: #aaaaaa;">We'll be right back!</p>
+            </div>
+            """, 503
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+# ... (rest of your code remains completely untouched)
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
