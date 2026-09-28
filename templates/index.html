@@ -89,16 +89,16 @@
     nav.top-nav { flex-wrap: wrap; justify-content: center; gap: 15px; font-size: 0.85rem; }
     .layout-grid { padding: 15px; }
     
-    /* Shrinks table padding and font size slightly so stats fit */
-    th, td { padding: 10px 4px !important; font-size: 0.8rem !important; }
-    .player-cell { padding: 8px 4px !important; gap: 6px !important; }
+    /* 1. Shrinks table padding and font size slightly so stats fit */
+    th, td { padding: 8px 2px !important; font-size: 0.75rem !important; }
+    .player-cell { padding: 6px 2px !important; gap: 4px !important; }
     
-    /* Controls the invisible box width */
-    .team-name-text { font-size: 0.65rem !important; min-width: 95px !important; }
+    /* 2. Strictly locks the width of the team names on mobile so it truncates early */
+    .team-name-text { font-size: 0.60rem !important; width: 75px !important; min-width: 75px !important; max-width: 75px !important; }
     
     .manager-name-text { font-size: 0.55rem !important; }
-    .custom-crest { width: 26px !important; height: 26px !important; font-size: 0.60rem !important; }
-    .rank-badge { width: 20px !important; height: 20px !important; font-size: 0.65rem !important; }
+    .custom-crest { width: 24px !important; height: 24px !important; font-size: 0.55rem !important; }
+    .rank-badge { width: 20px !important; height: 20px !important; font-size: 0.60rem !important; }
   }
   
   .panel { background: var(--bg-panel); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
