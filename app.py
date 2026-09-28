@@ -101,20 +101,14 @@ def send_email(to, subject, template):
 
 # --- BUSINESS DAYS DEADLINE CALCULATOR ---
 def get_matchday_deadline(matchday_number):
-    """
-    Calculates a deadline skipping Saturdays (5) and Sundays (6).
-    If generated on Thursday, Matchday 1 = Friday, Matchday 2 = Monday.
-    """
     target_date = datetime.now()
     added_days = 0
     
     while added_days < matchday_number:
         target_date += timedelta(days=1)
-        # Weekdays are 0-4 (Monday-Friday)
         if target_date.weekday() < 5:
             added_days += 1
             
-    # Set the deadline to exactly 11:59 PM for that matchday
     return target_date.replace(hour=23, minute=59, second=59, microsecond=0)
 
 def generate_round_robin_schedule(player_ids):
@@ -157,15 +151,12 @@ def check_maintenance_mode():
         if request.endpoint and 'static' not in request.endpoint:
             return """
             <div style="font-family: Arial, sans-serif; text-align: center; padding-top: 15vh; background-color: #121212; color: #ffffff; height: 100vh; margin: 0;">
-                <h1 style="font-size: 3rem; margin-bottom: 10px;">🛠️ System Upgrade</h1>
+                <h1 style="font-size: 3rem; margin-bottom: 10px; color: #00E5FF;">🛠️ System Upgrade</h1>
                 <p style="font-size: 1.2rem; color: #aaaaaa;">Panic Keh League is currently undergoing maintenance.</p>
                 <p style="font-size: 1.2rem; color: #aaaaaa;">We'll be right back!</p>
             </div>
             """, 503
-            
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-# ... (rest of your code remains completely untouched)
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -733,7 +724,7 @@ def hard_reset_schedule():
         m.matchday = 1 
         if m.player_a_id in veteran_partner or m.player_b_id in veteran_partner:
             return (f"ABORT: Player {m.player_a_id} or {m.player_b_id} appears in more than "
-                     f"one completed match — can't build a clean Matchday 1 grid."), 400
+                      f"one completed match — can't build a clean Matchday 1 grid."), 400
         veteran_partner[m.player_a_id] = m.player_b_id
         veteran_partner[m.player_b_id] = m.player_a_id
         veteran_pairs.append((m.player_a_id, m.player_b_id))
@@ -997,6 +988,5 @@ def cron_deadline_reminders():
             if reminders_sent > 0:
                 db.session.commit()
                 
-    # THIS WAS MISSING: Actually start the background thread and return a response
     threading.Thread(target=process_in_background, args=(app.app_context(), match_data)).start()
     return f"Cron Executed: {len(match_data)} reminders are being sent in the background.", 200
