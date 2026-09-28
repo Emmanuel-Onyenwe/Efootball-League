@@ -148,14 +148,12 @@ def generate_round_robin_schedule(player_ids):
 def get_pending_fixtures_sorted():
     return Match.query.filter_by(status='pending').order_by(Match.matchday, Match.id).all()
 
-# --- MAINTENANCE MODE (OPTION 2) ---
+# --- MAINTENANCE MODE ---
 @app.before_request
 def check_maintenance_mode():
-    # Check if MAINTENANCE_MODE environment variable is set to true/1
-    is_maintenance = os.environ.get('MAINTENANCE_MODE', 'false').lower() in ['true', '1', 't']
+    is_maintenance = os.environ.get('MAINTENANCE_MODE', 'false').lower() in ['true', '1', 't', 'on']
     
     if is_maintenance:
-        # Allow static files to load just in case, block everything else
         if request.endpoint and 'static' not in request.endpoint:
             return """
             <div style="font-family: Arial, sans-serif; text-align: center; padding-top: 15vh; background-color: #121212; color: #ffffff; height: 100vh; margin: 0;">
@@ -164,7 +162,7 @@ def check_maintenance_mode():
                 <p style="font-size: 1.2rem; color: #aaaaaa;">We'll be right back!</p>
             </div>
             """, 503
-
+            
 @app.route('/register', methods=['GET', 'POST'])
 def register():
 # ... (rest of your code remains completely untouched)
@@ -995,6 +993,10 @@ def cron_deadline_reminders():
                 if match:
                     match.reminder_sent = True
                     reminders_sent += 1
-                
+            
             if reminders_sent > 0:
                 db.session.commit()
+                
+    # THIS WAS MISSING: Actually start the background thread and return a response
+    threading.Thread(target=process_in_background, args=(app.app_context(), match_data)).start()
+    return f"Cron Executed: {len(match_data)} reminders are being sent in the background.", 200
