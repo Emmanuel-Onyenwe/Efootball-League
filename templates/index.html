@@ -89,11 +89,11 @@
     nav.top-nav { flex-wrap: wrap; justify-content: center; gap: 15px; font-size: 0.85rem; }
     .layout-grid { padding: 15px; }
     
-    /* 1. Shrinks table padding and font size slightly so stats fit */
+    /* Shrinks table padding and font size slightly so stats fit */
     th, td { padding: 10px 4px !important; font-size: 0.8rem !important; }
     .player-cell { padding: 8px 4px !important; gap: 6px !important; }
     
-    /* 2. Controls the invisible box width. Change 95px to 85px if stats are still hidden! */
+    /* Controls the invisible box width */
     .team-name-text { font-size: 0.65rem !important; min-width: 95px !important; }
     
     .manager-name-text { font-size: 0.55rem !important; }
@@ -134,7 +134,7 @@
 
   /* SCROLLBAR & HEIGHT FIXES */
   .side-panel { display: flex; flex-direction: column; }
-  /* Dynamic height: 890px if logged in (compensates for Profile box), 820px if logged out */
+  /* Dynamic height */
   .fixture-scroll-box { 
     overflow-y: auto; 
     padding-right: 5px; 
@@ -323,151 +323,166 @@
 
   <main class="layout-grid">
     <section class="panel">
-  <!-- EDIT PROFILE ACCORDION -->
-  {% if current_user.is_authenticated and current_user.in_league %}
-  <div class="panel" style="margin-bottom: 20px; padding: 12px 16px;">
+      <!-- EDIT PROFILE ACCORDION -->
+      {% if current_user.is_authenticated and current_user.in_league %}
+      <div class="panel" style="margin-bottom: 20px; padding: 12px 16px;">
         <details>
-      <summary style="cursor: pointer; font-weight: 700; color: #00E5FF; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; list-style: none;">
-        ⚙️ Edit Profile <span style="text-transform: none; color: var(--text-mid); font-size: 0.75rem;">(Gamertag, Team & Squad)</span>
-      </summary>
-      
-      {% if (fixtures or completed_by_matchday) and current_user.squad_img %}
-        <!-- STANDARD ROSTER LOCKED MESSAGE -->
-        <div style="margin-top: 15px; padding: 16px; background: rgba(255, 77, 109, 0.1); border: 1px solid rgba(255, 77, 109, 0.3); border-radius: 8px; text-align: center;">
-          <p style="color: var(--text-hi); font-size: 0.95rem; margin: 0;">
-            🔒 <strong>ROSTER LOCKED</strong><br>
-            <span style="color: var(--text-mid); font-size: 0.85rem; display: block; margin-top: 6px;">Profiles and Squads cannot be edited after the fixture grid has been generated. Contact the Head Admin if a manual correction is required.</span>
-          </p>
-        </div>
-      {% else %}
-        <!-- FULL PROFILE EDITOR (Unlocked before season starts OR if Admin wipes squad image) -->
-        <form action="{{ url_for('edit_profile') }}" method="POST" enctype="multipart/form-data" style="margin-top: 15px;">
+          <summary style="cursor: pointer; font-weight: 700; color: #00E5FF; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; list-style: none;">
+            ⚙️ Edit Profile <span style="text-transform: none; color: var(--text-mid); font-size: 0.75rem;">(Gamertag, Team & Squad)</span>
+          </summary>
           
-          {% if fixtures or completed_by_matchday %}
-          <!-- ADMIN UNLOCK NOTICE -->
-          <div style="margin-bottom: 15px; padding: 12px; background: rgba(0, 229, 255, 0.1); border: 1px dashed var(--cyan); border-radius: 8px; text-align: center;">
-            <span style="color: var(--cyan); font-size: 0.85rem; font-weight: 700;">🔓 PROFILE TEMPORARILY UNLOCKED BY ADMIN</span><br>
-            <span style="color: var(--text-mid); font-size: 0.75rem;">You may claim an available team and update your Gamertag. It will permanently lock again once you save.</span>
-          </div>
-          {% endif %}
-
-          <div style="margin-bottom: 15px;">
-            <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">Update Gamertag</label>
-            <input type="text" name="gamertag" value="{{ current_user.name }}" 
-                   style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
-          </div>
-
-          <div style="margin-bottom: 15px;">
-            <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">Official Team (25 Top Clubs)</label>
-            <select name="team" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
-              <option value="{{ current_user.emblem }}" selected>Current: {{ current_user.emblem }}</option>
-              <optgroup label="🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League">
-                  {{ team_option('ARSENAL FC', 'ARSENAL FC') }}
-                  {{ team_option('CHELSEA FC', 'CHELSEA FC') }}
-                  {{ team_option('LIVERPOOL FC', 'LIVERPOOL FC') }}
-                  {{ team_option('MANCHESTER CITY FC', 'MANCHESTER CITY FC') }}
-                  {{ team_option('MANCHESTER UNITED FC', 'MANCHESTER UNITED FC') }}
-              </optgroup>
-              <optgroup label="🇪🇸 La Liga">
-                  {{ team_option('ATLETICO MADRID', 'ATLÉTICO MADRID') }}
-                  {{ team_option('FC BARCELONA', 'FC BARCELONA') }}
-                  {{ team_option('REAL MADRID CF', 'REAL MADRID CF') }}
-                  {{ team_option('SEVILLA FC', 'SEVILLA FC') }}
-                  {{ team_option('VILLARREAL CF', 'VILLARREAL CF') }}
-              </optgroup>
-              <optgroup label="🇮🇹 Serie A">
-                  {{ team_option('AC MILAN', 'AC MILAN') }}
-                  {{ team_option('AS ROMA', 'AS ROMA') }}
-                  {{ team_option('INTER MILAN', 'INTER MILAN') }}
-                  {{ team_option('JUVENTUS FC', 'JUVENTUS FC') }}
-                  {{ team_option('SSC NAPOLI', 'SSC NAPOLI') }}
-              </optgroup>
-              <optgroup label="🇩🇪 Bundesliga">
-                  {{ team_option('BAYER 04 LEVERKUSEN', 'BAYER 04 LEVERKUSEN') }}
-                  {{ team_option('BORUSSIA DORTMUND', 'BORUSSIA DORTMUND') }}
-                  {{ team_option('EINTRACHT FRANKFURT', 'EINTRACHT FRANKFURT') }}
-                  {{ team_option('FC BAYERN MUNICH', 'FC BAYERN MUNICH') }}
-                  {{ team_option('RB LEIPZIG', 'RB LEIPZIG') }}
-              </optgroup>
-              <optgroup label="🇫🇷 Ligue 1">
-                  {{ team_option('AS MONACO', 'AS MONACO') }}
-                  {{ team_option('LOSC LILLE', 'LOSC LILLE') }}
-                  {{ team_option('OLYMPIQUE DE MARSEILLE', 'OLYMPIQUE DE MARSEILLE') }}
-                  {{ team_option('OLYMPIQUE LYONNAIS', 'OLYMPIQUE LYONNAIS') }}
-                  {{ team_option('PARIS SAINT-GERMAIN', 'PARIS SAINT-GERMAIN') }}
-              </optgroup>
-            </select>
-          </div>
-
-          {% if not current_user.squad_img %}
-          <div style="margin-bottom: 20px;">
-            <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">Team Strength / Squad (Screenshot)</label>
-            <input type="file" name="squad_img" accept="image/*" required style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
-            <small style="color: var(--text-mid); display: block; margin-top: 5px;">Upload your active lineup to show your team strength. You can only upload this once!</small>
-          </div>
-          {% endif %}
-
-          <button type="submit" class="btn btn-brand" style="width: 100%; padding: 12px; font-size: 1rem; border-radius: 8px; background: #00E5FF; color: #161D38; font-weight: bold; border: none; cursor: pointer;">
-            Save Profile
-          </button>
-        </form>
-      {% endif %}
-    </details>
-  </div>
-  {% endif %}
-
-      <div class="panel-header">
-        <h2>League Table</h2>
-        <p>Ranked by Points, then Goal Difference.</p>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th width="40">#</th>
-              <th class="left">CLUB / MANAGER</th>
-              <th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GD</th><th>PTS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for user in standings %}
-            <tr class="{% if loop.index == 1 %}rank-1{% endif %}">
-              <td><div class="rank-badge">{{ loop.index }}</div></td>
+          {% if (fixtures or completed_by_matchday) and current_user.squad_img %}
+            <!-- STANDARD ROSTER LOCKED MESSAGE -->
+            <div style="margin-top: 15px; padding: 16px; background: rgba(255, 77, 109, 0.1); border: 1px solid rgba(255, 77, 109, 0.3); border-radius: 8px; text-align: center;">
+              <p style="color: var(--text-hi); font-size: 0.95rem; margin: 0;">
+                🔒 <strong>ROSTER LOCKED</strong><br>
+                <span style="color: var(--text-mid); font-size: 0.85rem; display: block; margin-top: 6px;">Profiles and Squads cannot be edited after the fixture grid has been generated. Contact the Head Admin if a manual correction is required.</span>
+              </p>
+            </div>
+          {% else %}
+            <!-- FULL PROFILE EDITOR (Unlocked before season starts OR if Admin wipes squad image) -->
+            <form action="{{ url_for('edit_profile') }}" method="POST" enctype="multipart/form-data" style="margin-top: 15px;">
               
-              <td class="player-cell">
-                {{ render_crest(user.emblem) }}
-                <div style="display: flex; flex-direction: column; justify-content: center;">
-                  <div style="display: flex; align-items: center; gap: 6px;">
-                    
-                    <!-- 🔴 TWEAK 'min-width: 140px;' FOR DESKTOP SPACING 🔴 -->
-                    <strong class="team-name-text" style="line-height: 1.2; text-transform: uppercase; font-size: 0.80rem; text-align: left; display: block; min-width: 100px; white-space: normal; word-wrap: break-word;">{{ user.emblem }}</strong>
-                    
-                    {% if user.squad_img %}
-                      <span onclick="showSquad('{{ user.squad_img }}')" style="cursor: pointer; display: flex; align-items: center; flex-shrink: 0;" title="View Squad">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#A8B2D1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                      </span>
-                    {% endif %}
-                  </div>
-                  <span class="manager-name-text" style="font-size: 0.65rem; color: var(--text-mid); font-weight: 500; margin-top: 2px;">{{ user.name }}</span>
-                </div>
-              </td>
+              {% if fixtures or completed_by_matchday %}
+              <!-- ADMIN UNLOCK NOTICE -->
+              <div style="margin-bottom: 15px; padding: 12px; background: rgba(0, 229, 255, 0.1); border: 1px dashed var(--cyan); border-radius: 8px; text-align: center;">
+                <span style="color: var(--cyan); font-size: 0.85rem; font-weight: 700;">🔓 PROFILE TEMPORARILY UNLOCKED BY ADMIN</span><br>
+                <span style="color: var(--text-mid); font-size: 0.75rem;">You may claim an available team and update your Gamertag. It will permanently lock again once you save.</span>
+              </div>
+              {% endif %}
 
-              <td>{{ user.played }}</td>
-              <td>{{ user.won }}</td>
-              <td>{{ user.drawn }}</td>
-              <td>{{ user.lost }}</td>
-              <td style="font-weight: 600;">{{ user.goals_for }}</td>
-              <td>{{ user.gd }}</td>
-              <td class="stat-pts">{{ user.points }}</td>
-            </tr>
-            {% else %}
-            <tr><td colspan="10" style="padding: 30px; color: var(--text-low);">No players have joined the league yet.</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
+              <div style="margin-bottom: 15px;">
+                <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">Update Gamertag</label>
+                <input type="text" name="gamertag" value="{{ current_user.name }}" 
+                       style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+              </div>
+
+              <div style="margin-bottom: 15px;">
+                <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">Official Team (25 Top Clubs)</label>
+                <select name="team" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+                  <option value="{{ current_user.emblem }}" selected>Current: {{ current_user.emblem }}</option>
+                  <optgroup label="🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League">
+                      {{ team_option('ARSENAL FC', 'ARSENAL FC') }}
+                      {{ team_option('CHELSEA FC', 'CHELSEA FC') }}
+                      {{ team_option('LIVERPOOL FC', 'LIVERPOOL FC') }}
+                      {{ team_option('MANCHESTER CITY FC', 'MANCHESTER CITY FC') }}
+                      {{ team_option('MANCHESTER UNITED FC', 'MANCHESTER UNITED FC') }}
+                  </optgroup>
+                  <optgroup label="🇪🇸 La Liga">
+                      {{ team_option('ATLETICO MADRID', 'ATLÉTICO MADRID') }}
+                      {{ team_option('FC BARCELONA', 'FC BARCELONA') }}
+                      {{ team_option('REAL MADRID CF', 'REAL MADRID CF') }}
+                      {{ team_option('SEVILLA FC', 'SEVILLA FC') }}
+                      {{ team_option('VILLARREAL CF', 'VILLARREAL CF') }}
+                  </optgroup>
+                  <optgroup label="🇮🇹 Serie A">
+                      {{ team_option('AC MILAN', 'AC MILAN') }}
+                      {{ team_option('AS ROMA', 'AS ROMA') }}
+                      {{ team_option('INTER MILAN', 'INTER MILAN') }}
+                      {{ team_option('JUVENTUS FC', 'JUVENTUS FC') }}
+                      {{ team_option('SSC NAPOLI', 'SSC NAPOLI') }}
+                  </optgroup>
+                  <optgroup label="🇩🇪 Bundesliga">
+                      {{ team_option('BAYER 04 LEVERKUSEN', 'BAYER 04 LEVERKUSEN') }}
+                      {{ team_option('BORUSSIA DORTMUND', 'BORUSSIA DORTMUND') }}
+                      {{ team_option('EINTRACHT FRANKFURT', 'EINTRACHT FRANKFURT') }}
+                      {{ team_option('FC BAYERN MUNICH', 'FC BAYERN MUNICH') }}
+                      {{ team_option('RB LEIPZIG', 'RB LEIPZIG') }}
+                  </optgroup>
+                  <optgroup label="🇫🇷 Ligue 1">
+                      {{ team_option('AS MONACO', 'AS MONACO') }}
+                      {{ team_option('LOSC LILLE', 'LOSC LILLE') }}
+                      {{ team_option('OLYMPIQUE DE MARSEILLE', 'OLYMPIQUE DE MARSEILLE') }}
+                      {{ team_option('OLYMPIQUE LYONNAIS', 'OLYMPIQUE LYONNAIS') }}
+                      {{ team_option('PARIS SAINT-GERMAIN', 'PARIS SAINT-GERMAIN') }}
+                  </optgroup>
+                </select>
+              </div>
+
+              {% if not current_user.squad_img %}
+              <div style="margin-bottom: 20px;">
+                <label style="display: block; color: var(--text-low); margin-bottom: 5px; font-size: 0.85rem;">Team Strength / Squad (Screenshot)</label>
+                <input type="file" name="squad_img" accept="image/*" required style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+                <small style="color: var(--text-mid); display: block; margin-top: 5px;">Upload your active lineup to show your team strength. You can only upload this once!</small>
+              </div>
+              {% endif %}
+
+              <button type="submit" class="btn btn-brand" style="width: 100%; padding: 12px; font-size: 1rem; border-radius: 8px; background: #00E5FF; color: #161D38; font-weight: bold; border: none; cursor: pointer;">
+                Save Profile
+              </button>
+            </form>
+          {% endif %}
+        </details>
+      </div>
+      {% endif %}
+
+      <!-- LEAGUE TABLE WRAPPER FOR SCREENSHOTS -->
+      <div id="capture-league-table" style="background: var(--bg-panel); position: relative;">
+        <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h2>League Table</h2>
+            <p>Ranked by Points, then Goal Difference.</p>
+          </div>
+          {% if current_user.is_authenticated and current_user.role == 'admin' %}
+          <!-- ADMIN ONLY: Share League Table -->
+          <button class="share-btn-table" onclick="shareLeagueTable()" style="background: rgba(0, 229, 255, 0.1); color: var(--cyan); border: 1px solid rgba(0, 229, 255, 0.3); padding: 6px 12px; border-radius: 6px; font-size: 0.70rem; font-weight: 700; cursor: pointer; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            Share
+          </button>
+          {% endif %}
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th width="40">#</th>
+                <th class="left">CLUB / MANAGER</th>
+                <th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GD</th><th>PTS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in standings %}
+              <tr class="{% if loop.index == 1 %}rank-1{% endif %}">
+                <td><div class="rank-badge">{{ loop.index }}</div></td>
+                
+                <td class="player-cell">
+                  {{ render_crest(user.emblem) }}
+                  <div style="display: flex; flex-direction: column; justify-content: center;">
+                    <div style="display: flex; align-items: center; justify-content: flex-start; gap: 6px;">
+                      <strong class="team-name-text" style="font-size: 0.80rem; font-weight: 700; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 100px;">{{ user.emblem }}</strong>
+                      {% if user.squad_img %}
+                        <span onclick="showSquad('{{ user.squad_img }}')" style="cursor: pointer; line-height: 1; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" title="View Squad">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="#A8B2D1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </span>
+                      {% endif %}
+                    </div>
+                    <span class="manager-name-text" style="font-size: 0.65rem; color: var(--text-mid); font-weight: 500; margin-top: 2px;">{{ user.name }}</span>
+                  </div>
+                </td>
+
+                <td>{{ user.played }}</td>
+                <td>{{ user.won }}</td>
+                <td>{{ user.drawn }}</td>
+                <td>{{ user.lost }}</td>
+                <td style="font-weight: 600;">{{ user.goals_for }}</td>
+                <td>{{ user.gd }}</td>
+                <td class="stat-pts">{{ user.points }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="10" style="padding: 30px; color: var(--text-low);">No players have joined the league yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- HIDDEN WATERMARK FOR LEAGUE TABLE (Admins) -->
+        <div id="branding-league-table" style="display: none; padding: 15px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; margin-top: 10px;">
+          <div style="font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; background: var(--grad-brand); -webkit-background-clip: text; color: transparent;">PANIC KEH <span style="color: var(--text-hi); -webkit-text-fill-color: var(--text-hi);">LEAGUE</span></div>
+          <div style="color: var(--text-mid); font-family: var(--font-heading); font-size: 0.8rem; margin-top: 4px; letter-spacing: 0.1em;">EFOOTBALL-LEAGUE-XV5U.ONRENDER.COM</div>
+        </div>
       </div>
     </section>
-    
+
     <aside class="panel side-panel">
       <div class="panel-header">
         <h2>Upcoming Fixtures</h2>
@@ -490,9 +505,10 @@
                 <div style="flex-grow: 1; height: 1px; background: rgba(255, 255, 255, 0.08);"></div>
                 
                 {% if current_user.is_authenticated %}
-                <!-- SHARE BUTTON (Only visible to logged-in players & admins) -->
-                <button class="share-btn-upcoming" onclick="shareUpcoming({{ matchday_num }})" style="background: var(--grad-brand); color: #000; border: none; padding: 4px 12px; border-radius: 6px; font-size: 0.70rem; font-weight: 800; cursor: pointer; text-transform: uppercase; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
-                  📸 Share
+                <!-- SHARE BUTTON -->
+                <button class="share-btn-upcoming" onclick="shareUpcoming({{ matchday_num }})" style="background: rgba(0, 229, 255, 0.05); color: var(--cyan); border: 1px solid rgba(0, 229, 255, 0.3); padding: 4px 10px; border-radius: 6px; font-size: 0.65rem; font-weight: 700; cursor: pointer; text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                  Share
                 </button>
                 {% endif %}
               </div>
@@ -562,125 +578,129 @@
     </aside>
 
     <div class="panel" style="margin-bottom: 20px; grid-column: 1 / -1;">
-    <div class="panel-header">
-      <h2>Recent Results</h2>
-      <p>Match results categorized by matchday cycle.</p>
-    </div>
+      <div class="panel-header">
+        <h2>Recent Results</h2>
+        <p>Match results categorized by matchday cycle.</p>
+      </div>
 
-    <div style="padding: 16px 24px;">
-      <div style="max-height: 380px; overflow-y: auto; padding-right: 8px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="padding: 12px 8px;">
+        <div style="max-height: 380px; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 10px;">
 
-      {% if completed_by_matchday %}
-        {% for group in completed_by_matchday %}
-          <!-- CAPTURE WRAPPER FOR FULL MATCHDAY (Admins) -->
-          <div id="capture-md-{{ group.matchday }}" style="background: var(--bg-panel); padding: 15px; border-radius: 12px; margin: 10px 0 15px 0; position: relative;">
-            
-            <div style="margin: 0 0 12px 0; display: flex; align-items: center; gap: 12px;">
-              <div style="font-family: var(--font-heading); font-size: 0.90rem; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.08em; background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.3); padding: 4px 14px 4px 12px; border-radius: 6px; display: inline-block; min-width: max-content; box-sizing: border-box; white-space: nowrap;">
-                Matchday {{ group.matchday }}
-              </div>
-              <div style="flex-grow: 1; height: 1px; background: rgba(255, 255, 255, 0.08);"></div>
+        {% if completed_by_matchday %}
+          {% for group in completed_by_matchday %}
+            <!-- CAPTURE WRAPPER FOR FULL MATCHDAY (Admins) -->
+            <div id="capture-md-{{ group.matchday }}" style="background: var(--bg-panel); padding: 12px 8px; border-radius: 12px; margin: 5px 0 10px 0; position: relative;">
               
-              {% if current_user.is_authenticated and current_user.role == 'admin' %}
-              <!-- ADMIN ONLY: Share Full Matchday -->
-              <button class="share-btn" onclick="shareMatchday({{ group.matchday }})" style="background: var(--grad-brand); color: #000; border: none; padding: 4px 12px; border-radius: 6px; font-size: 0.70rem; font-weight: 800; cursor: pointer; text-transform: uppercase; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
-                📸 Share MD{{ group.matchday }}
-              </button>
-              {% endif %}
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-            {% for match in group.matches %}
-              <!-- CAPTURE WRAPPER FOR SINGLE MATCH (Players) -->
-              <div id="capture-single-{{ match.id }}" style="background: rgba(255,255,255,0.05); padding: 12px 10px; border-radius: 8px; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.05); gap: 8px;">
+              <div style="margin: 0 0 12px 0; display: flex; align-items: center; gap: 10px;">
+                <div style="font-family: var(--font-heading); font-size: 0.85rem; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.08em; background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.3); padding: 4px 14px 4px 12px; border-radius: 6px; display: inline-block; min-width: max-content; box-sizing: border-box; white-space: nowrap;">
+                  Matchday {{ group.matchday }}
+                </div>
+                <div style="flex-grow: 1; height: 1px; background: rgba(255, 255, 255, 0.08);"></div>
                 
-                <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px;">
+                {% if current_user.is_authenticated and current_user.role == 'admin' %}
+                <!-- ADMIN ONLY: Share Full Matchday -->
+                <button class="share-btn" onclick="shareMatchday({{ group.matchday }})" style="background: rgba(0, 229, 255, 0.05); color: var(--cyan); border: 1px solid rgba(0, 229, 255, 0.3); padding: 4px 10px; border-radius: 6px; font-size: 0.65rem; font-weight: 700; cursor: pointer; text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                  Share MD{{ group.matchday }}
+                </button>
+                {% endif %}
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+              {% for match in group.matches %}
+                <!-- CAPTURE WRAPPER FOR SINGLE MATCH (Players) -->
+                <div id="capture-single-{{ match.id }}" style="background: rgba(255,255,255,0.05); padding: 10px 6px; border-radius: 8px; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.05); gap: 8px;">
                   
-                  <!-- Home Team (Left) -->
-                  <div style="display: flex; align-items: center; justify-content: flex-start; gap: 8px; min-width: 0; overflow: hidden;">
-                    {{ render_crest(match.player_a.emblem) }}
-                    <div style="min-width: 0; text-align: left; display: flex; flex-direction: column; flex: 1;">
-                      <div style="display: flex; align-items: center; justify-content: flex-start; gap: 4px;">
-                        <div style="font-weight: 700; color: var(--text-hi); font-size: 0.85rem; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_a.emblem }}</div>
-                        {% if match.player_a.squad_img %}
-                          <span onclick="showSquad('{{ match.player_a.squad_img }}')" style="cursor: pointer; line-height: 1; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" title="View Squad">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#A8B2D1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                          </span>
-                        {% endif %}
+                  <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 4px;">
+                    
+                    <!-- Home Team (Left) -->
+                    <div style="display: flex; align-items: center; justify-content: flex-start; gap: 6px; min-width: 0; overflow: hidden;">
+                      {{ render_crest(match.player_a.emblem) }}
+                      <div style="min-width: 0; text-align: left; display: flex; flex-direction: column; flex: 1;">
+                        <div style="display: flex; align-items: center; justify-content: flex-start; gap: 4px;">
+                          <div style="font-weight: 700; color: var(--text-hi); font-size: 0.80rem; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_a.emblem }}</div>
+                          {% if match.player_a.squad_img %}
+                            <span onclick="showSquad('{{ match.player_a.squad_img }}')" style="cursor: pointer; line-height: 1; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" title="View Squad">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="#A8B2D1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </span>
+                          {% endif %}
+                        </div>
+                        <div style="font-size: 0.65rem; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_a.name }}</div>
                       </div>
-                      <div style="font-size: 0.70rem; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_a.name }}</div>
                     </div>
+                    
+                    <!-- Score / Walkover (Center) -->
+                    <div style="text-align: center; padding: 0 2px;">
+                      {% if match.status == 'voided' %}
+                        <span style="background: var(--red); color: white; font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; font-weight: bold; display: inline-block;">VOID</span>
+                      {% elif match.status == 'approved' and not match.screenshot_path %}
+                        <span style="background: var(--violet); color: white; font-size: 0.60rem; padding: 3px 6px; border-radius: 4px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.05em; display: inline-block; line-height: 1.2;">WALKOVER<br><span style="font-size:0.95rem;">{{ match.score_a }} - {{ match.score_b }}</span></span>
+                      {% else %}
+                        <span style="font-size: 1.1rem; font-weight: 900; color: #00E5FF; text-shadow: 0 0 5px rgba(0,229,255,0.3); white-space: nowrap; background: rgba(0,0,0,0.25); padding: 3px 8px; border-radius: 6px; display: inline-block;">{{ match.score_a }} - {{ match.score_b }}</span>
+                      {% endif %}
+                    </div>
+                    
+                    <!-- Away Team (Right) -->
+                    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; min-width: 0; overflow: hidden;">
+                      <div style="min-width: 0; text-align: right; display: flex; flex-direction: column; flex: 1; align-items: flex-end;">
+                        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 4px; max-width: 100%;">
+                          {% if match.player_b.squad_img %}
+                            <span onclick="showSquad('{{ match.player_b.squad_img }}')" style="cursor: pointer; line-height: 1; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" title="View Squad">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="#A8B2D1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </span>
+                          {% endif %}
+                          <div style="font-weight: 700; color: var(--text-hi); font-size: 0.80rem; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_b.emblem }}</div>
+                        </div>
+                        <div style="font-size: 0.65rem; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">{{ match.player_b.name }}</div>
+                      </div>
+                      {{ render_crest(match.player_b.emblem) }}
+                    </div>
+                    
                   </div>
-                  
-                  <!-- Score / Walkover (Center) -->
-                  <div style="text-align: center; padding: 0 4px;">
-                    {% if match.status == 'voided' %}
-                      <span style="background: var(--red); color: white; font-size: 0.75rem; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; font-weight: bold; display: inline-block;">VOID</span>
-                    {% elif match.status == 'approved' and not match.screenshot_path %}
-                      <span style="background: var(--violet); color: white; font-size: 0.65rem; padding: 4px 6px; border-radius: 4px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.05em; display: inline-block; line-height: 1.2;">WALKOVER<br><span style="font-size:1.05rem;">{{ match.score_a }} - {{ match.score_b }}</span></span>
-                    {% else %}
-                      <span style="font-size: 1.25rem; font-weight: 900; color: #00E5FF; text-shadow: 0 0 5px rgba(0,229,255,0.3); white-space: nowrap; background: rgba(0,0,0,0.25); padding: 4px 10px; border-radius: 6px; display: inline-block;">{{ match.score_a }} - {{ match.score_b }}</span>
+
+                  <div class="evidence-links" style="display: flex; justify-content: center; gap: 8px;">
+                    {% if match.screenshot_path %}
+                      {% for img_url in match.screenshot_path.split(',') %}
+                        {% if img_url.strip() %}
+                          <a href="{{ img_url.strip() }}" target="_blank" style="padding: 2px 8px; background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 4px; color: var(--cyan); text-decoration: none; font-size: 0.60rem; font-weight: 600;">Evidence {{ loop.index }} 📸</a>
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                    
+                    {% if current_user.is_authenticated and (current_user.id == match.player_a_id or current_user.id == match.player_b_id) %}
+                    <!-- PLAYER ONLY: Share Personal Match Result -->
+                    <button class="share-btn-single" onclick="shareSingleMatch({{ match.id }})" style="background: rgba(255, 46, 154, 0.05); color: var(--magenta); border: 1px solid rgba(255, 46, 154, 0.3); padding: 3px 8px; border-radius: 4px; font-size: 0.60rem; font-weight: 700; cursor: pointer; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px;">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 10px; height: 10px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                      Share Result
+                    </button>
                     {% endif %}
                   </div>
-                  
-                  <!-- Away Team (Right) -->
-                  <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; overflow: hidden;">
-                    <div style="min-width: 0; text-align: right; display: flex; flex-direction: column; flex: 1; align-items: flex-end;">
-                      <div style="display: flex; align-items: center; justify-content: flex-end; gap: 4px; max-width: 100%;">
-                        {% if match.player_b.squad_img %}
-                          <span onclick="showSquad('{{ match.player_b.squad_img }}')" style="cursor: pointer; line-height: 1; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;" title="View Squad">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#A8B2D1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                          </span>
-                        {% endif %}
-                        <div style="font-weight: 700; color: var(--text-hi); font-size: 0.85rem; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_b.emblem }}</div>
-                      </div>
-                      <div style="font-size: 0.70rem; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">{{ match.player_b.name }}</div>
-                    </div>
-                    {{ render_crest(match.player_b.emblem) }}
+
+                  <!-- HIDDEN WATERMARK FOR SINGLE MATCH (Players) -->
+                  <div id="branding-single-{{ match.id }}" style="display: none; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center;">
+                    <div style="font-family: var(--font-display); font-weight: 800; font-size: 0.9rem; background: var(--grad-brand); -webkit-background-clip: text; color: transparent;">PANIC KEH <span style="color: var(--text-hi); -webkit-text-fill-color: var(--text-hi);">LEAGUE</span></div>
                   </div>
-                  
-                </div>
 
-                <div class="evidence-links" style="display: flex; justify-content: center; gap: 8px;">
-                  {% if match.screenshot_path %}
-                    {% for img_url in match.screenshot_path.split(',') %}
-                      {% if img_url.strip() %}
-                        <a href="{{ img_url.strip() }}" target="_blank" style="padding: 2px 8px; background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 4px; color: var(--cyan); text-decoration: none; font-size: 0.65rem; font-weight: 600;">Evidence {{ loop.index }} 📸</a>
-                      {% endif %}
-                    {% endfor %}
-                  {% endif %}
-                  
-                  {% if current_user.is_authenticated and (current_user.id == match.player_a_id or current_user.id == match.player_b_id) %}
-                  <!-- PLAYER ONLY: Share Personal Match Result -->
-                  <button class="share-btn-single" onclick="shareSingleMatch({{ match.id }})" style="padding: 2px 8px; background: rgba(255, 46, 154, 0.1); border: 1px solid rgba(255, 46, 154, 0.4); border-radius: 4px; color: var(--magenta); font-size: 0.65rem; font-weight: 800; cursor: pointer; text-transform: uppercase;">📸 Share Result</button>
-                  {% endif %}
                 </div>
-
-                <!-- HIDDEN WATERMARK FOR SINGLE MATCH (Players) -->
-                <div id="branding-single-{{ match.id }}" style="display: none; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center;">
-                  <div style="font-family: var(--font-display); font-weight: 800; font-size: 0.9rem; background: var(--grad-brand); -webkit-background-clip: text; color: transparent;">PANIC KEH <span style="color: var(--text-hi); -webkit-text-fill-color: var(--text-hi);">LEAGUE</span></div>
-                </div>
-
+              {% endfor %}
               </div>
-            {% endfor %}
-            </div>
 
-            <!-- HIDDEN WATERMARK FOR FULL MATCHDAY (Admins) -->
-            <div id="branding-md-{{ group.matchday }}" style="display: none; margin-top: 15px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center;">
-              <div style="font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; background: var(--grad-brand); -webkit-background-clip: text; color: transparent;">PANIC KEH <span style="color: var(--text-hi); -webkit-text-fill-color: var(--text-hi);">LEAGUE</span></div>
-              <div style="color: var(--text-mid); font-family: var(--font-heading); font-size: 0.8rem; margin-top: 4px; letter-spacing: 0.1em;">EFOOTBALL-LEAGUE-XV5U.ONRENDER.COM</div>
-            </div>
+              <!-- HIDDEN WATERMARK FOR FULL MATCHDAY (Admins) -->
+              <div id="branding-md-{{ group.matchday }}" style="display: none; margin-top: 15px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center;">
+                <div style="font-family: var(--font-display); font-weight: 800; font-size: 1.2rem; background: var(--grad-brand); -webkit-background-clip: text; color: transparent;">PANIC KEH <span style="color: var(--text-hi); -webkit-text-fill-color: var(--text-hi);">LEAGUE</span></div>
+                <div style="color: var(--text-mid); font-family: var(--font-heading); font-size: 0.8rem; margin-top: 4px; letter-spacing: 0.1em;">EFOOTBALL-LEAGUE-XV5U.ONRENDER.COM</div>
+              </div>
 
+            </div>
+          {% endfor %}
+        {% else %}
+          <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 8px; text-align: center; border: 1px dashed rgba(255,255,255,0.1);">
+             <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem; margin: 0;">No matches have been completed yet.<br>The pitch is waiting!</p>
           </div>
-        {% endfor %}
-      {% else %}
-        <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 8px; text-align: center; border: 1px dashed rgba(255,255,255,0.1);">
-           <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem; margin: 0;">No matches have been completed yet.<br>The pitch is waiting!</p>
+        {% endif %} 
         </div>
-      {% endif %} 
-      </div>
-    </div> 
-  </div>
+      </div> 
+    </div>
 
     <section class="panel" style="grid-column: 1 / -1; margin-top: 10px;">
       <div class="panel-header">
@@ -915,32 +935,63 @@
   <!-- HTML-TO-IMAGE SCRIPT (Converts to SVG first to perfectly preserve all logos and gradients) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
   <script>
+    function shareLeagueTable() {
+      const container = document.getElementById('capture-league-table');
+      const branding = document.getElementById('branding-league-table');
+      const shareBtn = container.querySelector('.share-btn-table');
+      const eyes = container.querySelectorAll('span[title="View Squad"]');
+      
+      const originalWidth = container.style.width;
+      
+      shareBtn.style.display = 'none';
+      eyes.forEach(eye => eye.style.display = 'none');
+      branding.style.display = 'block';
+      
+      container.style.width = '800px';
+      
+      htmlToImage.toPng(container, { backgroundColor: '#10162C', pixelRatio: 2 })
+        .then(function (dataUrl) {
+          container.style.width = originalWidth;
+          shareBtn.style.display = 'inline-flex';
+          eyes.forEach(eye => eye.style.display = 'inline-flex');
+          branding.style.display = 'none';
+          
+          const link = document.createElement('a');
+          link.download = 'PanicKeh_League_Table.png';
+          link.href = dataUrl;
+          link.click();
+        })
+        .catch(function (error) {
+          console.error("Screenshot failed:", error);
+          container.style.width = originalWidth;
+        });
+    }
+
     function shareMatchday(matchdayNum) {
       const container = document.getElementById('capture-md-' + matchdayNum);
       const branding = document.getElementById('branding-md-' + matchdayNum);
       const shareBtn = container.querySelector('.share-btn');
       const singleBtns = container.querySelectorAll('.share-btn-single');
       const evidenceLinks = container.querySelectorAll('.evidence-links a');
-      const eyes = container.querySelectorAll('span[title="View Squad"]'); // Target eye icons
+      const eyes = container.querySelectorAll('span[title="View Squad"]');
       
       const originalWidth = container.style.width;
       
       shareBtn.style.display = 'none';
       singleBtns.forEach(btn => btn.style.display = 'none');
       evidenceLinks.forEach(link => link.style.display = 'none'); 
-      eyes.forEach(eye => eye.style.display = 'none'); // Hide eyes
+      eyes.forEach(eye => eye.style.display = 'none');
       branding.style.display = 'block';
       
-      // Increased to 800px to prevent team names from squishing/overlapping
       container.style.width = '800px';
       
       htmlToImage.toPng(container, { backgroundColor: '#10162C', pixelRatio: 2 })
         .then(function (dataUrl) {
           container.style.width = originalWidth;
-          shareBtn.style.display = 'block';
-          singleBtns.forEach(btn => btn.style.display = 'inline-block');
+          shareBtn.style.display = 'inline-flex';
+          singleBtns.forEach(btn => btn.style.display = 'inline-flex');
           evidenceLinks.forEach(link => link.style.display = 'inline-block');
-          eyes.forEach(eye => eye.style.display = ''); // Restore eyes
+          eyes.forEach(eye => eye.style.display = 'inline-flex');
           branding.style.display = 'none';
           
           const link = document.createElement('a');
@@ -958,22 +1009,21 @@
       const container = document.getElementById('capture-upcoming-' + matchdayNum);
       const branding = document.getElementById('branding-upcoming-' + matchdayNum);
       const shareBtn = container.querySelector('.share-btn-upcoming');
-      const eyes = container.querySelectorAll('span[title="View Squad"]'); // Target eye icons
+      const eyes = container.querySelectorAll('span[title="View Squad"]');
       
       const originalWidth = container.style.width;
       
       shareBtn.style.display = 'none';
-      eyes.forEach(eye => eye.style.display = 'none'); // Hide eyes
+      eyes.forEach(eye => eye.style.display = 'none');
       branding.style.display = 'block';
       
-      // Increased to 800px to prevent team names from squishing/overlapping
       container.style.width = '800px';
       
       htmlToImage.toPng(container, { backgroundColor: '#10162C', pixelRatio: 2 })
         .then(function (dataUrl) {
           container.style.width = originalWidth;
-          shareBtn.style.display = 'block';
-          eyes.forEach(eye => eye.style.display = ''); // Restore eyes
+          shareBtn.style.display = 'inline-flex';
+          eyes.forEach(eye => eye.style.display = 'inline-flex');
           branding.style.display = 'none';
           
           const link = document.createElement('a');
@@ -992,24 +1042,23 @@
       const branding = document.getElementById('branding-single-' + matchId);
       const shareBtns = container.querySelectorAll('.share-btn-single');
       const evidenceLinks = container.querySelectorAll('.evidence-links a');
-      const eyes = container.querySelectorAll('span[title="View Squad"]'); // Target eye icons
+      const eyes = container.querySelectorAll('span[title="View Squad"]');
       
       const originalWidth = container.style.width;
       
       shareBtns.forEach(btn => btn.style.display = 'none');
       evidenceLinks.forEach(link => link.style.display = 'none');
-      eyes.forEach(eye => eye.style.display = 'none'); // Hide eyes
+      eyes.forEach(eye => eye.style.display = 'none');
       branding.style.display = 'block';
       
-      // Increased to 800px to prevent team names from squishing/overlapping
       container.style.width = '800px';
       
       htmlToImage.toPng(container, { backgroundColor: '#161D38', pixelRatio: 2 })
         .then(function (dataUrl) {
           container.style.width = originalWidth;
-          shareBtns.forEach(btn => btn.style.display = 'inline-block');
+          shareBtns.forEach(btn => btn.style.display = 'inline-flex');
           evidenceLinks.forEach(link => link.style.display = 'inline-block');
-          eyes.forEach(eye => eye.style.display = ''); // Restore eyes
+          eyes.forEach(eye => eye.style.display = 'inline-flex');
           branding.style.display = 'none';
           
           const link = document.createElement('a');
