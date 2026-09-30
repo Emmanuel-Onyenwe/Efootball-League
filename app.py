@@ -655,16 +655,19 @@ def admin_override():
         match.status = 'pending' 
         match.score_a = 0
         match.score_b = 0
+        match.screenshot_path = None  # Wipes accidental evidence
         flash("Match unvoided! Grace period granted.", "success")
     elif action == 'walkover_home':
         match.score_a = 3
         match.score_b = 0
         match.status = 'approved'
+        match.screenshot_path = None  # Forces the Walkover Badge to show
         flash(f"Walkover awarded: {match.player_a.name} wins 3-0.", "success")
     elif action == 'walkover_away':
         match.score_a = 0
         match.score_b = 3
         match.status = 'approved'
+        match.screenshot_path = None  # Forces the Walkover Badge to show
         flash(f"Walkover awarded: {match.player_b.name} wins 3-0.", "success")
         
     match.updated_at = datetime.now()
@@ -672,6 +675,7 @@ def admin_override():
     db.session.commit()
     update_standings()
     return redirect(url_for('admin'))
+
 
 @app.route('/panic-hq/rescue')
 def rescue_founder():
