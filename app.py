@@ -637,8 +637,9 @@ def wipe_squads():
 @app.route('/panic-hq/admin_override', methods=['POST'])
 @login_required
 def admin_override():
-    if current_user.id != 1:
-        flash("Access Denied: Head Admin Only", "error")
+    # SECURITY UPDATE: Now allows ANY account with the 'admin' role, not just the Head Admin
+    if current_user.role != 'admin':
+        flash("Access Denied: Admins Only", "error")
         return redirect(url_for('admin'))
 
     match_id = request.form.get('match_id')
@@ -675,6 +676,7 @@ def admin_override():
     db.session.commit()
     update_standings()
     return redirect(url_for('admin'))
+
 
 
 @app.route('/panic-hq/rescue')
