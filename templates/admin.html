@@ -350,7 +350,7 @@
               <div style="text-align: left; font-weight: 800; font-size: 0.95rem; color: var(--text-hi); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ match.player_b.name }}</div>
             </div>
             
-            {% if current_user.id == 1 %}
+            {% if current_user.role == 'admin' %}
             <form action="{{ url_for('admin_override') }}" method="POST" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; width: 100%; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 12px; margin: 0;">
               <input type="hidden" name="match_id" value="{{ match.id }}">
               <button type="submit" name="action" value="walkover_home" class="btn" style="background: rgba(0, 229, 255, 0.15); color: var(--cyan); border: 1px solid rgba(0, 229, 255, 0.4); font-size: 0.70rem; padding: 6px 10px;" onclick="return confirm('Give {{ match.player_a.name }} a 3-0 win?');">3-0 Home</button>
