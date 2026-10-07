@@ -204,14 +204,16 @@
               </div>
 
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
-                {% if user.role == 'player' %}
-                    <form action="{{ url_for('promote_player', user_id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to promote {{ user.name }} to Co-Admin?');">
-                      <button type="submit" style="background: var(--violet); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: bold; text-transform: uppercase;">Promote</button>
-                    </form>
-                  {% elif user.role == 'admin' and user.id != 1 %}
-                    <form action="{{ url_for('demote_player', user_id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to strip {{ user.name }} of their admin rights?');">
-                      <button type="submit" style="background: var(--red); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: bold; text-transform: uppercase;">Demote</button>
-                    </form>
+                {% if current_user.id == 1 %}
+                    {% if user.role == 'player' %}
+                      <form action="{{ url_for('promote_player', user_id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to promote {{ user.name }} to Co-Admin?');">
+                        <button type="submit" style="background: var(--violet); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: bold; text-transform: uppercase;">Promote</button>
+                      </form>
+                    {% elif user.role == 'admin' and user.id != 1 %}
+                      <form action="{{ url_for('demote_player', user_id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to strip {{ user.name }} of their admin rights?');">
+                        <button type="submit" style="background: var(--red); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: bold; text-transform: uppercase;">Demote</button>
+                      </form>
+                    {% endif %}
                   {% endif %}
                 
                 {% if user.id != current_user.id and user.id != 1 %}
