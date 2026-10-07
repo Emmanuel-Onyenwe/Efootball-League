@@ -461,25 +461,33 @@ def approve_player(user_id):
 @app.route('/panic-hq/promote/<int:user_id>', methods=['POST'])
 @login_required
 def promote_player(user_id):
-    if current_user.role == 'admin':
-        user = User.query.get_or_404(user_id)
-        user.role = 'admin'
-        db.session.commit()
-        flash(f"{user.name} is now a Co-Admin!", "success")
+    # STRICT SECURITY: Only Head Admin (ID 1) can promote
+    if current_user.id != 1:
+        flash("Access Denied: Only the Head Admin can promote players.", "error")
+        return redirect(url_for('admin'))
+        
+    user = User.query.get_or_404(user_id)
+    user.role = 'admin'
+    db.session.commit()
+    flash(f"{user.name} is now a Co-Admin!", "success")
     return redirect(url_for('admin'))
 
 @app.route('/panic-hq/demote/<int:user_id>', methods=['POST'])
 @login_required
 def demote_player(user_id):
-    if current_user.role == 'admin':
-        if user_id == 1:
-            flash("Action Denied: The Head Admin cannot be demoted.", "error")
-            return redirect(url_for('admin'))
-            
-        user = User.query.get_or_404(user_id)
-        user.role = 'player'
-        db.session.commit()
-        flash(f"{user.name} has been demoted back to a standard player.", "success")
+    # STRICT SECURITY: Only Head Admin (ID 1) can demote
+    if current_user.id != 1:
+        flash("Access Denied: Only the Head Admin can demote admins.", "error")
+        return redirect(url_for('admin'))
+        
+    if user_id == 1:
+        flash("Action Denied: The Head Admin cannot be demoted.", "error")
+        return redirect(url_for('admin'))
+        
+    user = User.query.get_or_404(user_id)
+    user.role = 'player'
+    db.session.commit()
+    flash(f"{user.name} has been demoted back to a standard player.", "success")
     return redirect(url_for('admin'))
     
 @app.route('/panic-hq/generate_fixtures', methods=['POST'])
