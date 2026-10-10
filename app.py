@@ -938,7 +938,18 @@ with app.app_context():
         db.session.commit()
     except Exception:
         db.session.rollback()
-     
+
+@app.route('/panic-hq/reactivate/<int:user_id>', methods=['POST'])
+@login_required
+def reactivate_player(user_id):
+    if current_user.role == 'admin':
+        user = User.query.get_or_404(user_id)
+        user.in_league = True
+        user.status = 'active'
+        db.session.commit()
+        flash(f"{user.name} has been pulled back into the Active Roster!", "success")
+    return redirect(url_for('admin'))
+    
 @app.route('/panic-hq/purge')
 @login_required
 def purge_everything():
