@@ -209,12 +209,6 @@
                       <form action="{{ url_for('promote_player', user_id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to promote {{ user.name }} to Co-Admin?');">
                         <button type="submit" style="background: var(--violet); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: bold; text-transform: uppercase;">Promote</button>
                       </form>
-                    {% elif user.role == 'admin' and user.id != 1 %}
-                      <form action="{{ url_for('demote_player', user_id=user.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to strip {{ user.name }} of their admin rights?');">
-                        <button type="submit" style="background: var(--red); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: bold; text-transform: uppercase;">Demote</button>
-                      </form>
-                    {% endif %}
-                  {% endif %}
                 
                 {% if user.id != current_user.id and user.id != 1 %}
                 <form action="{{ url_for('eliminate_player', user_id=user.id) }}" method="POST" style="margin:0;" onsubmit="return confirm('Remove this player from the league?');">
@@ -271,16 +265,28 @@
                 </div>
               </div>
 
-              <div style="display: flex; gap: 10px; align-items: center;">
-                {% if user.id != current_user.id and user.id != 1 %}
-                <form action="{{ url_for('delete_player', user_id=user.id) }}" method="POST" style="margin:0;" onsubmit="return confirm('DANGER: Permanently delete {{ user.name }} from the database? This cannot be undone.');">
-                  <button type="submit" class="btn btn-red" style="padding: 6px 12px; font-size: 0.75rem;">Delete</button>
-                </form>
-                {% else %}
-                  <span style="color: var(--green); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; background: rgba(51, 230, 160, 0.1); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(51, 230, 160, 0.3);">Protected</span>
-                {% endif %}
-              </div>
-            </div>
+                            <!-- USER DIRECTORY ACTIONS -->
+              <td>
+                <div style="display: flex; gap: 8px; justify-content: center;">
+                  {% if not user.in_league %}
+                  <!-- REACTIVATE BUTTON (For Dormant Veterans) -->
+                  <form action="{{ url_for('reactivate_player', user_id=user.id) }}" method="POST" style="margin:0;">
+                    <button type="submit" style="background: var(--cyan); color: #000; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.70rem; font-weight: 800; cursor: pointer; text-transform: uppercase;">
+                      Reactivate
+                    </button>
+                  </form>
+                  {% endif %}
+                  
+                  <!-- DELETE BUTTON -->
+                  {% if current_user.id == 1 and user.id != 1 %}
+                  <form action="{{ url_for('delete_player', user_id=user.id) }}" method="POST" style="margin:0;" onsubmit="return confirm('WARNING: This will permanently delete {{ user.name }}. Are you sure?');">
+                    <button type="submit" style="background: var(--red); color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.70rem; font-weight: 800; cursor: pointer; text-transform: uppercase;">
+                      Delete
+                    </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </td>
           {% endfor %}
         {% else %}
           <p style="color: var(--text-low); font-style: italic;">No users found in the database.</p>
