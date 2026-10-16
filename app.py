@@ -846,19 +846,34 @@ def eliminate_player(user_id):
         user = User.query.get_or_404(user_id)
         
         user.in_league = False
-        user.status = 'active' 
+        user.status = 'dormant' 
         
+        # Find all pending matches belonging to this eliminated user
         unplayed_matches = Match.query.filter(
             (Match.status == 'pending') & 
             ((Match.player_a_id == user.id) | (Match.player_b_id == user.id))
         ).all()
+        
+        # Automatically convert remaining matches into 3-0 walkovers for their opponents
         for m in unplayed_matches:
-            db.session.delete(m)
+            if m.player_a_id == user.id:
+                # Eliminated user was Player A -> Player B wins 3-0
+                m.score_a = 0
+                m.score_b = 3
+            else:
+                # Eliminated user was Player B -> Player A wins 3-0
+                m.score_a = 3
+                m.score_b = 0
+                
+            m.status = 'approved'
+            m.updated_at = datetime.now()
             
         db.session.commit()
-        flash(f"{user.name} removed from the active roster and sent back to the waiting room.", "success")
+        update_standings()
+        
+        flash(f"{user.name} has been eliminated. Their remaining pending matches were automatically awarded as 3-0 walkovers to their opponents.", "success")
     return redirect(url_for('admin'))
-
+            
 @app.route('/edit_profile', methods=['POST'])
 @login_required
 def edit_profile():
