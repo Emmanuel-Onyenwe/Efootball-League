@@ -493,12 +493,15 @@ def generate_fixtures():
     return sync_matchdays()
 
 FIRST_OPEN_MATCHDAY = 6
+OPEN_STATUSES = ('pending', 'submitted')
+
 
 def get_matchday_deadline(matchday_num):
     anchor = datetime.strptime(os.environ.get('MD6_START', '2026-10-19'), '%Y-%m-%d')
     anchor -= timedelta(days=anchor.weekday())
     weeks, day = divmod(max(int(matchday_num or 0), FIRST_OPEN_MATCHDAY) - FIRST_OPEN_MATCHDAY, 5)
     return (anchor + timedelta(weeks=weeks, days=day)).replace(hour=23, minute=59, second=59, microsecond=0)
+
 
 @app.route('/panic-hq/sync-matchdays', methods=['POST'])
 @login_required
