@@ -491,6 +491,7 @@ def demote_player(user_id):
 @login_required
 def generate_fixtures():
     return sync_matchdays()
+
 def get_matchday_deadline(matchday_num):
     today = datetime.now()
     # Find the upcoming Monday
@@ -500,8 +501,12 @@ def get_matchday_deadline(matchday_num):
     next_monday = today + timedelta(days=days_until_monday)
     next_monday = next_monday.replace(hour=0, minute=0, second=0, microsecond=0)
     
+    # If it's Matchday 1-5 (catch-up matches), map them to Matchday 6's window 
+    # so they never show "Deadline Passed" for players still catching up.
+    effective_matchday = max(6, matchday_num)
+    
     # Matchday 6 maps to Friday of next week (4 days after Monday)
-    days_offset = ((matchday_num - 6) * 7) + 4
+    days_offset = ((effective_matchday - 6) * 7) + 4
     
     deadline = next_monday + timedelta(days=days_offset)
     return deadline.replace(hour=23, minute=59, second=0)
