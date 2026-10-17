@@ -1016,7 +1016,43 @@ def purge_everything():
     except Exception as e:
         db.session.rollback()
         return f"Purge failed: {e}", 500
-        
+@app.route('/panic-hq/diagnose-schedule')
+@login_required
+def diagnose_schedule():
+    if current_user.role != 'admin':
+        return "Access Denied", 403
+
+    matches = Match.query.all()
+    names = {u.id: u.name for u in User.query.all()}
+    players = {pid for m in matches for pid in (m.player_a_id, m.player_b_id)}
+    n = len(players)
+
+    by_md, pair_count = {}, {}
+    for m in matches:
+        by_md.setdefault(m.matchday or 0, []).append(m)
+        key = frozenset((m.player_a_id, m.player_b_id))
+        pair_count[key] = pair_count.get(key, 0) + 1
+
+    out = [f"Players seen in matches: {n} | matches in DB: {len(matches)} | expected: {n * (n - 1)}", ""]
+    for md in sorted(by_md):
+        ms = by_md[md]
+        status = {}
+        for m in ms:
+            status[m.status] = status.get(m.status, 0) + 1
+        idle = sorted(names.get(p, p) for p in players - {pid for m in ms for pid in (m.player_a_id, m.player_b_id)})
+        out.append(f"MD{md}: {len(ms)} matches {status}" + (f" | no game: {idle}" if idle else ""))
+
+    odd = [(sorted(names.get(p, p) for p in k), c) for k, c in pair_count.items() if c != 2]
+    missing = [(sorted(names.get(p, p) for p in frozenset(a) | frozenset(b)), 0)
+               for a, b in itertools.combinations(sorted(players), 2)
+               if frozenset((a, b)) not in pair_count] if False else []
+    out += ["", "Pairs without exactly 2 matches:"] + [f"{p} -> {c}" for p, c in odd]
+    absent = [sorted((names.get(a, a), names.get(b, b)))
+              for a, b in itertools.combinations(sorted(players), 2)
+              if frozenset((a, b)) not in pair_count]
+    out += ["Pairs with 0 matches:"] + [str(p) for p in absent]
+    return "<pre>" + "\n".join(map(str, out)) + "</pre>"
+    
 @app.route('/api/cron/deadline-reminders')
 def cron_deadline_reminders():
     now = datetime.now()
