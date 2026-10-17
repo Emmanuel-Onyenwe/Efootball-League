@@ -503,11 +503,9 @@ def get_matchday_deadline(matchday_num):
     next_monday = today + timedelta(days=days_until_monday)
     next_monday = next_monday.replace(hour=0, minute=0, second=0, microsecond=0)
     
-    # Matchday 6 maps to Friday of next week (4 days after Monday)
-    # Every subsequent matchday adds exactly 7 days (1 week)
-    days_offset = ((matchday_num - 6) * 7) + 4
-    
-    deadline = next_monday + timedelta(days=days_offset)
+    # All pending fixtures share next Friday's deadline (4 days after Monday) 
+    # so players can freely play any pending match without being locked out.
+    deadline = next_monday + timedelta(days=4)
     return deadline.replace(hour=23, minute=59, second=0)
 
 
@@ -521,16 +519,15 @@ def sync_matchdays():
     all_matches = Match.query.all()
     updated = 0
 
-    # Non-destructive sync: Only update deadlines for pending matches based on their exact matchday number
+    # Refresh deadlines for all pending matches cleanly
     for m in all_matches:
         if m.status == 'pending':
             m.deadline = get_matchday_deadline(m.matchday)
             updated += 1
 
     db.session.commit()
-    flash(f"SYNC SUCCESS: Refreshed deadlines for {updated} pending matches across all matchdays cleanly without altering history.", "success")
+    flash(f"SYNC SUCCESS: Refreshed deadlines for {updated} pending matches to next Friday!", "success")
     return redirect(url_for('admin'))
-
 
 @app.route('/panic-hq/approve/<int:match_id>', methods=['POST'])
 @login_required
