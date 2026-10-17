@@ -492,22 +492,13 @@ def demote_player(user_id):
 def generate_fixtures():
     return sync_matchdays()
 
-from datetime import datetime, timedelta
+FIRST_OPEN_MATCHDAY = 6
 
 def get_matchday_deadline(matchday_num):
-    today = datetime.now()
-    # Find the upcoming Monday
-    days_until_monday = (0 - today.weekday()) % 7
-    if days_until_monday == 0:
-        days_until_monday = 7
-    next_monday = today + timedelta(days=days_until_monday)
-    next_monday = next_monday.replace(hour=0, minute=0, second=0, microsecond=0)
-    
-    # All pending fixtures share next Friday's deadline (4 days after Monday) 
-    # so players can freely play any pending match without being locked out.
-    deadline = next_monday + timedelta(days=4)
-    return deadline.replace(hour=23, minute=59, second=0)
-
+    anchor = datetime.strptime(os.environ.get('MD6_START', '2026-10-19'), '%Y-%m-%d')
+    anchor -= timedelta(days=anchor.weekday())
+    weeks, day = divmod(max(int(matchday_num or 0), FIRST_OPEN_MATCHDAY) - FIRST_OPEN_MATCHDAY, 5)
+    return (anchor + timedelta(weeks=weeks, days=day)).replace(hour=23, minute=59, second=59, microsecond=0)
 
 @app.route('/panic-hq/sync-matchdays', methods=['POST'])
 @login_required
@@ -516,19 +507,61 @@ def sync_matchdays():
         flash("Access Denied: Admins only.", "error")
         return redirect(url_for('index'))
 
-    all_matches = Match.query.all()
-    updated = 0
+    try:
+        active_ids = sorted(u.id for u in User.query.filter_by(status='active', in_league=True).all())
+        matches = Match.query.all()
+        existing_legs = {(m.player_a_id, m.player_b_id) for m in matches}
 
-    # Refresh deadlines for all pending matches cleanly
-    for m in all_matches:
-        if m.status == 'pending':
-            m.deadline = get_matchday_deadline(m.matchday)
-            updated += 1
+        busy = {}
+        for m in matches:
+            if m.status in OPEN_STATUSES and (m.matchday or 0) >= FIRST_OPEN_MATCHDAY:
+                busy.setdefault(m.matchday, set()).update((m.player_a_id, m.player_b_id))
 
-    db.session.commit()
-    flash(f"SYNC SUCCESS: Refreshed deadlines for {updated} pending matches to next Friday!", "success")
+        def place(a, b):
+            md = FIRST_OPEN_MATCHDAY
+            while busy.get(md, set()) & {a, b}:
+                md += 1
+            busy.setdefault(md, set()).update((a, b))
+            return md
+
+        moved = 0
+        for m in matches:
+            if m.status == 'pending' and (m.matchday or 0) < FIRST_OPEN_MATCHDAY:
+                m.matchday = place(m.player_a_id, m.player_b_id)
+                moved += 1
+
+        created = 0
+        if len(active_ids) >= 2 and len(active_ids) % 2 == 0:
+            for rnd in generate_round_robin_schedule(active_ids):
+                for home, away in rnd:
+                    if (home, away) in existing_legs:
+                        continue
+                    md = place(home, away)
+                    db.session.add(Match(player_a_id=home, player_b_id=away, status='pending',
+                                         matchday=md, deadline=get_matchday_deadline(md)))
+                    existing_legs.add((home, away))
+                    created += 1
+
+        refreshed = 0
+        for m in matches:
+            if m.status != 'pending':
+                continue
+            deadline = get_matchday_deadline(m.matchday)
+            if m.deadline != deadline:
+                m.deadline = deadline
+                m.reminder_sent = False
+                refreshed += 1
+
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        flash(f"SYNC FAILED, nothing was changed: {e}", "error")
+        return redirect(url_for('admin'))
+
+    flash(f"SYNC SUCCESS: {refreshed} deadlines refreshed, {moved} stale fixtures moved out of "
+          f"Matchdays 1-{FIRST_OPEN_MATCHDAY - 1}, {created} missing fixtures created.", "success")
     return redirect(url_for('admin'))
-
+    
 @app.route('/panic-hq/approve/<int:match_id>', methods=['POST'])
 @login_required
 def approve_match(match_id):
