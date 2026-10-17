@@ -565,6 +565,64 @@ def sync_matchdays():
           f"Matchdays 1-{FIRST_OPEN_MATCHDAY - 1}, {created} missing fixtures created.", "success")
     return redirect(url_for('admin'))
     
+def plan_pending_matchdays():
+    matches = Match.query.all()
+    capacity = len({p for m in matches for p in (m.player_a_id, m.player_b_id)}) // 2
+    pending = sorted((m for m in matches if m.status == 'pending'), key=lambda m: (m.matchday or 0, m.id))
+
+    slots = {}
+    def slot(md):
+        return slots.setdefault(md, {'players': set(), 'count': 0})
+
+    for m in matches:
+        if m.status != 'pending':
+            s = slot(m.matchday or 0)
+            s['players'] |= {m.player_a_id, m.player_b_id}
+            s['count'] += 1
+
+    plan = {}
+    for m in pending:
+        pair = {m.player_a_id, m.player_b_id}
+        md = FIRST_OPEN_MATCHDAY
+        while slot(md)['count'] >= capacity or slot(md)['players'] & pair:
+            md += 1
+        slot(md)['players'] |= pair
+        slot(md)['count'] += 1
+        plan[m.id] = md
+    return pending, plan, slots
+
+
+@app.route('/panic-hq/rebalance-matchdays', methods=['GET', 'POST'])
+@login_required
+def rebalance_matchdays():
+    if current_user.role != 'admin':
+        flash("Access Denied: Admins only.", "error")
+        return redirect(url_for('index'))
+
+    pending, plan, slots = plan_pending_matchdays()
+    moved = sum(plan[m.id] != m.matchday for m in pending)
+
+    if request.method == 'POST':
+        try:
+            for m in pending:
+                m.matchday = plan[m.id]
+                deadline = get_matchday_deadline(m.matchday)
+                if m.deadline != deadline:
+                    m.deadline = deadline
+                    m.reminder_sent = False
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            flash(f"REBALANCE FAILED, nothing was changed: {e}", "error")
+            return redirect(url_for('admin'))
+        flash(f"REBALANCED: {moved} pending fixtures moved, last matchday is MD{max(plan.values(), default=0)}.", "success")
+        return redirect(url_for('admin'))
+
+    lines = [f"MD{md}: {s['count']} matches | deadline {get_matchday_deadline(md):%a %d %b}"
+             for md, s in sorted(slots.items()) if md >= FIRST_OPEN_MATCHDAY]
+    return ("<pre>" + "\n".join(lines) + f"\n\n{moved} of {len(pending)} pending fixtures change matchday.</pre>"
+            "<form method='post'><button style='font-size:1.2rem;padding:12px 24px'>APPLY</button></form>")
+    
 @app.route('/panic-hq/approve/<int:match_id>', methods=['POST'])
 @login_required
 def approve_match(match_id):
