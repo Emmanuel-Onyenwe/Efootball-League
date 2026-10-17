@@ -501,16 +501,14 @@ def get_matchday_deadline(matchday_num):
     next_monday = today + timedelta(days=days_until_monday)
     next_monday = next_monday.replace(hour=0, minute=0, second=0, microsecond=0)
     
-    # If it's Matchday 1-5 (catch-up matches), map them to Matchday 6's window 
-    # so they never show "Deadline Passed" for players still catching up.
+    # Map Matchdays 1-5 to the baseline window, and Matchday 6+ to weekly intervals
     effective_matchday = max(6, matchday_num)
-    
-    # Matchday 6 maps to Friday of next week (4 days after Monday)
     days_offset = ((effective_matchday - 6) * 7) + 4
     
     deadline = next_monday + timedelta(days=days_offset)
     return deadline.replace(hour=23, minute=59, second=0)
-    
+
+
 @app.route('/panic-hq/sync-matchdays', methods=['POST'])
 @login_required
 def sync_matchdays():
@@ -522,48 +520,57 @@ def sync_matchdays():
     user_ids = [u.id for u in users]
 
     if len(user_ids) % 2 != 0:
-        flash("Can't sync: the Circle Method needs an EVEN number of active players.", "error")
+        flash("Can't sync: The Circle Method needs an EVEN number of active players.", "error")
         return redirect(url_for('admin'))
 
     schedule = generate_round_robin_schedule(user_ids)
 
-    pair_matchdays = {} 
+    pair_matchdays = {}
     for matchday_index, round_matches in enumerate(schedule, start=1):
         for home_id, away_id in round_matches:
-            pair = tuple(sorted([home_id, away_id]))
+            pair = tuple(sorted((home_id, away_id)))
             pair_matchdays.setdefault(pair, []).append(matchday_index)
 
     all_matches = Match.query.order_by(Match.id).all()
     matches_by_pair = {}
     for m in all_matches:
-        pair = tuple(sorted([m.player_a_id, m.player_b_id]))
+        pair = tuple(sorted((m.player_a_id, m.player_b_id)))
         matches_by_pair.setdefault(pair, []).append(m)
 
     updated = 0
     created = 0
 
+    # 1. Refresh deadlines for ALL pending matches based on their current matchday (without scrambling matchday numbers)
+    for m in all_matches:
+        if m.status == 'pending':
+            m.deadline = get_matchday_deadline(m.matchday)
+            updated += 1
+
+    # 2. Add any truly missing fixtures for active pairs
     for pair, matchdays in pair_matchdays.items():
-        existing = matches_by_pair.get(pair, [])
-        for leg_index, matchday in enumerate(matchdays):
-            matchday_deadline = get_matchday_deadline(matchday)
-            
-            if leg_index < len(existing):
-                m = existing[leg_index]
-                m.matchday = matchday
-                m.deadline = matchday_deadline 
-                updated += 1
-            else:
+        existing = [m for m in matches_by_pair.get(pair, []) if m.status != 'void']
+        existing_count = len(existing)
+        
+        if existing_count < len(matchdays):
+            for i in range(existing_count, len(matchdays)):
+                matchday = matchdays[i]
                 home_id, away_id = next(
-                    (h, a) for (h, a) in schedule[matchday - 1] if tuple(sorted([h, a])) == pair
+                    (h, a) for (h, a) in schedule[matchday - 1] if tuple(sorted((h, a))) == pair
                 )
-                db.session.add(Match(
-                    player_a_id=home_id, player_b_id=away_id,
-                    deadline=matchday_deadline, status='pending', matchday=matchday
-                ))
-                created += 1
+                already_exists = any(
+                    (m.player_a_id == home_id and m.player_b_id == away_id) or 
+                    (m.player_a_id == away_id and m.player_b_id == home_id) 
+                    for m in existing
+                )
+                if not already_exists:
+                    db.session.add(Match(
+                        player_a_id=home_id, player_b_id=away_id,
+                        deadline=get_matchday_deadline(matchday), status='pending', matchday=matchday
+                    ))
+                    created += 1
 
     db.session.commit()
-    flash(f"UPGRADE SUCCESS: Grid rebuilt! {created} missing cross-matches added, {updated} matchdays shuffled.", "success")
+    flash(f"SYNC SUCCESS: Pending deadlines aligned to Mon-Fri! {created} missing fixtures added, {updated} deadlines refreshed.", "success")
     return redirect(url_for('admin'))
 
 @app.route('/panic-hq/approve/<int:match_id>', methods=['POST'])
