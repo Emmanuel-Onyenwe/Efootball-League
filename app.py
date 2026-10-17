@@ -491,7 +491,21 @@ def demote_player(user_id):
 @login_required
 def generate_fixtures():
     return sync_matchdays()
-
+def get_matchday_deadline(matchday_num):
+    today = datetime.now()
+    # Find the upcoming Monday
+    days_until_monday = (0 - today.weekday()) % 7
+    if days_until_monday == 0:
+        days_until_monday = 7
+    next_monday = today + timedelta(days=days_until_monday)
+    next_monday = next_monday.replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # Matchday 6 maps to Friday of next week (4 days after Monday)
+    days_offset = ((matchday_num - 6) * 7) + 4
+    
+    deadline = next_monday + timedelta(days=days_offset)
+    return deadline.replace(hour=23, minute=59, second=0)
+    
 @app.route('/panic-hq/sync-matchdays', methods=['POST'])
 @login_required
 def sync_matchdays():
