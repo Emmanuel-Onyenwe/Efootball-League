@@ -492,6 +492,8 @@ def demote_player(user_id):
 def generate_fixtures():
     return sync_matchdays()
 
+from datetime import datetime, timedelta
+
 def get_matchday_deadline(matchday_num):
     today = datetime.now()
     # Find the upcoming Monday
@@ -501,7 +503,8 @@ def get_matchday_deadline(matchday_num):
     next_monday = today + timedelta(days=days_until_monday)
     next_monday = next_monday.replace(hour=0, minute=0, second=0, microsecond=0)
     
-    # Matchday 6 maps to Friday next week. Matchday 7 is 1 week after, etc.
+    # Matchday 6 maps to Friday of next week (4 days after Monday)
+    # Every subsequent matchday adds exactly 7 days (1 week)
     days_offset = ((matchday_num - 6) * 7) + 4
     
     deadline = next_monday + timedelta(days=days_offset)
@@ -515,70 +518,19 @@ def sync_matchdays():
         flash("Access Denied: Admins only.", "error")
         return redirect(url_for('index'))
 
-    users = User.query.filter_by(status='active', in_league=True).order_by(User.id).all()
-    user_ids = [u.id for u in users]
-
-    if len(user_ids) % 2 != 0:
-        flash("Can't sync: The Circle Method needs an EVEN number of active players.", "error")
-        return redirect(url_for('admin'))
-
-    schedule = generate_round_robin_schedule(user_ids)
-
-    pair_matchdays = {}
-    for matchday_index, round_matches in enumerate(schedule, start=1):
-        for home_id, away_id in round_matches:
-            pair = tuple(sorted((home_id, away_id)))
-            pair_matchdays.setdefault(pair, []).append(matchday_index)
-
     all_matches = Match.query.all()
-    matches_by_pair = {}
-    for m in all_matches:
-        pair = tuple(sorted((m.player_a_id, m.player_b_id)))
-        matches_by_pair.setdefault(pair, []).append(m)
-
     updated = 0
-    created = 0
-    deleted_ghosts = 0
 
-    # 1. Clean up any lingering pending matches from Matchdays 1 to 5 (since those rounds are done)
+    # Non-destructive sync: Only update deadlines for pending matches based on their exact matchday number
     for m in all_matches:
-        if m.status == 'pending' and m.matchday < 6:
-            db.session.delete(m)
-            deleted_ghosts += 1
-
-    # 2. Only sync/create fixtures for Matchday 6 and onwards
-    for pair, matchdays in pair_matchdays.items():
-        existing = [m for m in matches_by_pair.get(pair, []) if m.status != 'void']
-        
-        for matchday in matchdays:
-            if matchday < 6:
-                continue  # Ignore matchdays 1-5 completely
-            
-            match_exists = any(
-                m.matchday == matchday and 
-                ((m.player_a_id == pair[0] and m.player_b_id == pair[1]) or 
-                 (m.player_a_id == pair[1] and m.player_b_id == pair[0]))
-                for m in existing
-            )
-            
-            if not match_exists:
-                home_id, away_id = next(
-                    (h, a) for (h, a) in schedule[matchday - 1] if tuple(sorted((h, a))) == pair
-                )
-                db.session.add(Match(
-                    player_a_id=home_id, player_b_id=away_id,
-                    deadline=get_matchday_deadline(matchday), status='pending', matchday=matchday
-                ))
-                created += 1
-            else:
-                for m in existing:
-                    if m.matchday == matchday and m.status == 'pending':
-                        m.deadline = get_matchday_deadline(matchday)
-                        updated += 1
+        if m.status == 'pending':
+            m.deadline = get_matchday_deadline(m.matchday)
+            updated += 1
 
     db.session.commit()
-    flash(f"SYNC SUCCESS: Removed {deleted_ghosts} old pending fixtures from past rounds. Matchday 6+ aligned!", "success")
+    flash(f"SYNC SUCCESS: Refreshed deadlines for {updated} pending matches across all matchdays cleanly without altering history.", "success")
     return redirect(url_for('admin'))
+
 
 @app.route('/panic-hq/approve/<int:match_id>', methods=['POST'])
 @login_required
