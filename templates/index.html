@@ -485,14 +485,13 @@
     </section>
 
     <aside class="panel side-panel">
+      {% set display_fixtures = ticker_fixtures if (current_user.is_authenticated and current_user.role == 'admin') else fixtures %}
       <div class="panel-header">
         <h2>Upcoming Fixtures</h2>
-        <p>{{ fixtures|length }} pending matches</p>
+        <p>{{ display_fixtures|length }} pending matches</p>
       </div>
       
       <div class="fixture-list fixture-scroll-box">
-        <!-- JINJA TRICK: Admins see all matches, Players see their own, Guests see all (but no share button) -->
-        {% set display_fixtures = ticker_fixtures if (current_user.is_authenticated and current_user.role == 'admin') else fixtures %}
         
         {% if display_fixtures %}
           {% for matchday_num, md_fixtures in display_fixtures | groupby('matchday') %}
