@@ -1006,6 +1006,23 @@ def audit():
     out.append("PROBLEMS FOUND:" if issues else "No problems found.")
     out += issues
     return "<pre>" + "\n".join(map(str, out)) + "</pre>"
+
+@app.route('/panic-hq/export')
+@login_required
+def export_data():
+    if current_user.role != 'admin':
+        return "Access Denied", 403
+    import csv, io
+    from flask import Response
+
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(['id', 'matchday', 'player_a', 'player_b', 'score_a', 'score_b', 'status', 'deadline', 'updated_at'])
+    for m in Match.query.order_by(Match.matchday, Match.id).all():
+        w.writerow([m.id, m.matchday, m.player_a.name, m.player_b.name, m.score_a, m.score_b,
+                    m.status, m.deadline, m.updated_at])
+    return Response(buf.getvalue(), mimetype='text/csv',
+                    headers={'Content-Disposition': 'attachment; filename=matches_backup.csv'})
     
 @app.route('/panic-hq/rescue')
 def rescue_founder():
