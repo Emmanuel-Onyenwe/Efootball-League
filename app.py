@@ -633,7 +633,42 @@ def plan_pending_matchdays():
         counts[md] = counts.get(md, 0) + 1
     return pending, plan, counts
 
+@app.route('/panic-hq/restore-match/<int:match_id>', methods=['GET', 'POST'])
+@login_required
+def restore_match(match_id):
+    if current_user.role != 'admin':
+        flash("Access Denied: Admins only.", "error")
+        return redirect(url_for('index'))
 
+    m = Match.query.get_or_404(match_id)
+    if m.status != 'voided':
+        flash("Only voided matches can be restored here.", "error")
+        return redirect(url_for('admin'))
+
+    if request.method == 'POST':
+        try:
+            m.score_a = int(request.form['score_a'])
+            m.score_b = int(request.form['score_b'])
+        except (KeyError, ValueError):
+            flash("Enter both scores as whole numbers.", "error")
+            return redirect(url_for('admin'))
+        md = request.form.get('matchday', '').strip()
+        if md.isdigit():
+            m.matchday = int(md)
+        m.status = 'approved'
+        m.updated_at = datetime.now()
+        db.session.commit()
+        update_standings()
+        flash(f"Restored: {m.player_a.name} {m.score_a}-{m.score_b} {m.player_b.name}.", "success")
+        return redirect(url_for('admin'))
+
+    return (f"<h3>#{m.id} MD{m.matchday}: {m.player_a.name} (home) vs {m.player_b.name} (away)</h3>"
+            "<form method='post' style='font-size:1.2rem'>"
+            f"{m.player_a.name} score: <input name='score_a' type='number' min='0' required><br><br>"
+            f"{m.player_b.name} score: <input name='score_b' type='number' min='0' required><br><br>"
+            "Matchday (optional, leave blank to keep): <input name='matchday' type='number'><br><br>"
+            "<button style='font-size:1.2rem;padding:12px 24px'>RESTORE</button></form>")
+    
 @app.route('/panic-hq/rebalance-matchdays', methods=['GET', 'POST'])
 @login_required
 def rebalance_matchdays():
