@@ -1037,6 +1037,31 @@ def hard_reset_schedule():
             f"Matchday {total_matchdays}.\n\n"
             f"Veterans detected: {veteran_names}\n"
             f"Rookies detected: {rookie_names}")
+
+@app.route('/panic-hq/ledger')
+@login_required
+def ledger():
+    if current_user.role != 'admin':
+        return "Access Denied", 403
+    u = User.query.filter(db.func.lower(User.name) == request.args.get('name', '').lower()).first_or_404()
+    rows = Match.query.filter(
+        ((Match.player_a_id == u.id) | (Match.player_b_id == u.id)) & (Match.status != 'pending')
+    ).order_by(Match.matchday, Match.id).all()
+
+    out, total = [f"{u.name}: {len(rows)} finished matches", ""], 0
+    for m in rows:
+        home = m.player_a_id == u.id
+        opp = (m.player_b if home else m.player_a).name
+        mine, theirs = (m.score_a, m.score_b) if home else (m.score_b, m.score_a)
+        if m.status == 'voided':
+            res, pts = "VOID (loss, 0 pts)", 0
+        else:
+            res, pts = ("W", 3) if mine > theirs else ("D", 1) if mine == theirs else ("L", 0)
+        total += pts
+        kind = "walkover" if m.status == 'approved' and not m.screenshot_path else "played"
+        out.append(f"MD{m.matchday:<3} #{m.id} {'H' if home else 'A'} vs {opp:14} {mine}-{theirs}  {res:18} {kind}  +{pts}")
+    out += ["", f"Total points from matches: {total} | stored in table: {u.points}"]
+    return "<pre>" + "\n".join(out) + "</pre>"
     
 @app.route('/panic-hq/eliminate/<int:user_id>', methods=['POST'])
 @login_required
