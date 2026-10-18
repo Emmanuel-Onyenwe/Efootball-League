@@ -565,50 +565,72 @@ def sync_matchdays():
           f"Matchdays 1-{FIRST_OPEN_MATCHDAY - 1}, {created} missing fixtures created.", "success")
     return redirect(url_for('admin'))
     
+TARGET_LAST_MATCHDAY = 23
+
+
 def plan_pending_matchdays():
     matches = Match.query.all()
-    capacity = len({p for m in matches for p in (m.player_a_id, m.player_b_id)}) // 2
     pending = sorted((m for m in matches if m.status == 'pending'), key=lambda m: (m.matchday or 0, m.id))
-
-    slots = {}
-    def slot(md):
-        return slots.setdefault(md, {'players': set(), 'count': 0})
-
+    fixed = {}
     for m in matches:
         if m.status != 'pending':
-            s = slot(m.matchday or 0)
-            s['players'] |= {m.player_a_id, m.player_b_id}
-            s['count'] += 1
+            fixed.setdefault(m.matchday or 0, set()).update((m.player_a_id, m.player_b_id))
 
-    def biggest_set(edges, room):
-        best = []
-        def go(i, used, cur):
-            nonlocal best
-            if len(cur) > len(best):
-                best = list(cur)
-            if len(best) == room or i == len(edges) or len(cur) + len(edges) - i <= len(best):
-                return
-            pair = {edges[i].player_a_id, edges[i].player_b_id}
-            if not pair & used:
-                cur.append(edges[i])
-                go(i + 1, used | pair, cur)
-                cur.pop()
-            if len(best) < room:
-                go(i + 1, used, cur)
-        go(0, frozenset(), [])
-        return best
+    def solve(last, budget=8):
+        days = range(FIRST_OPEN_MATCHDAY, last + 1)
+        used = {d: set(fixed.get(d, ())) for d in days}
+        plan, todo = {}, list(pending)
+        stop = time.monotonic() + budget
 
-    plan, remaining, md = {}, list(pending), FIRST_OPEN_MATCHDAY
-    while remaining and md < FIRST_OPEN_MATCHDAY + 100:
-        s = slot(md)
-        free = [m for m in remaining if not {m.player_a_id, m.player_b_id} & s['players']]
-        for m in biggest_set(free, capacity - s['count']):
-            s['players'] |= {m.player_a_id, m.player_b_id}
-            s['count'] += 1
-            plan[m.id] = md
-            remaining.remove(m)
-        md += 1
-    return pending, plan, slots
+        def options(m):
+            return [d for d in days if m.player_a_id not in used[d] and m.player_b_id not in used[d]]
+
+        def feasible():
+            for p in {x for m in todo for x in (m.player_a_id, m.player_b_id)}:
+                if sum(p in (m.player_a_id, m.player_b_id) for m in todo) > sum(p not in used[d] for d in days):
+                    return False
+            return True
+
+        def go():
+            if not todo:
+                return True
+            if time.monotonic() > stop:
+                raise TimeoutError
+            if not feasible():
+                return False
+            m = min(todo, key=lambda x: len(options(x)))
+            idx = todo.index(m)
+            todo.remove(m)
+            pair = {m.player_a_id, m.player_b_id}
+            for d in options(m):
+                used[d] |= pair
+                plan[m.id] = d
+                if go():
+                    return True
+                used[d] -= pair
+                del plan[m.id]
+            todo.insert(idx, m)
+            return False
+
+        return plan if go() else None
+
+    plan = None
+    for last in range(TARGET_LAST_MATCHDAY, TARGET_LAST_MATCHDAY + 30):
+        try:
+            plan = solve(last)
+        except TimeoutError:
+            plan = None
+        if plan is not None:
+            break
+
+    if plan is None:
+        return pending, None, {}
+
+    counts = {md: len(ids) for md, ids in fixed.items()}
+    counts = {md: sum(1 for m in matches if m.status != 'pending' and (m.matchday or 0) == md) for md in fixed}
+    for md in plan.values():
+        counts[md] = counts.get(md, 0) + 1
+    return pending, plan, counts
 
 
 @app.route('/panic-hq/rebalance-matchdays', methods=['GET', 'POST'])
@@ -618,7 +640,12 @@ def rebalance_matchdays():
         flash("Access Denied: Admins only.", "error")
         return redirect(url_for('index'))
 
-    pending, plan, slots = plan_pending_matchdays()
+    pending, plan, counts = plan_pending_matchdays()
+    if plan is None:
+        flash("REBALANCE: no valid arrangement found, nothing was changed.", "error")
+        return redirect(url_for('admin'))
+
+    last = max(plan.values(), default=FIRST_OPEN_MATCHDAY)
     moved = sum(plan[m.id] != m.matchday for m in pending)
 
     if request.method == 'POST':
@@ -634,12 +661,13 @@ def rebalance_matchdays():
             db.session.rollback()
             flash(f"REBALANCE FAILED, nothing was changed: {e}", "error")
             return redirect(url_for('admin'))
-        flash(f"REBALANCED: {moved} pending fixtures moved, last matchday is MD{max(plan.values(), default=0)}.", "success")
+        flash(f"REBALANCED: {moved} pending fixtures moved, last matchday is MD{last}.", "success")
         return redirect(url_for('admin'))
 
-    lines = [f"MD{md}: {s['count']} matches | deadline {get_matchday_deadline(md):%a %d %b}"
-             for md, s in sorted(slots.items()) if md >= FIRST_OPEN_MATCHDAY]
-    return ("<pre>" + "\n".join(lines) + f"\n\n{moved} of {len(pending)} pending fixtures change matchday.</pre>"
+    lines = [f"MD{md}: {counts.get(md, 0)} matches | deadline {get_matchday_deadline(md):%a %d %b}"
+             for md in range(FIRST_OPEN_MATCHDAY, last + 1)]
+    return ("<pre>" + "\n".join(lines) + f"\n\nLast matchday: MD{last}"
+            f"\n{moved} of {len(pending)} pending fixtures change matchday.</pre>"
             "<form method='post'><button style='font-size:1.2rem;padding:12px 24px'>APPLY</button></form>")
     
 @app.route('/panic-hq/approve/<int:match_id>', methods=['POST'])
