@@ -580,15 +580,34 @@ def plan_pending_matchdays():
             s['players'] |= {m.player_a_id, m.player_b_id}
             s['count'] += 1
 
-    plan = {}
-    for m in pending:
-        pair = {m.player_a_id, m.player_b_id}
-        md = FIRST_OPEN_MATCHDAY
-        while slot(md)['count'] >= capacity or slot(md)['players'] & pair:
-            md += 1
-        slot(md)['players'] |= pair
-        slot(md)['count'] += 1
-        plan[m.id] = md
+    def biggest_set(edges, room):
+        best = []
+        def go(i, used, cur):
+            nonlocal best
+            if len(cur) > len(best):
+                best = list(cur)
+            if len(best) == room or i == len(edges) or len(cur) + len(edges) - i <= len(best):
+                return
+            pair = {edges[i].player_a_id, edges[i].player_b_id}
+            if not pair & used:
+                cur.append(edges[i])
+                go(i + 1, used | pair, cur)
+                cur.pop()
+            if len(best) < room:
+                go(i + 1, used, cur)
+        go(0, frozenset(), [])
+        return best
+
+    plan, remaining, md = {}, list(pending), FIRST_OPEN_MATCHDAY
+    while remaining and md < FIRST_OPEN_MATCHDAY + 100:
+        s = slot(md)
+        free = [m for m in remaining if not {m.player_a_id, m.player_b_id} & s['players']]
+        for m in biggest_set(free, capacity - s['count']):
+            s['players'] |= {m.player_a_id, m.player_b_id}
+            s['count'] += 1
+            plan[m.id] = md
+            remaining.remove(m)
+        md += 1
     return pending, plan, slots
 
 
