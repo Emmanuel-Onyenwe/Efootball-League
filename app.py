@@ -841,6 +841,85 @@ def admin_override():
     update_standings()
     return redirect(url_for('admin'))
 
+@app.route('/panic-hq/audit')
+@login_required
+def audit():
+    if current_user.role != 'admin':
+        return "Access Denied", 403
+
+    users = {u.id: u for u in User.query.all()}
+    nm = lambda i: users[i].name if i in users else f"#{i}"
+    matches = Match.query.order_by(Match.matchday, Match.id).all()
+    out, issues = [], []
+
+    st = {}
+    for m in matches:
+        st[m.status] = st.get(m.status, 0) + 1
+    out.append(f"Matches: {len(matches)} {st}")
+
+    by_md = {}
+    for m in matches:
+        by_md.setdefault(m.matchday or 0, []).append(m)
+    for md, ms in sorted(by_md.items()):
+        seen = {}
+        for m in ms:
+            for p in (m.player_a_id, m.player_b_id):
+                seen.setdefault(p, []).append(m)
+        dup = {p: v for p, v in seen.items() if len(v) > 1}
+        if len(ms) > 6 or dup:
+            issues.append(f"MD{md}: {len(ms)} matches, players twice: {sorted(nm(p) for p in dup)}")
+            for m in ms:
+                issues.append(f"    #{m.id} {nm(m.player_a_id)} {m.score_a}-{m.score_b} {nm(m.player_b_id)} [{m.status}]")
+
+    pairs = {}
+    for m in matches:
+        pairs.setdefault(frozenset((m.player_a_id, m.player_b_id)), []).append(m)
+    for k, ms in pairs.items():
+        who = sorted(nm(p) for p in k)
+        if len(ms) != 2:
+            issues.append(f"Pair {who}: {len(ms)} matches")
+        elif ms[0].player_a_id == ms[1].player_a_id:
+            issues.append(f"Pair {who}: both legs have the same home player")
+    pids = {p for m in matches for p in (m.player_a_id, m.player_b_id)}
+    for a, b in itertools.combinations(sorted(pids), 2):
+        if frozenset((a, b)) not in pairs:
+            issues.append(f"Pair {sorted((nm(a), nm(b)))}: no matches")
+
+    for m in matches:
+        if m.status == 'approved' and (m.score_a is None or m.score_b is None):
+            issues.append(f"#{m.id} approved with empty score")
+        if m.status == 'pending':
+            for p in (m.player_a_id, m.player_b_id):
+                u = users.get(p)
+                if u and not (u.status == 'active' and u.in_league):
+                    issues.append(f"#{m.id} pending MD{m.matchday} involves inactive player {u.name}")
+
+    out.append("")
+    out.append("STANDINGS (recomputed from matches vs stored in table):")
+    for u in User.query.filter_by(status='active', in_league=True).all():
+        r = dict(p=0, w=0, d=0, l=0, gf=0, ga=0, pts=0)
+        for m in matches:
+            if m.status not in ('approved', 'voided') or u.id not in (m.player_a_id, m.player_b_id):
+                continue
+            r['p'] += 1
+            if m.status == 'voided':
+                r['l'] += 1
+                continue
+            mine, theirs = (m.score_a, m.score_b) if m.player_a_id == u.id else (m.score_b, m.score_a)
+            r['gf'] += mine; r['ga'] += theirs
+            if mine > theirs: r['w'] += 1; r['pts'] += 3
+            elif mine == theirs: r['d'] += 1; r['pts'] += 1
+            else: r['l'] += 1
+        stored = dict(p=u.played, w=u.won, d=u.drawn, l=u.lost, gf=u.goals_for, ga=u.goals_against, pts=u.points)
+        ok = "OK " if r == stored else "MISMATCH"
+        out.append(f"{ok} {u.name:14} P{r['p']} W{r['w']} D{r['d']} L{r['l']} GF{r['gf']} GA{r['ga']} Pts{r['pts']}"
+                   + ("" if r == stored else f"  stored={stored}"))
+
+    out.append("")
+    out.append("PROBLEMS FOUND:" if issues else "No problems found.")
+    out += issues
+    return "<pre>" + "\n".join(map(str, out)) + "</pre>"
+    
 @app.route('/panic-hq/rescue')
 def rescue_founder():
     founder = User.query.get(1)
