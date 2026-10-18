@@ -774,6 +774,58 @@ def fast_track_league():
     flash(f"FAST-TRACK ACTIVATED! {len(pending_matches)} matches have been synced to a 7-day final deadline.", "success")
     return redirect(url_for('admin'))
 
+ORIGINAL_FIXTURES = {
+    1: [('spoilerbeatz', 'bigboyyy09'), ('ætz', 'andy'), ('kruz', 'yung'),
+        ('nightmare', 'take the win'), ('saint', 'joe'), ('for_winnie', 'ghost')],
+    2: [('andy', 'spoilerbeatz'), ('bigboyyy09', 'kruz'), ('take the win', 'ætz'),
+        ('yung', 'saint'), ('ghost', 'nightmare'), ('joe', 'for_winnie')],
+    3: [('spoilerbeatz', 'kruz'), ('andy', 'take the win'), ('saint', 'bigboyyy09'),
+        ('ætz', 'ghost'), ('nightmare', 'joe'), ('for_winnie', 'yung')],
+    4: [('take the win', 'spoilerbeatz'), ('kruz', 'saint'), ('ghost', 'andy'),
+        ('bigboyyy09', 'for_winnie'), ('joe', 'ætz'), ('yung', 'nightmare')],
+    5: [('spoilerbeatz', 'saint'), ('take the win', 'ghost'), ('for_winnie', 'kruz'),
+        ('andy', 'joe'), ('nightmare', 'bigboyyy09'), ('ætz', 'yung')],
+}
+
+
+@app.route('/panic-hq/align-md1-5', methods=['GET', 'POST'])
+@login_required
+def align_md1_5():
+    if current_user.role != 'admin':
+        flash("Access Denied: Admins only.", "error")
+        return redirect(url_for('index'))
+
+    users = User.query.all()
+    uid = lambda key: next((u.id for u in users if u.name.casefold().startswith(key)), None)
+    name = {u.id: u.name for u in users}
+
+    rows = []
+    for md, games in ORIGINAL_FIXTURES.items():
+        for h, a in games:
+            hid, aid = uid(h), uid(a)
+            m = Match.query.filter_by(player_a_id=hid, player_b_id=aid).first() if hid and aid else None
+            rows.append((md, h, a, m))
+
+    changes = [(md, m) for md, _, _, m in rows if m and m.status != 'pending' and m.matchday != md]
+
+    if request.method == 'POST':
+        for md, m in changes:
+            m.matchday = md
+        db.session.commit()
+        flash(f"ALIGNED: {len(changes)} match labels set back to their original matchday. Scores and points untouched.", "success")
+        return redirect(url_for('admin'))
+
+    lines = []
+    for md, h, a, m in rows:
+        if not m:
+            lines.append(f"MD{md} {h} vs {a}: NOT FOUND (home/away may differ)")
+        else:
+            flag = "  <-- relabel" if (m.status != 'pending' and m.matchday != md) else ""
+            lines.append(f"MD{md} {name[m.player_a_id]} {m.score_a}-{m.score_b} {name[m.player_b_id]} "
+                         f"| #{m.id} now MD{m.matchday} [{m.status}]{flag}")
+    return ("<pre>" + "\n".join(lines) + f"\n\n{len(changes)} labels would change.</pre>"
+            "<form method='post'><button style='font-size:1.2rem;padding:12px 24px'>APPLY</button></form>")
+    
 @app.route('/panic-hq/add_strike/<int:user_id>', methods=['POST'])
 @login_required
 def add_strike(user_id):
